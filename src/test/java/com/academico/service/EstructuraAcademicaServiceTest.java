@@ -41,10 +41,10 @@ class EstructuraAcademicaServiceTest {
     @Test
     @DisplayName("Debe permitir agregar si la suma total es <= 100")
     void testPuedeAgregarActividad_Exito() throws SQLException {
-        // Simulamos que la base de datos dice que actualmente hay 50% registrado
+        // Simular que la base de datos dice que actualmente hay 50% registrado
         when(actividadDAO.sumaPonderaciones(1, 1)).thenReturn(new BigDecimal("50.00"));
 
-        // Intentamos agregar 30% más (Total 80%)
+        // Intentar agregar 30% más (Total 80%)
         boolean resultado = estructuraService.puedeAgregarActividad(1, 1, new BigDecimal("30.00"));
 
         assertTrue(resultado, "Debería permitir agregar porque 50 + 30 <= 100");
@@ -53,10 +53,10 @@ class EstructuraAcademicaServiceTest {
     @Test
     @DisplayName("Debe rechazar si la suma total excede 100")
     void testPuedeAgregarActividad_FallaExcede100() throws SQLException {
-        // Simulamos que la base de datos dice que actualmente hay 80% registrado
+        // Simular que la base de datos dice que actualmente hay 80% registrado
         when(actividadDAO.sumaPonderaciones(1, 1)).thenReturn(new BigDecimal("80.00"));
 
-        // Intentamos agregar 30% más (Total 110%)
+        // Intentar agregar 30% más (Total 110%)
         boolean resultado = estructuraService.puedeAgregarActividad(1, 1, new BigDecimal("30.00"));
 
         assertFalse(resultado, "Debería rechazar porque 80 + 30 > 100");
@@ -65,11 +65,11 @@ class EstructuraAcademicaServiceTest {
     @Test
     @DisplayName("Debe lanzar excepción si se intenta guardar en una unidad cerrada")
     void testGuardarActividad_FallaUnidadCerrada() throws SQLException {
-        // Simulamos que el guardia de seguridad detecta que la unidad está cerrada y lanza su error
+        // Simular que la unidad está cerrada 
         doThrow(new IllegalStateException("Unidad cerrada."))
                 .when(estadoUnidadService).validarUnidadAbierta(1, 1);
 
-        // Verificamos que al intentar guardar, la excepción suba y detenga todo
+        // Verificar que al intentar guardar, la excepción suba y detenga todo
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             estructuraService.guardarActividad(actividadPrueba);
         });

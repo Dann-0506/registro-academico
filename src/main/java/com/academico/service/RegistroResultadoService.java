@@ -21,6 +21,12 @@ public class RegistroResultadoService {
         this.estadoUnidadService = new EstadoUnidadService();
     }
 
+    public RegistroResultadoService(ResultadoDAO resultadoDAO, InscripcionDAO inscripcionDAO, EstadoUnidadService estadoUnidadService) {
+        this.resultadoDAO = resultadoDAO;
+        this.inscripcionDAO = inscripcionDAO;
+        this.estadoUnidadService = estadoUnidadService;
+    }
+
     public void guardarCalificacion(int inscripcionId, int grupoId, int unidadId, int actividadGrupoId, BigDecimal calificacion) throws SQLException {
         estadoUnidadService.validarUnidadAbierta(grupoId, unidadId);
         
