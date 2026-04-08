@@ -27,15 +27,11 @@ public class ReporteService {
         this.alumnoDAO = new AlumnoDAO();
     }
 
-    /**
-     * Genera el concentrado final de la materia para un grupo entero.
-     * Lista para ser mostrada en la tabla de resultados de la interfaz.
-     */
     public List<CalificacionFinal> generarReporteFinalGrupo(int grupoId) throws SQLException {
         List<CalificacionFinal> reporteGrupo = new ArrayList<>();
         
         List<Inscripcion> inscripciones = inscripcionDAO.findByGrupo(grupoId);
-        List<Unidad> unidades = unidadDAO.findAll(); // Catálogo de unidades
+        List<Unidad> unidades = unidadDAO.findByGrupo(grupoId);
 
         for (Inscripcion inscripcion : inscripciones) {
             
