@@ -1,4 +1,4 @@
-package com.academico.service;
+package com.academico.auth;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.junit.jupiter.api.BeforeEach;

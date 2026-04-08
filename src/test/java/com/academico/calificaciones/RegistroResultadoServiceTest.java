@@ -1,8 +1,9 @@
-package com.academico.service;
+package com.academico.calificaciones;
 
-import com.academico.dao.InscripcionDAO;
-import com.academico.dao.ResultadoDAO;
-import com.academico.model.Inscripcion;
+import com.academico.academia.EstadoUnidadService;
+import com.academico.inscripciones.Inscripcion;
+import com.academico.inscripciones.InscripcionDAO;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

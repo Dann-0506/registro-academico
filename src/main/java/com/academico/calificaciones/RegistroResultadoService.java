@@ -2,7 +2,7 @@ package com.academico.calificaciones;
 
 import com.academico.inscripciones.Inscripcion;
 import com.academico.inscripciones.InscripcionDAO;
-import com.academico.service.EstadoUnidadService;
+import com.academico.academia.EstadoUnidadService;
 import com.academico.core.db.DatabaseManager;
 
 import java.math.BigDecimal;

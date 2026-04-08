@@ -1,6 +1,6 @@
 package com.academico.core.util;
 
-import com.academico.model.Usuario;
+import com.academico.auth.Usuario;
 
 public class SessionManager {
 

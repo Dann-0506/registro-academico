@@ -1,6 +1,6 @@
-package com.academico;
+package com.academico.core;
 
-import com.academico.db.DatabaseManager;
+import com.academico.core.db.DatabaseManager;
 
 public class MainApp {
 

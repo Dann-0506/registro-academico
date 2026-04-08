@@ -1,9 +1,9 @@
-package com.academico.dao;
-
-import com.academico.db.DatabaseManager;
+package com.academico.core;
 
 import java.sql.*;
 import java.util.Optional;
+
+import com.academico.core.db.DatabaseManager;
 
 public class ConfiguracionDAO {
 
