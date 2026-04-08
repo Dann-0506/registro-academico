@@ -1,4 +1,4 @@
-package com.academico.db;
+package com.academico.core.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

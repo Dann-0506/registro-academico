@@ -1,4 +1,4 @@
-package com.academico.util;
+package com.academico.core.util;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
