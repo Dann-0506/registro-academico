@@ -127,4 +127,27 @@ public class ResultadoDAO {
             }
         }
     }
+
+    public void guardarLoteEnConexion(Connection conn, List<Resultado> resultados) throws SQLException {
+        String sql = """
+                INSERT INTO resultado 
+                    (inscripcion_id, actividad_grupo_id, calificacion, modificado_en)
+                VALUES (?, ?, ?, NOW())
+                ON CONFLICT (inscripcion_id, actividad_grupo_id)
+                DO UPDATE SET calificacion  = EXCLUDED.calificacion,
+                            modificado_en = NOW()
+                """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (Resultado r : resultados) {
+                ps.setInt(1, r.getInscripcionId());
+                ps.setInt(2, r.getActividadGrupoId());
+                if (r.getCalificacion() != null)
+                    ps.setBigDecimal(3, r.getCalificacion());
+                else
+                    ps.setNull(3, Types.NUMERIC);
+                ps.addBatch();
+            }
+            ps.executeBatch();
+        }
+    }
 }
