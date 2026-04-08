@@ -20,7 +20,6 @@ public class GrupoDAO {
         g.setClave(rs.getString("clave"));
         g.setSemestre(rs.getString("semestre"));
         g.setActivo(rs.getBoolean("activo"));
-        // Campos del JOIN — pueden no estar presentes en todas las consultas
         try { g.setMateriaNombre(rs.getString("materia_nombre")); } catch (SQLException ignored) {}
         try { g.setMaestroNombre(rs.getString("maestro_nombre")); } catch (SQLException ignored) {}
         return g;
@@ -114,6 +113,35 @@ public class GrupoDAO {
             }
         }
         return g;
+    }
+
+    public List<String> insertarLote(List<Grupo> grupos) throws SQLException {
+        List<String> duplicados = new ArrayList<>();
+        String sql = """
+                INSERT INTO grupo (materia_id, maestro_id, clave, semestre, activo)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT (clave) DO NOTHING
+                """;
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (Grupo g : grupos) {
+                    ps.setInt(1, g.getMateriaId());
+                    ps.setInt(2, g.getMaestroId());
+                    ps.setString(3, g.getClave());
+                    ps.setString(4, g.getSemestre());
+                    ps.setBoolean(5, g.isActivo());
+                    if (ps.executeUpdate() == 0) duplicados.add(g.getClave());
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+        return duplicados;
     }
 
 

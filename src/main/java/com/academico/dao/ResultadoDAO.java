@@ -28,10 +28,6 @@ public class ResultadoDAO {
 
     // === Consulta ===
 
-    /**
-     * Resultados de un alumno en todas las actividades de una unidad.
-     * Este es el query central para calcular el resultado de una unidad.
-     */
     public List<Resultado> findByInscripcionYUnidad(int inscripcionId, int unidadId)
             throws SQLException {
         String sql = """
@@ -80,10 +76,6 @@ public class ResultadoDAO {
 
     // === Escritura ===
 
-    /**
-     * Inserta o actualiza la calificación de un alumno en una actividad.
-     * UPSERT: si ya existe, actualiza; si no, inserta.
-     */
     public void guardar(int inscripcionId, int actividadGrupoId,
                         java.math.BigDecimal calificacion) throws SQLException {
         String sql = """
@@ -104,10 +96,6 @@ public class ResultadoDAO {
         }
     }
 
-    /**
-     * Guarda múltiples calificaciones en una sola transacción.
-     * Usado cuando el maestro guarda toda una unidad de una vez.
-     */
     public void guardarLote(List<Resultado> resultados) throws SQLException {
         String sql = """
                 INSERT INTO resultado (inscripcion_id, actividad_grupo_id,

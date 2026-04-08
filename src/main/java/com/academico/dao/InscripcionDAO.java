@@ -107,6 +107,34 @@ public class InscripcionDAO {
         return i;
     }
 
+    public List<String> insertarLote(List<Inscripcion> inscripciones) throws SQLException {
+        List<String> duplicados = new ArrayList<>();
+        String sql = """
+                INSERT INTO inscripcion (alumno_id, grupo_id, fecha)
+                VALUES (?, ?, CURRENT_DATE)
+                ON CONFLICT (alumno_id, grupo_id) DO NOTHING
+                """;
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (Inscripcion i : inscripciones) {
+                    ps.setInt(1, i.getAlumnoId());
+                    ps.setInt(2, i.getGrupoId());
+                    if (ps.executeUpdate() == 0) {
+                        duplicados.add("Alumno ID: " + i.getAlumnoId() + " en Grupo ID: " + i.getGrupoId());
+                    }
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+        return duplicados;
+    }
+
     // === Actualización ===
 
     public void actualizarOverride(int inscripcionId, BigDecimal override, String justificacion) throws SQLException {

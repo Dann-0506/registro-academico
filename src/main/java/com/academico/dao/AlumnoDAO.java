@@ -15,11 +15,9 @@ public class AlumnoDAO {
     private Alumno mapear(ResultSet rs) throws SQLException {
         Alumno a = new Alumno();
         a.setId(rs.getInt("id"));
-        // usuario_id puede ser null
         int uid = rs.getInt("usuario_id");
         a.setUsuarioId(rs.wasNull() ? null : uid);
         a.setMatricula(rs.getString("matricula"));
-        // nombre y email vienen del JOIN con usuario
         a.setNombre(rs.getString("nombre"));
         a.setEmail(rs.getString("email"));
         return a;
@@ -118,11 +116,6 @@ public class AlumnoDAO {
         return a;
     }
 
-    /**
-     * Inserta múltiples alumnos en una sola transacción.
-     * Usado para importación por CSV.
-     * Devuelve la lista de matrículas que ya existían y fueron ignoradas.
-     */
     public List<String> insertarLote(List<Alumno> alumnos) throws SQLException {
         List<String> duplicados = new ArrayList<>();
         String sql = "INSERT INTO alumno (matricula) VALUES (?) ON CONFLICT (matricula) DO NOTHING";
