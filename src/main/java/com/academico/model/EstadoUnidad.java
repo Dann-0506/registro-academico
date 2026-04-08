@@ -7,7 +7,7 @@ public class EstadoUnidad {
     private int grupoId;
     private int unidadId;
     private String estado;
-    private LocalDateTime actualziadoEn;
+    private LocalDateTime actualizadoEn;
 
     public EstadoUnidad() {}
 
@@ -16,7 +16,7 @@ public class EstadoUnidad {
         this.grupoId = grupoId;
         this.unidadId = unidadId;
         this.estado = estado;
-        this.actualziadoEn = actualizadoEn;
+        this.actualizadoEn = actualizadoEn;
     }
 
     public int getId() { return id; }
@@ -31,8 +31,8 @@ public class EstadoUnidad {
     public String getEstado() { return estado; }
     public void setEstado(String estado) {this.estado = estado; }
 
-    public LocalDateTime getActualizadoEn() { return actualziadoEn; }
-    public void setActualizadoEn(LocalDateTime actualizadoEn) { this.actualziadoEn = actualizadoEn; }
+    public LocalDateTime getActualizadoEn() { return actualizadoEn; }
+    public void setActualizadoEn(LocalDateTime actualizadoEn) { this.actualizadoEn = actualizadoEn; }
 
 
     public boolean isCerrada() {
