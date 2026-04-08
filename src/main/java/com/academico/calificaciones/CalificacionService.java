@@ -1,5 +1,7 @@
-package com.academico.service;
+package com.academico.calificaciones;
 
+import com.academico.academia.Unidad;
+import com.academico.inscripciones.Alumno;
 import com.academico.model.*;
 
 import java.math.BigDecimal;

@@ -1,10 +1,9 @@
-package com.academico.service;
+package com.academico.calificaciones;
 
-import com.academico.dao.ResultadoDAO;
-import com.academico.db.DatabaseManager;
-import com.academico.dao.InscripcionDAO;
-import com.academico.model.Inscripcion;
-import com.academico.model.Resultado;
+import com.academico.inscripciones.Inscripcion;
+import com.academico.inscripciones.InscripcionDAO;
+import com.academico.service.EstadoUnidadService;
+import com.academico.core.db.DatabaseManager;
 
 import java.math.BigDecimal;
 import java.sql.Connection;

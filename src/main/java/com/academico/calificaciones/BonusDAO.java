@@ -1,7 +1,6 @@
-package com.academico.dao;
+package com.academico.calificaciones;
 
-import com.academico.db.DatabaseManager;
-import com.academico.model.Bonus;
+import com.academico.core.db.DatabaseManager;
 
 import java.sql.*;
 import java.util.ArrayList;
