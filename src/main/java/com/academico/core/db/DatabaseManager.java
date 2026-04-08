@@ -55,7 +55,7 @@ public class DatabaseManager {
     private static void createSchemaIfNeeded() {
         try (Connection conn = getConnection();
             InputStream is = DatabaseManager.class
-                    .getResourceAsStream("/com/academico/db/schema.sql")) {
+                    .getResourceAsStream("/com/academico/core/db/schema.sql")) {
 
             if (is == null) {
                 throw new RuntimeException("schema.sql no encontrado en el classpath");
