@@ -16,6 +16,11 @@ public class EstructuraAcademicaService {
         this.estadoUnidadService = new EstadoUnidadService();
     }
 
+    public EstructuraAcademicaService(ActividadGrupoDAO actividadDAO, EstadoUnidadService estadoUnidadService) {
+        this.actividadDAO = actividadDAO;
+        this.estadoUnidadService = estadoUnidadService;
+    }
+
     // === Validaciones matemáticas ===
 
     public boolean puedeAgregarActividad(int grupoId, int unidadId, BigDecimal nuevaPonderacion) throws SQLException {
