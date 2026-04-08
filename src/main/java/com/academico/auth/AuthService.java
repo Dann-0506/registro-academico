@@ -1,8 +1,6 @@
-package com.academico.service;
+package com.academico.auth;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.academico.dao.UsuarioDAO;
-import com.academico.model.Usuario;
 
 import java.util.Optional;
 

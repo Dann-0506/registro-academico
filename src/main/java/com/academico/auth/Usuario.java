@@ -1,4 +1,4 @@
-package com.academico.model;
+package com.academico.auth;
 
 public class Usuario {
     private int id;
