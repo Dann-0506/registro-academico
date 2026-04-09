@@ -1,6 +1,7 @@
-package com.academico.inscripciones;
+package com.academico.dao;
 
 import com.academico.core.db.DatabaseManager;
+import com.academico.model.Alumno;
 
 import java.sql.*;
 import java.util.ArrayList;

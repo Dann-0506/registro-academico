@@ -1,7 +1,7 @@
-package com.academico.academia.dao;
+package com.academico.dao;
 
-import com.academico.academia.model.EstadoUnidad;
 import com.academico.core.db.DatabaseManager;
+import com.academico.model.EstadoUnidad;
 
 import java.sql.*;
 

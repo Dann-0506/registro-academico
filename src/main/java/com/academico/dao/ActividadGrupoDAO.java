@@ -1,7 +1,7 @@
-package com.academico.calificaciones.dao;
+package com.academico.dao;
 
-import com.academico.calificaciones.model.ActividadGrupo;
 import com.academico.core.db.DatabaseManager;
+import com.academico.model.ActividadGrupo;
 
 import java.math.BigDecimal;
 import java.sql.*;

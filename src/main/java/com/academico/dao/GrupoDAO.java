@@ -1,7 +1,7 @@
-package com.academico.academia.dao;
+package com.academico.dao;
 
-import com.academico.academia.model.Grupo;
 import com.academico.core.db.DatabaseManager;
+import com.academico.model.Grupo;
 
 import java.sql.*;
 import java.util.ArrayList;

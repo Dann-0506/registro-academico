@@ -1,6 +1,7 @@
-package com.academico.auth;
+package com.academico.dao;
 
 import com.academico.core.db.DatabaseManager;
+import com.academico.model.Usuario;
 
 import java.sql.*;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.academico.models;
+package com.academico.model;
 
 public class Maestro {
     private int id;

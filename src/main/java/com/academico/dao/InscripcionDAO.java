@@ -1,6 +1,7 @@
-package com.academico.inscripciones;
+package com.academico.dao;
 
 import com.academico.core.db.DatabaseManager;
+import com.academico.model.Inscripcion;
 
 import java.math.BigDecimal;
 import java.sql.*;

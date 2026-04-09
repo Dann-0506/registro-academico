@@ -1,4 +1,4 @@
-package com.academico.models;
+package com.academico.model;
 
 public class Materia {
     private int id;

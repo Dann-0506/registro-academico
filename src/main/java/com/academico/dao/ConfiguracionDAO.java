@@ -1,4 +1,4 @@
-package com.academico.core;
+package com.academico.dao;
 
 import java.sql.*;
 import java.util.Optional;
