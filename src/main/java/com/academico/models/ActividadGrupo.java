@@ -1,4 +1,4 @@
-package com.academico.calificaciones.model;
+package com.academico.models;
 
 import java.math.BigDecimal;
 

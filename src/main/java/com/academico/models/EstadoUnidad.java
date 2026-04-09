@@ -1,4 +1,4 @@
-package com.academico.academia.model;
+package com.academico.models;
 
 import java.time.LocalDateTime;
 
