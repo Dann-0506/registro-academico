@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.academico.auth.ui.LoginController"
+           styleClass="login-fondo"
+           stylesheets="@../../../core/css/base.css,
+                        @../../../core/css/components.css,
+                        @../css/login.css">
+
+    <!-- Fondo centrado -->
+    <VBox alignment="CENTER" spacing="0"
+          maxWidth="400" maxHeight="480"
+          styleClass="login-tarjeta">
+
+        <!-- Encabezado -->
+        <VBox alignment="CENTER" spacing="4"
+              style="-fx-padding: 32 32 24 32;">
+            <Label text="Registro Académico"
+                   style="-fx-font-size: 24px; -fx-font-weight: bold;"
+                   styleClass="titulo-seccion"/>
+            <Label text="Ingresa tus credenciales para continuar"
+                   style="-fx-font-size: 16px;"
+                   styleClass="subtitulo-seccion"/>
+        </VBox>
+
+        <!-- Separador -->
+        <Separator/>
+
+        <!-- Formulario -->
+        <VBox spacing="16" style="-fx-padding: 24 32 0 32;">
+
+            <!-- Email -->
+            <VBox spacing="4">
+                <Label text="Correo electrónico"
+                       styleClass="etiqueta-campo"/>
+                <TextField fx:id="campEmail"
+                           promptText="usuario@institucion.edu"
+                           maxWidth="Infinity"/>
+                <Label fx:id="errorEmail"
+                       styleClass="mensaje-error"
+                       visible="false"
+                       managed="false"/>
+            </VBox>
+
+            <!-- Contraseña -->
+            <VBox spacing="4">
+                <Label text="Contraseña"
+                       styleClass="etiqueta-campo"/>
+                <PasswordField fx:id="campPassword"
+                               promptText="••••••••"
+                               maxWidth="Infinity"/>
+                <Label fx:id="errorPassword"
+                       styleClass="mensaje-error"
+                       visible="false"
+                       managed="false"/>
+            </VBox>
+
+            <!-- Error general -->
+            <Label fx:id="errorGeneral"
+                   styleClass="mensaje-error"
+                   wrapText="true"
+                   visible="false"
+                   managed="false"/>
+
+        </VBox>
+
+        <!-- Spacer -->
+        <Region VBox.vgrow="ALWAYS"/>
+
+        <!-- Botón -->
+        <VBox style="-fx-padding: 24 32 32 32;">
+            <Button fx:id="botonLogin"
+                    text="Iniciar sesión"
+                    maxWidth="Infinity"
+                    defaultButton="true"
+                    styleClass="accent"
+                    onAction="#handleLogin"/>
+        </VBox>
+
+    </VBox>
+
+</StackPane>
