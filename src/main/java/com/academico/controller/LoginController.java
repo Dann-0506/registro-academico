@@ -1,9 +1,10 @@
-package com.academico.auth.ui;
+package com.academico.controller;
 
-import com.academico.auth.AuthService;
-import com.academico.auth.Usuario;
-import com.academico.core.util.NavegationUtil;
-import com.academico.core.util.SessionManager;
+import com.academico.model.Usuario;
+import com.academico.service.AuthService;
+import com.academico.util.NavegationUtil;
+import com.academico.util.SessionManagerUtil;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -53,7 +54,7 @@ public class LoginController {
 
             if (resultado.isPresent()) {
                 Usuario usuario = resultado.get();
-                SessionManager.iniciarSesion(usuario);
+                SessionManagerUtil.iniciarSesion(usuario);
                 navegarSegunRol(usuario.getRol());
             } else {
                 mostrarError(errorGeneral,

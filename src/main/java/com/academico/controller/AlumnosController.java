@@ -1,11 +1,11 @@
-package com.academico.academia.ui;
+package com.academico.controller;
 
-import com.academico.auth.Usuario;
-import com.academico.auth.UsuarioDAO;
-import com.academico.core.util.SessionManager;
-import com.academico.inscripciones.Alumno;
-import com.academico.inscripciones.AlumnoDAO;
-import com.academico.inscripciones.CargaDatosService;
+import com.academico.dao.AlumnoDAO;
+import com.academico.dao.UsuarioDAO;
+import com.academico.model.Alumno;
+import com.academico.model.Usuario;
+import com.academico.service.CargaDatosService;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -145,7 +145,7 @@ public class AlumnosController {
                     ? campoMatricula.getText().trim() + "@academico.local"
                     : campoEmail.getText().trim());
                 usuario.setPasswordHash(
-                    new com.academico.auth.AuthService()
+                    new com.academico.service.AuthService()
                         .hashearPassword(campoMatricula.getText().trim()));
                 usuario.setRol("alumno");
                 usuario.setActivo(true);
