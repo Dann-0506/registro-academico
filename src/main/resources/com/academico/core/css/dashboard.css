@@ -1,0 +1,46 @@
+/* ============================================================
+   DASHBOARD — Estilos específicos del layout principal
+   ============================================================ */
+
+.sidebar {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -color-border-default;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 16px;
+    -fx-pref-width: 220px;
+    -fx-min-width: 220px;
+}
+
+.sidebar-titulo {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 12 8 4 8;
+}
+
+.sidebar-boton {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 8 12 8 12;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-pref-width: 188px;
+}
+
+.sidebar-boton:hover {
+    -fx-background-color: -color-bg-default;
+}
+
+.sidebar-boton-activo {
+    -fx-background-color: -color-accent-subtle;
+    -fx-text-fill: -color-accent-fg;
+    -fx-font-weight: bold;
+}
+
+.contenido-principal {
+    -fx-background-color: -color-bg-default;
+    -fx-padding: 32px;
+}

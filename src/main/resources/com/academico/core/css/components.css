@@ -18,46 +18,6 @@
     -fx-font-weight: bold;
 }
 
-/* ── Barra lateral de navegación ── */
-.sidebar {
-    -fx-background-color: -color-bg-subtle;
-    -fx-padding: 16px;
-    -fx-pref-width: 220px;
-    -fx-min-width: 220px;
-}
-
-.sidebar-titulo {
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -color-fg-muted;
-    -fx-padding: 8 0 4 8;
-}
-
-.sidebar-boton {
-    -fx-alignment: CENTER_LEFT;
-    -fx-background-color: transparent;
-    -fx-padding: 8 12;
-    -fx-cursor: hand;
-    -fx-pref-width: 188px;
-    -fx-border-radius: 6px;
-    -fx-background-radius: 6px;
-}
-
-.sidebar-boton:hover {
-    -fx-background-color: -color-bg-default;
-}
-
-.sidebar-boton-activo {
-    -fx-background-color: -color-accent-subtle;
-    -fx-text-fill: -color-accent-fg;
-}
-
-/* ── Área de contenido principal ── */
-.contenido-principal {
-    -fx-background-color: -color-bg-default;
-    -fx-padding: 24px;
-}
-
 /* ── Tarjetas ── */
 .tarjeta {
     -fx-background-color: -color-bg-default;
@@ -86,10 +46,6 @@
     -fx-text-fill: -color-fg-default;
 }
 
-.campo-requerido {
-    -fx-prompt-text-fill: -color-danger-fg;
-}
-
 /* ── Indicador de ponderaciones ── */
 .ponderacion-completa {
     -fx-accent: -color-success-fg;
@@ -103,7 +59,7 @@
     -fx-accent: -color-danger-fg;
 }
 
-/* ── Mensajes de error inline ── */
+/* ── Mensajes inline ── */
 .mensaje-error {
     -fx-text-fill: -color-danger-fg;
     -fx-font-size: 12px;
