@@ -1,0 +1,15 @@
+/* ============================================================
+   LOGIN — Estilos específicos de la pantalla de autenticación
+   ============================================================ */
+
+.login-fondo {
+    -fx-background-color: #E8EDF2;
+}
+
+.login-tarjeta {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: transparent;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 24, 0, 0, 4);
+}
