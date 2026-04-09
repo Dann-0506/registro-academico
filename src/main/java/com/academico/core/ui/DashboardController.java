@@ -69,11 +69,11 @@ public class DashboardController {
         menuNavegacion.getChildren().add(label);
     }
 
-    // Después
     private void agregarBoton(String texto, String rutaFxml) {
         Button boton = new Button(texto);
-        boton.getStyleClass().add("sidebar-boton");
+        boton.getStyleClass().add("flat");
         boton.setMaxWidth(Double.MAX_VALUE);
+        boton.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         boton.setOnAction(e -> {
             actualizarBotonActivo(boton);
             NavegationUtil.cargarEnArea(areaPrincipal, rutaFxml);
@@ -83,10 +83,12 @@ public class DashboardController {
 
     private void actualizarBotonActivo(Button boton) {
         if (botonActivo != null) {
-            botonActivo.getStyleClass().remove("sidebar-boton-activo");
+            botonActivo.getStyleClass().remove("accent");
+            botonActivo.getStyleClass().add("flat");
         }
         botonActivo = boton;
-        botonActivo.getStyleClass().add("sidebar-boton-activo");
+        botonActivo.getStyleClass().remove("flat");
+        botonActivo.getStyleClass().add("accent");
     }
 
     @FXML

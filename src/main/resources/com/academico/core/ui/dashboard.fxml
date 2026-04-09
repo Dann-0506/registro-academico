@@ -3,63 +3,61 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.academico.core.ui.DashboardController"
-            stylesheets="@../css/base.css,
-                         @../css/components.css,
-                         @../css/dashboard.css">
+            fx:controller="com.academico.core.ui.DashboardController">
 
-    <!-- ── Barra lateral ── -->
+    <!-- Sidebar -->
     <left>
-        <VBox styleClass="sidebar" spacing="0">
+        <VBox spacing="0"
+              prefWidth="220" minWidth="220"
+              style="-fx-background-color: -color-bg-subtle;
+                     -fx-border-color: -color-border-default;
+                     -fx-border-width: 0 1 0 0;">
+            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
 
-            <!-- Perfil del usuario -->
-            <VBox spacing="4" style="-fx-padding: 8 0 16 0;">
+            <!-- Perfil -->
+            <VBox spacing="2">
+                <padding><Insets bottom="12"/></padding>
                 <Label fx:id="labelNombreUsuario"
-                    text="Cargando..."
-                    style="-fx-font-size: 15px; -fx-font-weight: bold;
-                            -fx-wrap-text: true;"/>
+                       text="Cargando..."
+                       styleClass="text-bold"
+                       style="-fx-font-size: 14px;"/>
                 <Label fx:id="labelRolUsuario"
-                    text=""
-                    styleClass="subtitulo-seccion"
-                    style="-fx-font-size: 11px; -fx-text-fill: -color-fg-muted;"/>
+                       styleClass="text-muted"
+                       style="-fx-font-size: 12px;"/>
             </VBox>
 
-            <Separator style="-fx-padding: 0 0 12 0;"/>
-            <Region style="-fx-pref-height: 12px;"/>
+            <Separator/>
+            <Region prefHeight="8"/>
 
-            <!-- Navegación dinámica según rol -->
+            <!-- Menú dinámico -->
             <VBox fx:id="menuNavegacion" spacing="2" VBox.vgrow="ALWAYS"/>
 
-            <!-- Spacer -->
             <Region VBox.vgrow="ALWAYS"/>
 
-            <Separator style="-fx-padding: 0 0 12 0;"/>
-            <Region style="-fx-pref-height: 8px;"/>
+            <Separator/>
+            <Region prefHeight="8"/>
 
             <!-- Cerrar sesión -->
             <Button text="Cerrar sesión"
                     maxWidth="Infinity"
-                    styleClass="sidebar-boton"
-                    style="-fx-text-fill: -color-danger-fg;"
+                    styleClass="flat, danger"
                     onAction="#handleCerrarSesion"/>
-
         </VBox>
     </left>
 
-    <!-- ── Área de contenido principal ── -->
+    <!-- Contenido principal -->
     <center>
         <StackPane fx:id="areaPrincipal"
-                   styleClass="contenido-principal">
-            <!-- Bienvenida inicial -->
+                   style="-fx-background-color: -color-bg-default;
+                          -fx-padding: 32;">
             <VBox alignment="CENTER" spacing="8">
                 <Label fx:id="labelBienvenida"
-                       style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+                       styleClass="title-3"/>
                 <Label text="Selecciona una opción del menú para comenzar."
-                       styleClass="subtitulo-seccion"/>
+                       styleClass="text-muted"/>
             </VBox>
         </StackPane>
     </center>
