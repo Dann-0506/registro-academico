@@ -1,7 +1,13 @@
-package com.academico.calificaciones;
+package com.academico.calificaciones.service;
 
-import com.academico.academia.Unidad;
-import com.academico.academia.UnidadDAO;
+import com.academico.academia.dao.UnidadDAO;
+import com.academico.academia.model.Unidad;
+import com.academico.calificaciones.dao.BonusDAO;
+import com.academico.calificaciones.dao.ResultadoDAO;
+import com.academico.calificaciones.model.Bonus;
+import com.academico.calificaciones.model.CalificacionFinal;
+import com.academico.calificaciones.model.Resultado;
+import com.academico.calificaciones.model.ResultadoUnidad;
 import com.academico.inscripciones.Alumno;
 import com.academico.inscripciones.AlumnoDAO;
 import com.academico.inscripciones.Inscripcion;

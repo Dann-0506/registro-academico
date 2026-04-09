@@ -1,4 +1,4 @@
-package com.academico.calificaciones;
+package com.academico.calificaciones.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

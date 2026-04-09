@@ -1,6 +1,10 @@
-package com.academico.calificaciones;
+package com.academico.calificaciones.service;
 
-import com.academico.academia.Unidad;
+import com.academico.academia.model.Unidad;
+import com.academico.calificaciones.model.ActividadGrupo;
+import com.academico.calificaciones.model.CalificacionFinal;
+import com.academico.calificaciones.model.Resultado;
+import com.academico.calificaciones.model.ResultadoUnidad;
 import com.academico.inscripciones.Alumno;
 
 import java.math.BigDecimal;

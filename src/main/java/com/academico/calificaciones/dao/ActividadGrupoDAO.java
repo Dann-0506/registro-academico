@@ -1,5 +1,6 @@
-package com.academico.calificaciones;
+package com.academico.calificaciones.dao;
 
+import com.academico.calificaciones.model.ActividadGrupo;
 import com.academico.core.db.DatabaseManager;
 
 import java.math.BigDecimal;
