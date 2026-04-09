@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.academico.inscripciones.ui.AlumnosController">
+
+    <!-- ── Encabezado ── -->
+    <top>
+        <VBox spacing="12">
+            <padding><Insets bottom="16"/></padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="Alumnos" styleClass="title-3"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Importar CSV"
+                        styleClass="flat"
+                        onAction="#handleImportarCsv"/>
+                <Button text="Nuevo alumno"
+                        styleClass="accent"
+                        onAction="#handleNuevo"/>
+            </HBox>
+
+            <!-- Barra de búsqueda -->
+            <TextField fx:id="campoBusqueda"
+                       promptText="Buscar por nombre o matrícula..."
+                       maxWidth="320"
+                       onKeyReleased="#handleBusqueda"/>
+        </VBox>
+    </top>
+
+    <!-- ── Contenido: tabla + formulario ── -->
+    <center>
+        <HBox spacing="16">
+
+            <!-- Tabla -->
+            <TableView fx:id="tablaAlumnos"
+                       HBox.hgrow="ALWAYS"
+                       placeholder="No hay alumnos registrados.">
+                <columns>
+                    <TableColumn fx:id="colMatricula"
+                                 text="Matrícula"
+                                 prefWidth="120"/>
+                    <TableColumn fx:id="colNombre"
+                                 text="Nombre"
+                                 prefWidth="240"/>
+                    <TableColumn fx:id="colEmail"
+                                 text="Correo"
+                                 prefWidth="240"/>
+                    <TableColumn fx:id="colAcciones"
+                                 text="Acciones"
+                                 prefWidth="120"/>
+                </columns>
+            </TableView>
+
+            <!-- Formulario lateral -->
+            <VBox fx:id="panelFormulario"
+                  spacing="16"
+                  prefWidth="280"
+                  visible="false"
+                  managed="false"
+                  style="-fx-background-color: -color-bg-subtle;
+                         -fx-background-radius: 8;
+                         -fx-padding: 16;">
+
+                <Label fx:id="labelTituloFormulario"
+                       text="Nuevo alumno"
+                       styleClass="title-4"/>
+
+                <Separator/>
+
+                <VBox spacing="4">
+                    <Label text="Matrícula *" styleClass="text-bold"/>
+                    <TextField fx:id="campoMatricula"
+                               promptText="Ej. 20230001"/>
+                    <Label fx:id="errorMatricula"
+                           styleClass="text-danger"
+                           visible="false"
+                           managed="false"/>
+                </VBox>
+
+                <VBox spacing="4">
+                    <Label text="Nombre completo *" styleClass="text-bold"/>
+                    <TextField fx:id="campoNombre"
+                               promptText="Ej. Juan Pérez García"/>
+                    <Label fx:id="errorNombre"
+                           styleClass="text-danger"
+                           visible="false"
+                           managed="false"/>
+                </VBox>
+
+                <VBox spacing="4">
+                    <Label text="Correo electrónico" styleClass="text-bold"/>
+                    <TextField fx:id="campoEmail"
+                               promptText="Ej. juan@correo.com"/>
+                    <Label fx:id="errorEmail"
+                           styleClass="text-danger"
+                           visible="false"
+                           managed="false"/>
+                </VBox>
+
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <Label fx:id="mensajeGeneral"
+                       wrapText="true"
+                       visible="false"
+                       managed="false"/>
+
+                <HBox spacing="8">
+                    <Button text="Cancelar"
+                            styleClass="flat"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS"
+                            onAction="#handleCancelar"/>
+                    <Button fx:id="botonGuardar"
+                            text="Guardar"
+                            styleClass="accent"
+                            maxWidth="Infinity"
+                            HBox.hgrow="ALWAYS"
+                            onAction="#handleGuardar"/>
+                </HBox>
+
+            </VBox>
+
+        </HBox>
+    </center>
+
+</BorderPane>

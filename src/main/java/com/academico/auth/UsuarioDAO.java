@@ -104,6 +104,22 @@ public class UsuarioDAO {
         }
     }
 
+    public void actualizar(Usuario u) throws SQLException {
+        String sql = """
+                UPDATE usuario
+                SET nombre = ?, email = ?, activo = ?
+                WHERE id = ?
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, u.getNombre());
+            ps.setString(2, u.getEmail());
+            ps.setBoolean(3, u.isActivo());
+            ps.setInt(4, u.getId());
+            ps.executeUpdate();
+        }
+    }
+
     public void desactivar(int id) throws SQLException {
         String sql = "UPDATE usuario SET activo = FALSE WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
