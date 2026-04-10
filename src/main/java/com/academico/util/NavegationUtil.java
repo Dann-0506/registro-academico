@@ -9,6 +9,7 @@ import javafx.scene.layout.StackPane;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.net.URL;
 
 import com.academico.MainApp;
 
@@ -70,17 +71,20 @@ public class NavegationUtil {
      */
     public static void cargarEnArea(StackPane area, String ruta) {
         try {
-            FXMLLoader loader = new FXMLLoader(NavegationUtil.class.getResource(ruta));
+            URL url = NavegationUtil.class.getResource(ruta);
+            if (url == null) {
+                throw new Exception("No se encontró el archivo FXML en: " + ruta);
+            }
+
+            FXMLLoader loader = new FXMLLoader(url);
             Node vista = loader.load();
             area.getChildren().setAll(vista);
-        } catch (Exception e) { 
-            // ¡ESTO ES CLAVE! Imprime el error real en tu terminal
-            System.err.println("❌ ERROR FATAL AL CARGAR LA VISTA: " + ruta);
-            e.printStackTrace(); 
-            
-            Label placeholder = new Label("Error al cargar la vista (revisa la terminal)");
-            placeholder.setStyle("-fx-text-fill: red; -fx-font-size: 14px; -fx-font-weight: bold;");
-            area.getChildren().setAll(placeholder);
+
+        } catch (Exception e) {
+            System.err.println("ERROR DE NAVEGACIÓN: " + e.getMessage());
+            Label errorLabel = new Label("No se pudo cargar la vista seleccionada.");
+            errorLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+            area.getChildren().setAll(errorLabel);
         }
     }
 
