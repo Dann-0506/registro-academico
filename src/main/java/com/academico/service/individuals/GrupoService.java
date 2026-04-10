@@ -1,4 +1,4 @@
-package com.academico.service;
+package com.academico.service.individuals;
 
 import com.academico.dao.GrupoDAO;
 import com.academico.model.Grupo;

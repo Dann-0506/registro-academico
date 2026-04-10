@@ -1,4 +1,4 @@
-package com.academico.service;
+package com.academico.service.individuals;
 
 import com.academico.dao.MateriaDAO;
 import com.academico.model.Materia;

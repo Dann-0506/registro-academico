@@ -1,7 +1,7 @@
 package com.academico.controller;
 
-import com.academico.service.AlumnoService;
 import com.academico.model.Alumno;
+import com.academico.service.individuals.AlumnoService;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

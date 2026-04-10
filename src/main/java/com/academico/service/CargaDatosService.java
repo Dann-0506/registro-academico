@@ -1,6 +1,11 @@
 package com.academico.service;
 
 import com.academico.model.*;
+import com.academico.service.individuals.AlumnoService;
+import com.academico.service.individuals.GrupoService;
+import com.academico.service.individuals.InscripcionService;
+import com.academico.service.individuals.MaestroService;
+import com.academico.service.individuals.MateriaService;
 import com.academico.util.CsvUtil;
 import java.io.InputStream;
 import java.util.ArrayList;
