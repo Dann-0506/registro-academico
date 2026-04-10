@@ -12,13 +12,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
-import javafx.animation.PauseTransition;
-import javafx.util.Duration;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
-import java.util.Optional;
 
 public class MaestrosController { 
 
@@ -27,20 +24,30 @@ public class MaestrosController {
     @FXML private TableColumn<Maestro, String> colNombre;
     @FXML private TableColumn<Maestro, String> colEmail;
     @FXML private TableColumn<Maestro, Void> colAcciones;
+
     @FXML private Pagination paginacionMaestros;
+
     @FXML private TextField campoBusqueda;
     @FXML private TextField campoNumEmpleado;
     @FXML private TextField campoNombre;
     @FXML private TextField campoEmail;
-    @FXML private StackPane panelFormulario;
+    
     @FXML private Label labelTituloFormulario;
     @FXML private Label mensajeGeneral;
     @FXML private Label errorEmail;
     @FXML private Label errorNombre;
     @FXML private Label errorMatricula;
     @FXML private Label labelNotaPassword;
-    @FXML private Button btnRestablecerPassword;
+    @FXML private Label lblTituloConfirmacion;
+    @FXML private Label lblMensajeConfirmacion;
 
+    @FXML private Button btnRestablecerPassword;
+    @FXML private Button btnConfirmarAccion;
+    
+    @FXML private StackPane panelConfirmacion;
+    @FXML private StackPane panelFormulario;
+
+    private Runnable accionPendiente;
     private final MaestroService maestroService = new MaestroService();
     private final CargaDatosService cargaDatosService = new CargaDatosService();
     private final ObservableList<Maestro> listaMaestros = FXCollections.observableArrayList();
@@ -147,9 +154,7 @@ public class MaestrosController {
             mostrarNotificacion("Docente guardado con éxito", false);
             cargarDatos();
 
-            PauseTransition pause = new PauseTransition(Duration.seconds(1));
-            pause.setOnFinished(e -> handleCancelar());
-            pause.play();
+            handleCancelar();
         } catch (Exception e) {
             mostrarNotificacion(e.getMessage(), true);
         }
@@ -192,42 +197,39 @@ public class MaestrosController {
         boolean nuevoEstado = !m.isActivo();
         String accionText = nuevoEstado ? "Activar" : "Desactivar";
         
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar " + accionText);
-        alert.setHeaderText("¿Deseas " + accionText.toLowerCase() + " el acceso del docente " + m.getNombre() + "?");
-        
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                maestroService.cambiarEstado(m.getId(), nuevoEstado);
-                cargarDatos(); 
-                mostrarNotificacion("Cuenta del docente " + (nuevoEstado ? "activada" : "desactivada") + ".", false);
-            } catch (Exception e) {
-                mostrarNotificacion(e.getMessage(), true);
+        mostrarConfirmacion(
+            "Confirmar " + accionText,
+            "¿Deseas " + accionText.toLowerCase() + " el acceso del docente " + m.getNombre() + "?",
+            accionText,
+            nuevoEstado ? "accent" : "danger",
+            () -> {
+                try {
+                    maestroService.cambiarEstado(m.getId(), nuevoEstado);
+                    cargarDatos(); 
+                    mostrarNotificacion("Cuenta del docente " + (nuevoEstado ? "activada" : "desactivada") + ".", false);
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
             }
-        }
+        );
     }
 
     private void confirmarEliminacion(Maestro m) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Advertencia Crítica");
-        alert.setHeaderText("Vas a eliminar permanentemente al docente " + m.getNombre());
-        alert.setContentText("Esta acción borrará todo su registro. ¿Deseas continuar?");
-        
-        ButtonType btnEliminar = new ButtonType("Eliminar definitivamente", ButtonBar.ButtonData.OK_DONE);
-        ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(btnEliminar, btnCancelar);
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == btnEliminar) {
-            try {
-                maestroService.eliminar(m.getId());
-                cargarDatos();
-                mostrarNotificacion("Docente eliminado permanentemente.", false);
-            } catch (Exception e) {
-                mostrarNotificacion(e.getMessage(), true);
+        mostrarConfirmacion(
+            "Advertencia Crítica",
+            "Vas a eliminar permanentemente al docente " + m.getNombre() + ".\nEsta acción borrará todo su registro. ¿Deseas continuar?",
+            "Eliminar definitivamente",
+            "danger",
+            () -> {
+                try {
+                    maestroService.eliminar(m.getId());
+                    cargarDatos();
+                    mostrarNotificacion("Docente eliminado permanentemente.", false);
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
             }
-        }
+        );
     }
 
     @FXML 
@@ -254,26 +256,23 @@ public class MaestrosController {
     private void handleRestablecerPassword() {
         if (maestroEnEdicion == null) return;
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Restablecer Contraseña");
-        alert.setHeaderText("¿Deseas restablecer la contraseña de " + maestroEnEdicion.getNombre() + "?");
-        alert.setContentText("Su contraseña volverá a ser '123456' temporalmente.");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                maestroService.restablecerPassword(maestroEnEdicion.getId());
-                mostrarNotificacion("Contraseña restablecida a '123456'.", false);
-                
-                PauseTransition pause = new PauseTransition(Duration.seconds(1));
-                pause.setOnFinished(e -> handleCancelar());
-                pause.play();
-            } catch (Exception e) {
-                mostrarNotificacion(e.getMessage(), true);
+        mostrarConfirmacion(
+            "Restablecer Contraseña",
+            "¿Deseas restablecer la contraseña de " + maestroEnEdicion.getNombre() + "?\nSu contraseña volverá a ser '123456' temporalmente.",
+            "Restablecer",
+            "danger",
+            () -> {
+                try {
+                    maestroService.restablecerPassword(maestroEnEdicion.getId());
+                    mostrarNotificacion("Contraseña restablecida a '123456'.", false);
+                    
+                    handleCancelar();
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
             }
-        }
+        );
     }
-
     private void limpiar() { 
         campoNumEmpleado.clear(); 
         campoNombre.clear(); 
@@ -282,26 +281,56 @@ public class MaestrosController {
 
     private void mostrarNotificacion(String mensaje, boolean esError) {
         mensajeGeneral.setText(mensaje);
-        mensajeGeneral.setOpacity(1.0); // Reset de opacidad obligatorio
+        mensajeGeneral.setOpacity(1.0);
         mensajeGeneral.setVisible(true);
         mensajeGeneral.setManaged(true);
 
-        // Colores según el éxito o error
         if (esError) {
-            mensajeGeneral.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24;");
+            mensajeGeneral.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24; -fx-padding: 12 25; -fx-background-radius: 30; -fx-font-weight: bold;");
         } else {
-            mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724;");
+            mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 12 25; -fx-background-radius: 30; -fx-font-weight: bold;");
         }
 
-        // Animación: Se muestra y luego se desvanece suavemente
         javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(1), mensajeGeneral);
-        fade.setDelay(javafx.util.Duration.seconds(2)); // Se mantiene visible por 2 segundos
+        fade.setDelay(javafx.util.Duration.seconds(2));
         fade.setFromValue(1.0);
         fade.setToValue(0.0);
         fade.setOnFinished(e -> {
             mensajeGeneral.setVisible(false);
-            mensajeGeneral.setManaged(false);
         });
         fade.play();
+    }
+
+    // === LÓGICA DEL PANEL DE CONFIRMACIÓN ===
+
+    private void mostrarConfirmacion(String titulo, String mensaje, String textoBoton, String claseCSSBoton, Runnable accion) {
+        lblTituloConfirmacion.setText(titulo);
+        lblMensajeConfirmacion.setText(mensaje);
+        btnConfirmarAccion.setText(textoBoton);
+
+        // Limpiamos estilos anteriores y aplicamos el nuevo (accent o danger)
+        btnConfirmarAccion.getStyleClass().removeAll("accent", "danger");
+        btnConfirmarAccion.getStyleClass().add(claseCSSBoton);
+
+        // Guardamos la acción que se ejecutará si hace clic en confirmar
+        this.accionPendiente = accion;
+
+        panelConfirmacion.setVisible(true);
+        panelConfirmacion.setManaged(true);
+    }
+
+    @FXML
+    private void handleCancelarConfirmacion() {
+        panelConfirmacion.setVisible(false);
+        panelConfirmacion.setManaged(false);
+        accionPendiente = null;
+    }
+
+    @FXML
+    private void handleEjecutarConfirmacion() {
+        if (accionPendiente != null) {
+            accionPendiente.run(); 
+        }
+        handleCancelarConfirmacion();
     }
 }

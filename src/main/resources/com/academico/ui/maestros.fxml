@@ -63,8 +63,6 @@
                 <Label fx:id="errorEmail" styleClass="text-danger" visible="false" managed="false"/>
             </VBox>
 
-            <Label fx:id="mensajeGeneral" visible="false" managed="false" wrapText="true"/>
-
             <Label fx:id="labelNotaPassword" text="Nota: Los docentes nuevos se crean con la contraseña predeterminada '123456'." style="-fx-text-fill: #6c757d; -fx-font-size: 11px;" wrapText="true"/>
             
             <HBox spacing="10" alignment="CENTER_RIGHT">
@@ -75,5 +73,22 @@
             </HBox>
         </VBox>
     </StackPane>
+
+    <StackPane fx:id="panelConfirmacion" visible="false" managed="false" style="-fx-background-color: rgba(0,0,0,0.5);">
+        <VBox maxWidth="400" maxHeight="-Infinity" spacing="15" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5); -fx-padding: 30;">
+            
+            <Label fx:id="lblTituloConfirmacion" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Label fx:id="lblMensajeConfirmacion" wrapText="true" style="-fx-text-fill: #495057; -fx-font-size: 14px;"/>
+            
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Cancelar" onAction="#handleCancelarConfirmacion" styleClass="flat" style="-fx-pref-height: 35;"/>
+                <Button fx:id="btnConfirmarAccion" text="Confirmar" onAction="#handleEjecutarConfirmacion" style="-fx-pref-height: 35;"/>
+            </HBox>
+        </VBox>
+    </StackPane>
+
+    <Label fx:id="mensajeGeneral" visible="false" managed="false" wrapText="true" 
+           StackPane.alignment="BOTTOM_CENTER" 
+           style="-fx-translate-y: -40; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 5);"/>
 
 </StackPane>
