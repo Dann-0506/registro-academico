@@ -94,4 +94,47 @@ public class MaestroDAO {
         }
         return m;
     }
+
+    public void crear(Maestro m) throws SQLException {
+        String sqlUsuario = """
+                INSERT INTO usuario (nombre, email, password_hash, rol, activo)
+                VALUES (?, ?, ?, 'maestro', true) RETURNING id
+                """;
+        String sqlMaestro = """
+                INSERT INTO maestro (usuario_id, num_empleado)
+                VALUES (?, ?)
+                """;
+
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
+            conn.setAutoCommit(false); // Inicio de transacción
+            try {
+                int nuevoUsuarioId = -1;
+
+                // 1. Insertar en la tabla Usuario
+                try (PreparedStatement psU = conn.prepareStatement(sqlUsuario)) {
+                    psU.setString(1, m.getNombre());
+                    psU.setString(2, m.getEmail());
+                    // Hash de "123456"
+                    psU.setString(3, "$2a$10$wE0vA1O3HhXyI2BqD2K1uuA5Q.h5N6q9g/zQZ/oQYy2C1K1c0kO6i"); 
+                    try (ResultSet rs = psU.executeQuery()) {
+                        if (rs.next()) nuevoUsuarioId = rs.getInt(1);
+                    }
+                }
+
+                // 2. Insertar en la tabla Maestro
+                try (PreparedStatement psM = conn.prepareStatement(sqlMaestro)) {
+                    psM.setInt(1, nuevoUsuarioId);
+                    psM.setString(2, m.getNumEmpleado());
+                    psM.executeUpdate();
+                }
+
+                conn.commit(); // Éxito total
+            } catch (SQLException e) {
+                conn.rollback(); // Error: deshacemos todo
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
 }

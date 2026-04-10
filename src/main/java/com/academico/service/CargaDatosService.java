@@ -1,124 +1,161 @@
 package com.academico.service;
 
-import com.academico.dao.AlumnoDAO;
-import com.academico.dao.GrupoDAO;
-import com.academico.dao.InscripcionDAO;
-import com.academico.dao.MateriaDAO;
-import com.academico.model.Alumno;
-import com.academico.model.Grupo;
-import com.academico.model.Inscripcion;
-import com.academico.model.Materia;
+import com.academico.model.*;
 import com.academico.util.CsvUtil;
-import com.opencsv.exceptions.CsvValidationException;
-
-import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Orquestador de carga masiva. 
+ * Su función es procesar archivos CSV y delegar el guardado a los servicios correspondientes.
+ */
 public class CargaDatosService {
 
-    private final AlumnoDAO alumnoDAO;
-    private final MateriaDAO materiaDAO;
-    private final GrupoDAO grupoDAO;
-    private final InscripcionDAO inscripcionDAO;
+    // Dependencias de Servicios (Orquestación)
+    private final AlumnoService alumnoService;
+    private final MateriaService materiaService;
+    private final MaestroService maestroService;
+    private final GrupoService grupoService;
+    private final InscripcionService inscripcionService;
 
     public CargaDatosService() {
-        this.alumnoDAO = new AlumnoDAO();
-        this.materiaDAO = new MateriaDAO();
-        this.grupoDAO = new GrupoDAO();
-        this.inscripcionDAO = new InscripcionDAO();
+        this.alumnoService = new AlumnoService();
+        this.materiaService = new MateriaService();
+        this.maestroService = new MaestroService();
+        this.grupoService = new GrupoService();
+        this.inscripcionService = new InscripcionService();
     }
 
-    public CargaDatosService(AlumnoDAO alumnoDAO, MateriaDAO materiaDAO, GrupoDAO grupoDAO, InscripcionDAO inscripcionDAO) {
-        this.alumnoDAO = alumnoDAO;
-        this.materiaDAO = materiaDAO;
-        this.grupoDAO = grupoDAO;
-        this.inscripcionDAO = inscripcionDAO;
-    }
+    // === IMPORTACIÓN DE ALUMNOS ===
+    public List<String> importarAlumnosCsv(InputStream is) {
+        List<String> errores = new ArrayList<>();
+        try {
+            List<String[]> lineas = CsvUtil.leerCsv(is);
+            for (int i = 0; i < lineas.size(); i++) {
+                String[] fila = lineas.get(i);
+                if (fila.length < 2) continue;
 
-    public List<String> importarAlumnosCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
-        List<String[]> lineas = CsvUtil.leerCsv(is);
-        List<Alumno> alumnos = new ArrayList<>();
-
-        for (String[] fila : lineas) {
-            if (fila.length >= 2) {
-                Alumno alumno = new Alumno();
-                alumno.setMatricula(fila[0].trim());
-                alumno.setNombre(fila[1].trim());
-                
-                if (fila.length >= 3 && !fila[2].trim().isEmpty()) {
-                    alumno.setEmail(fila[2].trim());
-                }
-                
-                alumnos.add(alumno);
-            }
-        }
-        return alumnoDAO.insertarLote(alumnos); // Lista de matrículas ya existentes que no se insertaron
-    }
-
-    public List<String> importarMateriasCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
-        List<String[]> lineas = CsvUtil.leerCsv(is);
-        List<Materia> materias = new ArrayList<>();
-
-        for (String[] fila : lineas) {
-            if (fila.length >= 3) {
-                Materia materia = new Materia();
-                materia.setClave(fila[0].trim());
-                materia.setNombre(fila[1].trim());
-                
                 try {
-                    materia.setTotalUnidades(Integer.parseInt(fila[2].trim()));
-                    materias.add(materia);
-                } catch (NumberFormatException e) {
-                    System.err.println("Error de formato en total de unidades para la materia: " + materia.getClave());
-                }
-            }
-        }
-        return materiaDAO.insertarLote(materias); // Lista de claves que ya existian y fueron ignoradas.
-    }
-
-    public List<String> importarGruposCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
-        List<String[]> lineas = CsvUtil.leerCsv(is);
-        List<Grupo> grupos = new ArrayList<>();
-
-        for (String[] fila : lineas) {
-            if (fila.length >= 4) {
-                try {
-                    Grupo grupo = new Grupo();
-                    grupo.setMateriaId(Integer.parseInt(fila[0].trim()));
-                    grupo.setMaestroId(Integer.parseInt(fila[1].trim()));
-                    grupo.setClave(fila[2].trim());
-                    grupo.setSemestre(fila[3].trim());
-                    grupo.setActivo(true);
+                    Alumno a = new Alumno();
+                    a.setMatricula(fila[0].trim());
+                    a.setNombre(fila[1].trim());
+                    if (fila.length >= 3) a.setEmail(fila[2].trim());
                     
-                    grupos.add(grupo);
-                } catch (NumberFormatException e) {
-                    System.err.println("Error de formato numérico en la fila del grupo: " + fila[2]);
+                    // Delega al servicio la validación y guardado
+                    alumnoService.guardar(a, false); 
+                } catch (Exception e) {
+                    errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
             }
+        } catch (Exception e) {
+            errores.add("Error crítico al leer el archivo de alumnos: " + e.getMessage());
         }
-        return grupoDAO.insertarLote(grupos); // Lista de claves de grupo que ya existían y no se insertaron
+        return errores;
     }
 
-    public List<String> importarInscripcionesCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
-        List<String[]> lineas = CsvUtil.leerCsv(is);
-        List<Inscripcion> inscripciones = new ArrayList<>();
+    // === IMPORTACIÓN DE MATERIAS ===
+    public List<String> importarMateriasCsv(InputStream is) {
+        List<String> errores = new ArrayList<>();
+        try {
+            List<String[]> lineas = CsvUtil.leerCsv(is);
+            for (int i = 0; i < lineas.size(); i++) {
+                String[] fila = lineas.get(i);
+                if (fila.length < 3) continue;
 
-        for (String[] fila : lineas) {
-            if (fila.length >= 2) {
                 try {
-                    Inscripcion inscripcion = new Inscripcion();
-                    inscripcion.setAlumnoId(Integer.parseInt(fila[0].trim()));
-                    inscripcion.setGrupoId(Integer.parseInt(fila[1].trim()));
-                    
-                    inscripciones.add(inscripcion);
-                } catch (NumberFormatException e) {
-                    System.err.println("Error de formato numérico en la inscripción.");
+                    Materia m = new Materia();
+                    m.setClave(fila[0].trim());
+                    m.setNombre(fila[1].trim());
+                    m.setTotalUnidades(Integer.parseInt(fila[2].trim()));
+
+                    materiaService.guardar(m);
+                } catch (Exception e) {
+                    errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
             }
+        } catch (Exception e) {
+            errores.add("Error crítico al leer el archivo de materias.");
         }
-        return inscripcionDAO.insertarLote(inscripciones); // Lista de duplicados que fueron ignoradas
+        return errores;
+    }
+
+    // === IMPORTACIÓN DE MAESTROS ===
+    public List<String> importarMaestrosCsv(InputStream is) {
+        List<String> errores = new ArrayList<>();
+        try {
+            List<String[]> lineas = CsvUtil.leerCsv(is);
+            for (int i = 0; i < lineas.size(); i++) {
+                String[] fila = lineas.get(i);
+                if (fila.length < 3) continue;
+
+                try {
+                    Maestro m = new Maestro();
+                    m.setNombre(fila[0].trim());
+                    m.setEmail(fila[1].trim());
+                    m.setNumEmpleado(fila[2].trim());
+
+                    maestroService.guardar(m);
+                } catch (Exception e) {
+                    errores.add("Línea " + (i + 1) + ": " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            errores.add("Error crítico al leer el archivo de maestros.");
+        }
+        return errores;
+    }
+
+    // === IMPORTACIÓN DE GRUPOS ===
+    public List<String> importarGruposCsv(InputStream is) {
+        List<String> errores = new ArrayList<>();
+        try {
+            List<String[]> lineas = CsvUtil.leerCsv(is);
+            for (int i = 0; i < lineas.size(); i++) {
+                String[] fila = lineas.get(i);
+                if (fila.length < 4) continue;
+
+                try {
+                    Grupo g = new Grupo();
+                    g.setMateriaId(Integer.parseInt(fila[0].trim()));
+                    g.setMaestroId(Integer.parseInt(fila[1].trim()));
+                    g.setClave(fila[2].trim());
+                    g.setSemestre(fila[3].trim());
+                    g.setActivo(true);
+
+                    grupoService.guardar(g);
+                } catch (Exception e) {
+                    errores.add("Línea " + (i + 1) + ": " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            errores.add("Error crítico al leer el archivo de grupos.");
+        }
+        return errores;
+    }
+
+    // === IMPORTACIÓN DE INSCRIPCIONES ===
+    public List<String> importarInscripcionesCsv(InputStream is) {
+        List<String> errores = new ArrayList<>();
+        try {
+            List<String[]> lineas = CsvUtil.leerCsv(is);
+            for (int i = 0; i < lineas.size(); i++) {
+                String[] fila = lineas.get(i);
+                if (fila.length < 2) continue;
+
+                try {
+                    Inscripcion ins = new Inscripcion();
+                    ins.setAlumnoId(Integer.parseInt(fila[0].trim()));
+                    ins.setGrupoId(Integer.parseInt(fila[1].trim()));
+
+                    inscripcionService.inscribir(ins);
+                } catch (Exception e) {
+                    errores.add("Línea " + (i + 1) + ": " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            errores.add("Error crítico al leer el archivo de inscripciones.");
+        }
+        return errores;
     }
 }
