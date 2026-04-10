@@ -2,7 +2,6 @@ package com.academico.service.individuals;
 
 import com.academico.dao.ResultadoDAO;
 import com.academico.model.Resultado;
-import com.academico.service.EstadoUnidadService;
 import com.academico.util.DatabaseManagerUtil;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -23,6 +22,11 @@ public class ResultadoService {
     public ResultadoService() {
         this.resultadoDAO = new ResultadoDAO();
         this.estadoUnidadService = new EstadoUnidadService();
+    }
+
+    public ResultadoService(ResultadoDAO resultadoDAO, EstadoUnidadService estadoUnidadService) {
+        this.resultadoDAO = resultadoDAO;
+        this.estadoUnidadService = estadoUnidadService;
     }
 
     /**

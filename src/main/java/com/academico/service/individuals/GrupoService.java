@@ -6,7 +6,15 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class GrupoService {
-    private final GrupoDAO grupoDAO = new GrupoDAO();
+    private final GrupoDAO grupoDAO;
+
+    public GrupoService() {
+        this.grupoDAO = new GrupoDAO();
+    }
+
+    public GrupoService(GrupoDAO grupoDAO) {
+        this.grupoDAO = grupoDAO;
+    }
 
     public List<Grupo> listarTodos() throws Exception {
         try { return grupoDAO.findAll(); } 

@@ -34,6 +34,16 @@ public class ReporteService {
         this.resultadoService = new ResultadoService();
     }
 
+    public ReporteService(AlumnoService alumnoService, InscripcionService inscripcionService, UnidadService unidadService, 
+                          BonusService bonusService, CalificacionService calificacionService, ResultadoService resultadoService) {
+        this.alumnoService = alumnoService;
+        this.inscripcionService = inscripcionService;
+        this.unidadService = unidadService;
+        this.bonusService = bonusService;
+        this.calificacionService = calificacionService;
+        this.resultadoService = resultadoService;
+    }
+
     /**
      * Genera el desglose completo de calificaciones de un grupo.
      * @param grupoId ID del grupo a consultar.

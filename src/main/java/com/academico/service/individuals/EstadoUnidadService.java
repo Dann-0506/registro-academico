@@ -1,4 +1,4 @@
-package com.academico.service;
+package com.academico.service.individuals;
 
 import java.sql.SQLException;
 
@@ -11,6 +11,10 @@ public class EstadoUnidadService {
 
     public EstadoUnidadService() {
         this.estadoUnidadDAO = new EstadoUnidadDAO();
+    }
+
+    public EstadoUnidadService(EstadoUnidadDAO estadoUnidadDAO) {
+        this.estadoUnidadDAO = estadoUnidadDAO;
     }
 
     public void validarUnidadAbierta(int grupoId, int unidadId) throws SQLException {

@@ -2,11 +2,21 @@ package com.academico.service.individuals;
 
 import com.academico.dao.InscripcionDAO;
 import com.academico.model.Inscripcion;
+
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
 public class InscripcionService {
-    private final InscripcionDAO inscripcionDAO = new InscripcionDAO();
+    private final InscripcionDAO inscripcionDAO;
+
+    public InscripcionService() {
+        this.inscripcionDAO = new InscripcionDAO();
+    }
+
+    public InscripcionService(InscripcionDAO inscripcionDAO) {
+        this.inscripcionDAO = inscripcionDAO;
+    }
 
     /**
      * Registra un alumno en un grupo.
@@ -43,5 +53,13 @@ public class InscripcionService {
         } catch (SQLException e) {
             throw new Exception("No se pudo eliminar la inscripción.");
         }
+    }
+
+    public void aplicarOverrideMateria(int inscripcionId, BigDecimal calificacionManual, String justificacion) throws SQLException {
+        @SuppressWarnings("unused")
+        Inscripcion inscripcion = inscripcionDAO.findById(inscripcionId)
+                .orElseThrow(() -> new IllegalArgumentException("La inscripción no existe."));
+        
+        inscripcionDAO.actualizarOverride(inscripcionId, calificacionManual, justificacion);
     }
 }

@@ -6,7 +6,15 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class UnidadService {
-    private final UnidadDAO unidadDAO = new UnidadDAO();
+    private final UnidadDAO unidadDAO;
+
+    public UnidadService(){
+        this.unidadDAO = new UnidadDAO();
+    }
+
+    public UnidadService(UnidadDAO unidadDAO) {
+        this.unidadDAO = unidadDAO;
+    }
 
     public List<Unidad> listarPorGrupo(int grupoId) throws Exception {
         try {

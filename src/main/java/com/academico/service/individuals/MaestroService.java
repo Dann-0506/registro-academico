@@ -6,7 +6,15 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class MaestroService {
-    private final MaestroDAO maestroDAO = new MaestroDAO();
+    private final MaestroDAO maestroDAO;
+
+    public MaestroService(){
+        this.maestroDAO = new MaestroDAO();
+    }
+
+    public MaestroService(MaestroDAO maestroDAO) {
+        this.maestroDAO = maestroDAO;
+    }
 
     public List<Maestro> listarTodos() throws Exception {
         try { return maestroDAO.findAll(); } 
@@ -14,6 +22,9 @@ public class MaestroService {
     }
 
     public void guardar(Maestro maestro) throws Exception {
+        if (maestro.getNombre().isBlank() || maestro.getNumEmpleado().isBlank()) {
+            throw new IllegalArgumentException("El nombre y número de empleado son obligatorios.");
+        }
         try {
             maestroDAO.crear(maestro);
         } catch (SQLException e) {

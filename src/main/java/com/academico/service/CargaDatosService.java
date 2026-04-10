@@ -32,6 +32,15 @@ public class CargaDatosService {
         this.inscripcionService = new InscripcionService();
     }
 
+    public CargaDatosService(AlumnoService alumnoService, MateriaService materiaService, MaestroService maestroService,
+                             GrupoService grupoService, InscripcionService inscripcionService) {
+        this.alumnoService = alumnoService;
+        this.materiaService = materiaService;
+        this.maestroService = maestroService;
+        this.grupoService = grupoService;
+        this.inscripcionService = inscripcionService;
+    }
+
     // === IMPORTACIÓN DE ALUMNOS ===
     public List<String> importarAlumnosCsv(InputStream is) {
         List<String> errores = new ArrayList<>();

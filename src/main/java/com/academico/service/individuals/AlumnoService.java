@@ -6,7 +6,15 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class AlumnoService {
-    private final AlumnoDAO alumnoDAO = new AlumnoDAO();
+    private final AlumnoDAO alumnoDAO;
+
+    public AlumnoService() {
+        this.alumnoDAO = new AlumnoDAO();
+    }
+
+    public AlumnoService(AlumnoDAO alumnoDAO) {
+        this.alumnoDAO = alumnoDAO;
+    }
 
     public List<Alumno> listarTodos() throws Exception {
         try {

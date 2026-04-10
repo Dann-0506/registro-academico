@@ -6,7 +6,15 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class BonusService {
-    private final BonusDAO bonusDAO = new BonusDAO();
+    private final BonusDAO bonusDAO;
+
+    public BonusService(){
+        this.bonusDAO = new BonusDAO();
+    }
+
+    public BonusService(BonusDAO bonusDAO) {
+        this.bonusDAO = bonusDAO;
+    }
 
     public Optional<Bonus> obtenerBonusUnidad(int inscripcionId, int unidadId) throws Exception {
         try {
