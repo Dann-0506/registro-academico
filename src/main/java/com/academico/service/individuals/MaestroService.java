@@ -73,4 +73,13 @@ public class MaestroService {
             throw new Exception("Error al eliminar el registro.");
         }
     }
+
+    public void restablecerPassword(int id) throws Exception {
+        try {
+            String hashSeguro = authService.hashearPassword("123456");
+            maestroDAO.actualizarPassword(id, hashSeguro);
+        } catch (SQLException e) {
+            throw new Exception("Error al restablecer la contraseña del docente.");
+        }
+    }
 }

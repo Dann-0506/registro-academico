@@ -81,4 +81,13 @@ public class AlumnoService {
             throw new Exception("Error al buscar los datos del alumno.");
         }
     }
+
+    public void restablecerPassword(int id) throws Exception {
+        try {
+            String hashSeguro = authService.hashearPassword("123456");
+            alumnoDAO.actualizarPassword(id, hashSeguro);
+        } catch (SQLException e) {
+            throw new Exception("Error al restablecer la contraseña del alumno.");
+        }
+    }
 }

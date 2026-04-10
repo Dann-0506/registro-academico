@@ -8,6 +8,8 @@ public class Usuario {
     private String rol;
     private boolean activo;
 
+    private boolean requiereCambioPassword = false;
+
     public Usuario() {}
 
     public Usuario(int id, String nombre, String email, String rol, boolean activo) {
@@ -35,6 +37,9 @@ public class Usuario {
 
     public boolean isActivo()               { return activo; }
     public void setActivo(boolean activo)   { this.activo = activo; }
+
+    public boolean isRequiereCambioPassword()   { return requiereCambioPassword; }
+    public void setRequiereCambioPassword(boolean requiereCambioPassword) { this.requiereCambioPassword = requiereCambioPassword; }
 
     @Override
     public String toString() {

@@ -295,4 +295,15 @@ public class AlumnoDAO {
             }
         }
     }
+
+    public void actualizarPassword(int alumnoId, String passwordHash) throws SQLException {
+        // Subconsulta para encontrar el usuario_id asociado a este alumno
+        String sql = "UPDATE usuario SET password_hash = ? WHERE id = (SELECT usuario_id FROM alumno WHERE id = ?)";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, passwordHash);
+            ps.setInt(2, alumnoId);
+            ps.executeUpdate();
+        }
+    }
 }

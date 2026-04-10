@@ -216,4 +216,15 @@ public class MaestroDAO {
             }
         }
     }
+
+    public void actualizarPassword(int maestroId, String passwordHash) throws SQLException {
+        // Subconsulta para encontrar el usuario_id asociado a este maestro
+        String sql = "UPDATE usuario SET password_hash = ? WHERE id = (SELECT usuario_id FROM maestro WHERE id = ?)";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, passwordHash);
+            ps.setInt(2, maestroId);
+            ps.executeUpdate();
+        }
+    }
 }

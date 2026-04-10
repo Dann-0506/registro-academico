@@ -17,6 +17,7 @@ public class NavegationUtil {
 
     public static final String LOGIN          = "/com/academico/ui/login.fxml";
     public static final String DASHBOARD      = "/com/academico/ui/dashboard.fxml";
+    public static final String ADMINS         = "/com/academico/ui/admins.fxml";
     public static final String ALUMNOS        = "/com/academico/ui/alumnos.fxml";
     public static final String MATERIAS       = "/com/academico/ui/materias.fxml";
     public static final String MAESTROS       = "/com/academico/ui/maestros.fxml";
@@ -34,6 +35,7 @@ public class NavegationUtil {
     static {
         TITULOS.put(LOGIN,          "Iniciar Sesión");
         TITULOS.put(DASHBOARD,      "Panel Principal");
+        TITULOS.put(ADMINS,         "Administradores");
         TITULOS.put(ALUMNOS,        "Alumnos");
         TITULOS.put(MATERIAS,       "Materias");
         TITULOS.put(MAESTROS,       "Maestros");

@@ -12,10 +12,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
-import java.util.Optional;
 
 public class MaestrosController { 
 
@@ -24,28 +24,40 @@ public class MaestrosController {
     @FXML private TableColumn<Maestro, String> colNombre;
     @FXML private TableColumn<Maestro, String> colEmail;
     @FXML private TableColumn<Maestro, Void> colAcciones;
+
     @FXML private Pagination paginacionMaestros;
+
     @FXML private TextField campoBusqueda;
     @FXML private TextField campoNumEmpleado;
     @FXML private TextField campoNombre;
     @FXML private TextField campoEmail;
-    @FXML private VBox panelFormulario;
+    
     @FXML private Label labelTituloFormulario;
     @FXML private Label mensajeGeneral;
     @FXML private Label errorEmail;
     @FXML private Label errorNombre;
     @FXML private Label errorMatricula;
+    @FXML private Label labelNotaPassword;
+    @FXML private Label lblTituloConfirmacion;
+    @FXML private Label lblMensajeConfirmacion;
 
+    @FXML private Button btnRestablecerPassword;
+    @FXML private Button btnConfirmarAccion;
+    
+    @FXML private StackPane panelConfirmacion;
+    @FXML private StackPane panelFormulario;
+
+    private Runnable accionPendiente;
     private final MaestroService maestroService = new MaestroService();
     private final CargaDatosService cargaDatosService = new CargaDatosService();
     private final ObservableList<Maestro> listaMaestros = FXCollections.observableArrayList();
     private FilteredList<Maestro> maestrosFiltrados;
     private Maestro maestroEnEdicion = null;
-    private final int FILAS_POR_PAGINA = 14;
+    private final int FILAS_POR_PAGINA = 15;
 
     @FXML
     public void initialize() {
-        tablaMaestros.setFixedCellSize(50);
+        tablaMaestros.setFixedCellSize(48);
         configurarColumnas();
         cargarDatos();
     }
@@ -63,6 +75,7 @@ public class MaestrosController {
             private final HBox panel = new HBox(8, btnEditar, btnEstado, btnEliminar); 
             {
                 btnEditar.getStyleClass().addAll("accent", "flat");
+                btnEstado.getStyleClass().addAll("flat");
                 btnEliminar.getStyleClass().addAll("danger", "flat");
                 panel.setStyle("-fx-alignment: center;");
 
@@ -78,13 +91,17 @@ public class MaestrosController {
                     setGraphic(null);
                 } else {
                     Maestro m = getTableView().getItems().get(getIndex());
+                    
+                    btnEstado.getStyleClass().removeAll("success", "warning");
+
                     if (m.isActivo()) {
                         btnEstado.setText("Desactivar");
-                        btnEstado.setStyle("-fx-text-fill: #856404; -fx-background-color: #fff3cd;");
+                        btnEstado.getStyleClass().add("warning");
                     } else {
                         btnEstado.setText("Activar");
-                        btnEstado.setStyle("-fx-text-fill: #155724; -fx-background-color: #d4edda;");
+                        btnEstado.getStyleClass().add("success");
                     }
+                    
                     setGraphic(panel);
                 }
             }
@@ -135,8 +152,9 @@ public class MaestrosController {
         try {
             maestroService.guardar(m, maestroEnEdicion != null);
             mostrarNotificacion("Docente guardado con éxito", false);
-            handleCancelar();
             cargarDatos();
+
+            handleCancelar();
         } catch (Exception e) {
             mostrarNotificacion(e.getMessage(), true);
         }
@@ -144,27 +162,43 @@ public class MaestrosController {
 
     @FXML
     private void handleImportarCsv() {
-        FileChooser fc = new FileChooser();
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
-        File file = fc.showOpenDialog(tablaMaestros.getScene().getWindow());
-        if (file != null) {
-            try (FileInputStream fis = new FileInputStream(file)) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar archivo de Docentes (CSV)");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos CSV", "*.csv"));
+
+        File archivo = fileChooser.showOpenDialog(tablaMaestros.getScene().getWindow());
+
+        if (archivo != null) {
+            try (FileInputStream fis = new FileInputStream(archivo)) {
                 List<String> errores = cargaDatosService.importarMaestrosCsv(fis);
-                if (errores.isEmpty()) mostrarNotificacion("Importación exitosa", false);
-                else mostrarNotificacion("Completado con " + errores.size() + " errores.", true);
-                cargarDatos();
+
+                if (errores.isEmpty()) {
+                    mostrarNotificacion("¡Todos los docentes importados con éxito!", false);
+                } else {
+                    mostrarNotificacion("Importación completada con " + errores.size() + " errores.", true);
+                    mostrarDetallesErrores(errores, tablaMaestros.getScene().getWindow()); // Usamos el nuevo método
+                }
+                
+                cargarDatos(); 
+                
             } catch (Exception e) {
-                mostrarNotificacion("Error al procesar archivo", true);
+                mostrarNotificacion("Error crítico al procesar el archivo.", true);
             }
         }
     }
 
     private void abrirEdicion(Maestro m) {
         maestroEnEdicion = m;
+        
         campoNumEmpleado.setText(m.getNumEmpleado());
         campoNombre.setText(m.getNombre());
         campoEmail.setText(m.getEmail());
+        
         labelTituloFormulario.setText("Editar Docente");
+        labelNotaPassword.setText("Nota: Si el usuario olvidó su acceso, puedes restablecer su contraseña.");
+        btnRestablecerPassword.setVisible(true);
+        btnRestablecerPassword.setManaged(true);
+
         panelFormulario.setVisible(true);
         panelFormulario.setManaged(true);
     }
@@ -173,58 +207,82 @@ public class MaestrosController {
         boolean nuevoEstado = !m.isActivo();
         String accionText = nuevoEstado ? "Activar" : "Desactivar";
         
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar " + accionText);
-        alert.setHeaderText("¿Deseas " + accionText.toLowerCase() + " el acceso del docente " + m.getNombre() + "?");
-        
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                maestroService.cambiarEstado(m.getId(), nuevoEstado);
-                cargarDatos(); 
-                mostrarNotificacion("Cuenta del docente " + (nuevoEstado ? "activada" : "desactivada") + ".", false);
-            } catch (Exception e) {
-                mostrarNotificacion(e.getMessage(), true);
+        mostrarConfirmacion(
+            "Confirmar " + accionText,
+            "¿Deseas " + accionText.toLowerCase() + " el acceso del docente " + m.getNombre() + "?",
+            accionText,
+            nuevoEstado ? "accent" : "danger",
+            () -> {
+                try {
+                    maestroService.cambiarEstado(m.getId(), nuevoEstado);
+                    cargarDatos(); 
+                    mostrarNotificacion("Cuenta del docente " + (nuevoEstado ? "activada" : "desactivada") + ".", false);
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
             }
-        }
+        );
     }
 
     private void confirmarEliminacion(Maestro m) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Advertencia Crítica");
-        alert.setHeaderText("Vas a eliminar permanentemente al docente " + m.getNombre());
-        alert.setContentText("Esta acción borrará todo su registro. ¿Deseas continuar?");
-        
-        ButtonType btnEliminar = new ButtonType("Eliminar definitivamente", ButtonBar.ButtonData.OK_DONE);
-        ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(btnEliminar, btnCancelar);
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == btnEliminar) {
-            try {
-                maestroService.eliminar(m.getId());
-                cargarDatos();
-                mostrarNotificacion("Docente eliminado permanentemente.", false);
-            } catch (Exception e) {
-                mostrarNotificacion(e.getMessage(), true);
+        mostrarConfirmacion(
+            "Advertencia Crítica",
+            "Vas a eliminar permanentemente al docente " + m.getNombre() + ".\nEsta acción borrará todo su registro. ¿Deseas continuar?",
+            "Eliminar definitivamente",
+            "danger",
+            () -> {
+                try {
+                    maestroService.eliminar(m.getId());
+                    cargarDatos();
+                    mostrarNotificacion("Docente eliminado permanentemente.", false);
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
             }
-        }
+        );
     }
 
     @FXML 
     private void handleNuevo() { 
         maestroEnEdicion = null; 
-        limpiar(); 
+        limpiar();
+        
+        labelTituloFormulario.setText("Nuevo Docente");
+        labelNotaPassword.setText("Nota: Los docentes nuevos se crean con la contraseña predeterminada '123456'.");
+        btnRestablecerPassword.setVisible(false);
+        btnRestablecerPassword.setManaged(false);
+
         panelFormulario.setVisible(true); 
         panelFormulario.setManaged(true); 
-    
     }
+
     @FXML 
     private void handleCancelar() { 
         panelFormulario.setVisible(false); 
         panelFormulario.setManaged(false); 
     }
 
+    @FXML
+    private void handleRestablecerPassword() {
+        if (maestroEnEdicion == null) return;
+
+        mostrarConfirmacion(
+            "Restablecer Contraseña",
+            "¿Deseas restablecer la contraseña de " + maestroEnEdicion.getNombre() + "?\nSu contraseña volverá a ser '123456' temporalmente.",
+            "Restablecer",
+            "danger",
+            () -> {
+                try {
+                    maestroService.restablecerPassword(maestroEnEdicion.getId());
+                    mostrarNotificacion("Contraseña restablecida a '123456'.", false);
+                    
+                    handleCancelar();
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
+            }
+        );
+    }
     private void limpiar() { 
         campoNumEmpleado.clear(); 
         campoNombre.clear(); 
@@ -233,26 +291,76 @@ public class MaestrosController {
 
     private void mostrarNotificacion(String mensaje, boolean esError) {
         mensajeGeneral.setText(mensaje);
-        mensajeGeneral.setOpacity(1.0); // Reset de opacidad obligatorio
+        mensajeGeneral.setOpacity(1.0);
         mensajeGeneral.setVisible(true);
         mensajeGeneral.setManaged(true);
 
-        // Colores según el éxito o error
         if (esError) {
-            mensajeGeneral.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24;");
+            mensajeGeneral.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24; -fx-padding: 12 25; -fx-background-radius: 30; -fx-font-weight: bold;");
         } else {
-            mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724;");
+            mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 12 25; -fx-background-radius: 30; -fx-font-weight: bold;");
         }
 
-        // Animación: Se muestra y luego se desvanece suavemente
         javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(1), mensajeGeneral);
-        fade.setDelay(javafx.util.Duration.seconds(2)); // Se mantiene visible por 2 segundos
+        fade.setDelay(javafx.util.Duration.seconds(2));
         fade.setFromValue(1.0);
         fade.setToValue(0.0);
         fade.setOnFinished(e -> {
             mensajeGeneral.setVisible(false);
-            mensajeGeneral.setManaged(false);
         });
         fade.play();
+    }
+
+    // === LÓGICA DEL PANEL DE CONFIRMACIÓN ===
+
+    private void mostrarConfirmacion(String titulo, String mensaje, String textoBoton, String claseCSSBoton, Runnable accion) {
+        lblTituloConfirmacion.setText(titulo);
+        lblMensajeConfirmacion.setText(mensaje);
+        btnConfirmarAccion.setText(textoBoton);
+
+        // Limpiamos estilos anteriores y aplicamos el nuevo (accent o danger)
+        btnConfirmarAccion.getStyleClass().removeAll("accent", "danger");
+        btnConfirmarAccion.getStyleClass().add(claseCSSBoton);
+
+        // Guardamos la acción que se ejecutará si hace clic en confirmar
+        this.accionPendiente = accion;
+
+        panelConfirmacion.setVisible(true);
+        panelConfirmacion.setManaged(true);
+    }
+
+    @FXML
+    private void handleCancelarConfirmacion() {
+        panelConfirmacion.setVisible(false);
+        panelConfirmacion.setManaged(false);
+        accionPendiente = null;
+    }
+
+    @FXML
+    private void handleEjecutarConfirmacion() {
+        if (accionPendiente != null) {
+            accionPendiente.run(); 
+        }
+        handleCancelarConfirmacion();
+    }
+
+    private void mostrarDetallesErrores(List<String> errores, javafx.stage.Window ventanaPadre) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+
+        alert.initOwner(ventanaPadre); 
+        
+        alert.setTitle("Detalle de la Importación");
+        alert.setHeaderText("Algunas filas no pudieron procesarse:");
+
+        TextArea textArea = new TextArea(String.join("\n", errores));
+        textArea.setEditable(false);
+        textArea.setWrapText(false);
+        
+        textArea.setPrefWidth(550);
+        textArea.setPrefHeight(250);
+
+        alert.getDialogPane().setContent(textArea);
+        
+        alert.showAndWait();
     }
 }
