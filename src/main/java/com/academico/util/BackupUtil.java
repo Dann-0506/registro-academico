@@ -1,76 +1,51 @@
 package com.academico.util;
 
-import java.io.File;
+import io.github.cdimascio.dotenv.Dotenv;
 import java.io.IOException;
 
 public class BackupUtil {
 
-    /**
-     * Genera un archivo .sql con el respaldo completo de la base de datos.
-     * Usa la herramienta 'pg_dump' de PostgreSQL.
-     */
-    public static boolean crearRespaldo(String host, String puerto, String usuario, 
-                                        String password, String nombreBd, String rutaArchivoDestino) {
-        try {
-            ProcessBuilder pb = new ProcessBuilder(
-                    "pg_dump",
-                    "-h", host,
-                    "-p", puerto,
-                    "-U", usuario,
-                    "-F", "c", // Formato custom de postgres
-                    "-f", rutaArchivoDestino,
-                    nombreBd
-            );
-
-            // Inyectamos la contraseña como variable de entorno para que pg_dump no detenga 
-            // el proceso pidiendo teclear la contraseña en la terminal.
-            pb.environment().put("PGPASSWORD", password);
-            
-            Process proceso = pb.start();
-            int exitCode = proceso.waitFor();
-            
-            return exitCode == 0; // Un código de salida 0 indica que el proceso terminó correctamente
-            
-        } catch (IOException | InterruptedException e) {
-            System.err.println("Error al generar el respaldo: " + e.getMessage());
-            return false;
-        }
+    public static boolean crearRespaldoAuto(String rutaDestino) {
+        Dotenv dotenv = Dotenv.load();
+        return crearRespaldo(
+            dotenv.get("DB_HOST"),
+            dotenv.get("DB_PORT"),
+            dotenv.get("DB_USER"),
+            dotenv.get("DB_PASSWORD"),
+            dotenv.get("DB_NAME"),
+            rutaDestino
+        );
     }
 
-    /**
-     * Restaura un archivo de respaldo en la base de datos.
-     * Usa la herramienta 'pg_restore' de PostgreSQL.
-     */
-    public static boolean restaurarRespaldo(String host, String puerto, String usuario, 
-                                            String password, String nombreBd, String rutaArchivoOrigen) {
+    public static boolean crearRespaldo(String host, String puerto, String usuario, 
+                                        String password, String nombreBd, String rutaDestino) {
         try {
-            // Verificamos que el archivo de origen exista antes de intentar restaurar
-            File archivo = new File(rutaArchivoOrigen);
-            if (!archivo.exists()) {
-                System.err.println("El archivo de respaldo no existe: " + rutaArchivoOrigen);
+            // VERIFICACIÓN DE HERRAMIENTA (Prevención de errores)
+            if (!comandoExiste("pg_dump")) {
+                System.err.println("Error: 'pg_dump' no está instalado o no está en el PATH.");
                 return false;
             }
 
             ProcessBuilder pb = new ProcessBuilder(
-                    "pg_restore",
-                    "-h", host,
-                    "-p", puerto,
-                    "-U", usuario,
-                    "-d", nombreBd,
-                    "-1", // Ejecutar todo en una sola transacción
-                    "--clean", // Limpiar (borrar) objetos antes de crearlos
-                    rutaArchivoOrigen
+                    "pg_dump", "-h", host, "-p", puerto, "-U", usuario,
+                    "-F", "c", "-f", rutaDestino, nombreBd
             );
 
             pb.environment().put("PGPASSWORD", password);
-            
             Process proceso = pb.start();
-            int exitCode = proceso.waitFor();
-            
-            return exitCode == 0;
+            return proceso.waitFor() == 0;
             
         } catch (IOException | InterruptedException e) {
-            System.err.println("Error al restaurar el respaldo: " + e.getMessage());
+            System.err.println("Error en respaldo: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static boolean comandoExiste(String comando) {
+        try {
+            Process p = new ProcessBuilder(comando, "--version").start();
+            return p.waitFor() == 0;
+        } catch (Exception e) {
             return false;
         }
     }

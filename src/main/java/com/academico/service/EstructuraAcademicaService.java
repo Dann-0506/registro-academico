@@ -2,6 +2,7 @@ package com.academico.service;
 
 import com.academico.dao.ActividadGrupoDAO;
 import com.academico.model.ActividadGrupo;
+import com.academico.service.individuals.EstadoUnidadService;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;

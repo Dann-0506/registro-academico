@@ -15,6 +15,10 @@ public class AuthService {
         this.usuarioDAO = new UsuarioDAO();
     }
 
+    public AuthService(UsuarioDAO usuarioDAO) {
+        this.usuarioDAO = usuarioDAO;
+    }
+
     public String hashearPassword(String passwordPlano) {
         return BCrypt.withDefaults().hashToString(12, passwordPlano.toCharArray());
     }

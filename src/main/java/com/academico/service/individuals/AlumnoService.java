@@ -1,4 +1,4 @@
-package com.academico.service;
+package com.academico.service.individuals;
 
 import com.academico.dao.AlumnoDAO;
 import com.academico.model.Alumno;
@@ -6,7 +6,15 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class AlumnoService {
-    private final AlumnoDAO alumnoDAO = new AlumnoDAO();
+    private final AlumnoDAO alumnoDAO;
+
+    public AlumnoService() {
+        this.alumnoDAO = new AlumnoDAO();
+    }
+
+    public AlumnoService(AlumnoDAO alumnoDAO) {
+        this.alumnoDAO = alumnoDAO;
+    }
 
     public List<Alumno> listarTodos() throws Exception {
         try {
@@ -48,6 +56,14 @@ public class AlumnoService {
                 throw new Exception("No se puede eliminar: El alumno tiene registros académicos vinculados.");
             }
             throw new Exception("Error al eliminar el registro.");
+        }
+    }
+
+    public Alumno buscarPorId(int id) throws Exception {
+        try {
+            return alumnoDAO.findById(id).orElse(new Alumno());
+        } catch (SQLException e) {
+            throw new Exception("Error al buscar los datos del alumno.");
         }
     }
 }

@@ -1,68 +1,93 @@
 package com.academico.service;
 
-import com.academico.dao.AlumnoDAO;
-import com.academico.dao.BonusDAO;
-import com.academico.dao.InscripcionDAO;
-import com.academico.dao.ResultadoDAO;
-import com.academico.dao.UnidadDAO;
-import com.academico.model.Alumno;
-import com.academico.model.Bonus;
-import com.academico.model.CalificacionFinal;
-import com.academico.model.Inscripcion;
-import com.academico.model.Resultado;
-import com.academico.model.ResultadoUnidad;
-import com.academico.model.Unidad;
+import com.academico.model.*;
+import com.academico.service.individuals.AlumnoService;
+import com.academico.service.individuals.BonusService;
+import com.academico.service.individuals.InscripcionService;
+import com.academico.service.individuals.ResultadoService;
+import com.academico.service.individuals.UnidadService;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Servicio Orquestador de Reportes.
+ * Reúne datos de múltiples servicios para generar cálculos académicos complejos.
+ */
 public class ReporteService {
 
-    private final InscripcionDAO inscripcionDAO;
-    private final ResultadoDAO resultadoDAO;
-    private final UnidadDAO unidadDAO;
-    private final BonusDAO bonusDAO;
+    // Dependencias de Servicios (Arquitectura de Capas)
+    private final AlumnoService alumnoService;
+    private final InscripcionService inscripcionService;
+    private final UnidadService unidadService;
+    private final BonusService bonusService;
     private final CalificacionService calificacionService;
-    private final AlumnoDAO alumnoDAO;
+    private final ResultadoService resultadoService;
 
     public ReporteService() {
-        this.inscripcionDAO = new InscripcionDAO();
-        this.resultadoDAO = new ResultadoDAO();
-        this.unidadDAO = new UnidadDAO();
-        this.bonusDAO = new BonusDAO();
+        this.alumnoService = new AlumnoService();
+        this.inscripcionService = new InscripcionService();
+        this.unidadService = new UnidadService();
+        this.bonusService = new BonusService();
         this.calificacionService = new CalificacionService();
-        this.alumnoDAO = new AlumnoDAO();
+        this.resultadoService = new ResultadoService();
     }
 
-    public List<CalificacionFinal> generarReporteFinalGrupo(int grupoId) throws SQLException {
+    public ReporteService(AlumnoService alumnoService, InscripcionService inscripcionService, UnidadService unidadService, 
+                          BonusService bonusService, CalificacionService calificacionService, ResultadoService resultadoService) {
+        this.alumnoService = alumnoService;
+        this.inscripcionService = inscripcionService;
+        this.unidadService = unidadService;
+        this.bonusService = bonusService;
+        this.calificacionService = calificacionService;
+        this.resultadoService = resultadoService;
+    }
+
+    /**
+     * Genera el desglose completo de calificaciones de un grupo.
+     * @param grupoId ID del grupo a consultar.
+     * @return Lista de CalificacionFinal con el detalle por alumno y unidad.
+     * @throws Exception Si ocurre un error en cualquiera de los servicios de consulta.
+     */
+    public List<CalificacionFinal> generarReporteFinalGrupo(int grupoId) throws Exception {
         List<CalificacionFinal> reporteGrupo = new ArrayList<>();
         
-        List<Inscripcion> inscripciones = inscripcionDAO.findByGrupo(grupoId);
-        List<Unidad> unidades = unidadDAO.findByGrupo(grupoId);
+        // 1. Obtener la estructura del grupo (Inscritos y Unidades)
+        List<Inscripcion> inscripciones = inscripcionService.listarPorGrupo(grupoId);
+        List<Unidad> unidades = unidadService.listarPorGrupo(grupoId);
 
         for (Inscripcion inscripcion : inscripciones) {
             
-            Alumno alumno = alumnoDAO.findById(inscripcion.getAlumnoId()).orElse(new Alumno());
+            // 2. Obtener datos del alumno mediante su servicio
+            Alumno alumno = alumnoService.buscarPorId(inscripcion.getAlumnoId());
             
             List<ResultadoUnidad> resultadosUnidades = new ArrayList<>();
 
+            // 3. Procesar cada unidad académica
             for (Unidad unidad : unidades) {
-                List<Resultado> resultados = resultadoDAO.findByInscripcionYUnidad(inscripcion.getId(), unidad.getId());
-                Optional<Bonus> bonusUnidad = bonusDAO.findByInscripcionYUnidad(inscripcion.getId(), unidad.getId());
-                BigDecimal puntosExtra = bonusUnidad.map(Bonus::getPuntos).orElse(null);
+                // Consultar calificaciones mediante el servicio de resultados
+                List<Resultado> resultados = resultadoService.buscarPorInscripcionYUnidad(
+                        inscripcion.getId(), unidad.getId());
+                
+                // Consultar puntos extra mediante el servicio de bonus
+                BigDecimal puntosExtra = bonusService.obtenerBonusUnidad(inscripcion.getId(), unidad.getId())
+                        .map(Bonus::getPuntos)
+                        .orElse(BigDecimal.ZERO);
 
+                // Calcular el desempeño de la unidad
                 ResultadoUnidad ru = calificacionService.calcularResultadoUnidad(
                         inscripcion.getId(), unidad, resultados, puntosExtra);
                 
                 resultadosUnidades.add(ru);
             }
 
-            Optional<Bonus> bonusMateria = bonusDAO.findBonusMateria(inscripcion.getId());
-            BigDecimal extraMateria = bonusMateria.map(Bonus::getPuntos).orElse(null);
+            // 4. Consultar bonus global de la materia
+            BigDecimal extraMateria = bonusService.obtenerBonusMateria(inscripcion.getId())
+                    .map(Bonus::getPuntos)
+                    .orElse(BigDecimal.ZERO);
 
+            // 5. Generar el cálculo final (delegado al servicio de lógica pura)
             CalificacionFinal calificacionFinal = calificacionService.calcularCalificacionFinal(
                     inscripcion.getId(), 
                     alumno, 
