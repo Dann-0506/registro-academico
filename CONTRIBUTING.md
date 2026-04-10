@@ -2,7 +2,7 @@
 
 Esta guía explica cómo trabajar con Git en este proyecto, tanto desde la terminal como desde VSCode. Está pensada para quienes están aprendiendo el flujo de trabajo con ramas. 
 
-**NOTA: Ignoren lo de las convenciones en los nombres y eso, fue solo una sugerencia de Claude por ser el estandar. Pero el flujo si es así. Cualquier problema solo avisenme. ATTE. Daniel:)**
+**NOTA: Ignoren lo de las convenciones en los nombres y eso, fue solo una sugerencia de Claude por ser el estandar. Pero el flujo si es así. Cualquier problema solo avisenme. Atte: Daniel:)**
 ---
 
 ## ¿Por qué usamos ramas?
@@ -49,7 +49,7 @@ Antes de crear una rama, sincroniza tu copia local con lo que hay en el reposito
 **Desde la terminal:**
 ```bash
 git checkout main
-git pull
+git pull origin main
 ```
 
 **Desde VSCode:**
@@ -137,37 +137,18 @@ git push
 2. Selecciona `Insertar` (Push).
 3. Si es la primera vez, VSCode te preguntará si quieres publicar la rama — acepta.
 
+**NOTA: Puedes hacer esto al momento de crearla para que todos sepan que estas trabajando en dicha mejora.**
 ---
 
-### Paso 6 — Une tu rama a `main` (merge)
+### Paso 6 — Une tu rama a `main` con un `Pull Request`
 
-Cuando tu tarea esté terminada y los tests pasen, es momento de unir tu trabajo a `main`.
+Un **Pull Request (PR)** es una petición para que tu código sea revisado y unido a `main`.
+1. Entra al repositorio en **GitHub**.
+2. Verás un cartel amarillo que dice: **"Compare & pull request"**. haz clic ahí.
+3. **Título y Descripción:** Explica brevemente qué hciiste y si hay algo que tus compañeros deban probar.
+4. Haz clic en **"Create pull request"**.
 
-**Desde la terminal:**
-```bash
-# Primero asegúrate de que los tests pasan
-mvn test
-
-# Cambia a main
-git checkout main
-
-# Actualiza main por si hubo cambios mientras trabajabas
-git pull
-
-# Une tu rama
-git merge feature/nombre-de-tu-tarea
-
-# Sube main actualizado
-git push
-```
-
-**Desde VSCode:**
-1. Cambia a `main` haciendo clic en la rama en la esquina inferior izquierda.
-2. Abre la paleta de comandos `Ctrl+Shift+P`.
-3. Escribe `Git: Merge Branch` y presiona Enter.
-4. Selecciona tu rama `feature/nombre-de-tu-tarea` de la lista.
-5. Haz clic en `Sincronizar cambios` en la barra inferior para hacer push.
-
+**NOTA: Pide a un compañero que revise el código. Si todo está bien, alguien (o tí mismo si tienes permiso) hará clic en el botón verde **"Merge pull request"**.
 ---
 
 ### Paso 7 — Elimina la rama (opcional pero recomendado)
