@@ -11,8 +11,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+
 import java.util.List;
-import java.util.Optional;
 
 public class AdminsController {
 
@@ -20,16 +20,26 @@ public class AdminsController {
     @FXML private TableColumn<Usuario, String> colNombre;
     @FXML private TableColumn<Usuario, String> colEmail;
     @FXML private TableColumn<Usuario, Void> colAcciones;
+
     @FXML private Pagination paginacionAdmins;
+
     @FXML private TextField campoBusqueda;
-    
-    @FXML private StackPane panelFormulario;
-    @FXML private Label labelTituloFormulario;
     @FXML private TextField campoNombre;
     @FXML private TextField campoEmail;
+
+    @FXML private Label labelTituloFormulario;
     @FXML private Label mensajeGeneral;
     @FXML private Label labelNotaPassword;
+    @FXML private Label lblTituloConfirmacion;
+    @FXML private Label lblMensajeConfirmacion;
+
+    @FXML private Button btnConfirmarAccion;
     @FXML private Button btnRestablecerPassword;
+
+    @FXML private StackPane panelConfirmacion;
+    @FXML private StackPane panelFormulario;
+
+    private Runnable accionPendiente;
 
     private final AdminService adminService = new AdminService();
     private final ObservableList<Usuario> listaAdmins = FXCollections.observableArrayList();
@@ -85,7 +95,9 @@ public class AdminsController {
 
                     panel.getChildren().clear();
                     if (usuarioLogueado != null && u.getId() == usuarioLogueado.getId()) {
-                        panel.getChildren().add(btnEditar);
+                        Label lblTu = new Label("Eres tú. Edita desde 'Mi Perfil'.");
+                        lblTu.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic; -fx-font-size: 11px;");
+                        panel.getChildren().add(lblTu);
                     } else {
                         panel.getChildren().addAll(btnEditar, btnEstado, btnEliminar);
                     }
@@ -93,28 +105,6 @@ public class AdminsController {
                 }
             }
         });
-    }
-        
-    private void confirmarEliminacion(Usuario u) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Advertencia Crítica");
-        alert.setHeaderText("Vas a eliminar permanentemente a " + u.getNombre());
-        alert.setContentText("Esta acción borrará su acceso al sistema de forma irreversible. ¿Deseas continuar?");
-        
-        ButtonType btnEliminar = new ButtonType("Eliminar", ButtonBar.ButtonData.OK_DONE);
-        ButtonType btnCancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(btnEliminar, btnCancelar);
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == btnEliminar) {
-            try {
-                adminService.eliminar(u.getId());
-                cargarDatos();
-                mostrarNotificacion("Administrador eliminado.", false);
-            } catch (Exception e) {
-                mostrarNotificacion(e.getMessage(), true);
-            }
-        }
     }
 
     private void cargarDatos() {
@@ -195,26 +185,6 @@ public class AdminsController {
         }
     }
 
-    private void confirmarCambioEstado(Usuario u) {
-        boolean nuevoEstado = !u.isActivo();
-        String accionText = nuevoEstado ? "Activar" : "Desactivar";
-        
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar " + accionText);
-        alert.setHeaderText("¿Deseas " + accionText.toLowerCase() + " el acceso de " + u.getNombre() + "?");
-        
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                adminService.cambiarEstado(u.getId(), nuevoEstado);
-                cargarDatos(); 
-                mostrarNotificacion("Cuenta " + (nuevoEstado ? "activada" : "desactivada") + ".", false);
-            } catch (Exception e) {
-                mostrarNotificacion(e.getMessage(), true);
-            }
-        }
-    }
-
     @FXML 
     private void handleCancelar() { 
         panelFormulario.setVisible(false); 
@@ -225,21 +195,61 @@ public class AdminsController {
     private void handleRestablecerPassword() {
         if (adminEnEdicion == null) return;
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Restablecer Contraseña");
-        alert.setHeaderText("¿Deseas restablecer la contraseña de " + adminEnEdicion.getNombre() + "?");
-        alert.setContentText("Su contraseña volverá a ser '123456' temporalmente.");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                adminService.restablecerPassword(adminEnEdicion.getId());
-                mostrarNotificacion("Contraseña restablecida a '123456'.", false);
-                handleCancelar(); // Cerramos el panel por comodidad
-            } catch (Exception e) {
-                mostrarNotificacion(e.getMessage(), true);
+        mostrarConfirmacion(
+            "Restablecer Contraseña",
+            "¿Deseas restablecer la contraseña de " + adminEnEdicion.getNombre() + "?\nSu contraseña volverá a ser '123456' temporalmente.",
+            "Restablecer",
+            "danger", // Botón rojo
+            () -> {
+                try {
+                    adminService.restablecerPassword(adminEnEdicion.getId());
+                    mostrarNotificacion("Contraseña restablecida a '123456'.", false);
+                    
+                    handleCancelar();
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
             }
-        }
+        );
+    }
+
+    private void confirmarCambioEstado(Usuario u) {
+        boolean nuevoEstado = !u.isActivo();
+        String accionText = nuevoEstado ? "Activar" : "Desactivar";
+        
+        mostrarConfirmacion(
+            "Confirmar " + accionText,
+            "¿Deseas " + accionText.toLowerCase() + " el acceso de " + u.getNombre() + "?",
+            accionText,
+            nuevoEstado ? "accent" : "danger", // Azul si activa, Rojo si desactiva
+            () -> {
+                try {
+                    adminService.cambiarEstado(u.getId(), nuevoEstado);
+                    cargarDatos(); 
+                    mostrarNotificacion("Cuenta " + (nuevoEstado ? "activada" : "desactivada") + ".", false);
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
+            }
+        );
+    }
+
+    private void confirmarEliminacion(Usuario u) {
+        mostrarConfirmacion(
+            "Advertencia Crítica",
+            "Vas a eliminar permanentemente a " + u.getNombre() + ".\nEsta acción borrará su acceso al sistema de forma irreversible. ¿Deseas continuar?",
+            "Eliminar definitivamente",
+            "danger", // Botón rojo
+            () -> {
+                try {
+                    adminService.eliminar(u.getId());
+                    cargarDatos();
+                    mostrarNotificacion("Administrador eliminado.", false);
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
+            }
+        );
     }
 
     private void limpiarFormulario() { 
@@ -251,12 +261,12 @@ public class AdminsController {
         mensajeGeneral.setText(mensaje);
         mensajeGeneral.setOpacity(1.0);
         mensajeGeneral.setVisible(true);
-        mensajeGeneral.setManaged(true);
+        mensajeGeneral.setManaged(true); 
 
         if (esError) {
-            mensajeGeneral.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24; -fx-padding: 10; -fx-background-radius: 5;");
+            mensajeGeneral.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24; -fx-padding: 12 25; -fx-background-radius: 30; -fx-font-weight: bold;");
         } else {
-            mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 10; -fx-background-radius: 5;");
+            mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 12 25; -fx-background-radius: 30; -fx-font-weight: bold;");
         }
 
         javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(1), mensajeGeneral);
@@ -265,8 +275,40 @@ public class AdminsController {
         fade.setToValue(0.0);
         fade.setOnFinished(e -> {
             mensajeGeneral.setVisible(false);
-            mensajeGeneral.setManaged(false);
         });
         fade.play();
+    }
+
+    // === LÓGICA DEL PANEL DE CONFIRMACIÓN ===
+
+    private void mostrarConfirmacion(String titulo, String mensaje, String textoBoton, String claseCSSBoton, Runnable accion) {
+        lblTituloConfirmacion.setText(titulo);
+        lblMensajeConfirmacion.setText(mensaje);
+        btnConfirmarAccion.setText(textoBoton);
+
+        // Limpiamos estilos anteriores y aplicamos el nuevo (accent o danger)
+        btnConfirmarAccion.getStyleClass().removeAll("accent", "danger");
+        btnConfirmarAccion.getStyleClass().add(claseCSSBoton);
+
+        // Guardamos la acción que se ejecutará si hace clic en confirmar
+        this.accionPendiente = accion;
+
+        panelConfirmacion.setVisible(true);
+        panelConfirmacion.setManaged(true);
+    }
+
+    @FXML
+    private void handleCancelarConfirmacion() {
+        panelConfirmacion.setVisible(false);
+        panelConfirmacion.setManaged(false);
+        accionPendiente = null;
+    }
+
+    @FXML
+    private void handleEjecutarConfirmacion() {
+        if (accionPendiente != null) {
+            accionPendiente.run(); // Ejecuta el código guardado
+        }
+        handleCancelarConfirmacion(); // Cierra el modal
     }
 }

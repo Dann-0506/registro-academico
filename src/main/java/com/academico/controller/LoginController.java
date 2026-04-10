@@ -54,6 +54,11 @@ public class LoginController {
 
             if (resultado.isPresent()) {
                 Usuario usuario = resultado.get();
+
+                if ("123456".equals(campPassword.getText())) {
+                    usuario.setRequiereCambioPassword(true);
+                }
+                
                 SessionManagerUtil.iniciarSesion(usuario);
 
                 javafx.stage.Stage stage = (javafx.stage.Stage) botonLogin.getScene().getWindow();
