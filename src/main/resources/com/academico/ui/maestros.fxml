@@ -6,7 +6,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.academico.controller.AlumnosController">
+            fx:controller="com.academico.controller.MaestrosController">
 
     <top>
         <HBox alignment="CENTER">
@@ -16,25 +16,25 @@
                 </padding>
 
                 <HBox alignment="CENTER_LEFT" spacing="12">
-                    <Label text="Catálogo de Alumnos" styleClass="title-2"/>
+                    <Label text="Catálogo de Docentes" styleClass="title-2"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    
+
                     <VBox alignment="CENTER_RIGHT">
                         <Label text="Formato CSV esperado:" style="-fx-font-size: 10px; -fx-text-fill: -color-fg-muted;"/>
-                        <Label text="MATRÍCULA, NOMBRE, CORREO" style="-fx-font-size: 11px; -fx-font-weight: bold;"/>
+                        <Label text="NÚM. EMPLEADO, NOMBRE, CORREO" style="-fx-font-size: 11px; -fx-font-weight: bold;"/>
                     </VBox>
 
                     <Button text="Importar CSV" styleClass="flat" onAction="#handleImportarCsv">
                         <tooltip>
-                            <Tooltip text="Suba un archivo .csv (opcional con encabezado). Columnas: Matrícula, Nombre, Correo."/>
+                            <Tooltip text="Suba un archivo .csv (opcional con encabezado). Columnas: Núm. Empleado, Nombre, Correo."/>
                         </tooltip>
                     </Button>
-                    <Button text="Nuevo alumno" styleClass="accent" onAction="#handleNuevo"/>
+                    <Button text="Nuevo maestro" styleClass="accent" onAction="#handleNuevo"/>
                 </HBox>
                 
                 <HBox alignment="CENTER_LEFT" spacing="30">
                     <TextField fx:id="campoBusqueda"
-                            promptText="Buscar por nombre o matrícula..."
+                            promptText="Buscar por nombre o número de empleado..."
                             maxWidth="600" 
                             prefHeight="45"
                             HBox.hgrow="ALWAYS"
@@ -58,14 +58,14 @@
             <HBox spacing="20" maxWidth="1300" alignment="TOP_CENTER">
 
                 <VBox HBox.hgrow="ALWAYS" spacing="15">
-                    <TableView fx:id="tablaAlumnos" VBox.vgrow="ALWAYS">
+                    <TableView fx:id="tablaMaestros" VBox.vgrow="ALWAYS">
                         <placeholder>
-                            <Label text="No se encontraron alumnos registrados."/>
+                            <Label text="No se encontraron docentes registrados."/>
                         </placeholder>
                         <columns>
-                            <TableColumn fx:id="colMatricula" text="Matrícula" prefWidth="150" reorderable="false"/>
-                            <TableColumn fx:id="colNombre" text="Nombre" prefWidth="300" reorderable="false"/>
-                            <TableColumn fx:id="colEmail" text="Correo Electrónico" prefWidth="300" reorderable="false"/>
+                            <TableColumn fx:id="colNumEmpleado" text="Núm. Empleado" prefWidth="150" reorderable="false"/>
+                            <TableColumn fx:id="colNombre" text="Nombre Completo" prefWidth="300" reorderable="false"/>
+                            <TableColumn fx:id="colEmail" text="Correo Institucional" prefWidth="300" reorderable="false"/>
                             <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="260" reorderable="false" style="-fx-alignment: CENTER;"/>
                         </columns>
                         <columnResizePolicy>
@@ -73,7 +73,7 @@
                         </columnResizePolicy>
                     </TableView>
                     
-                    <Pagination fx:id="paginacionAlumnos" maxPageIndicatorCount="5" styleClass="flat"/>
+                    <Pagination fx:id="paginacionMaestros" maxPageIndicatorCount="5" styleClass="flat"/>
                 </VBox>
 
                 <VBox fx:id="panelFormulario" spacing="20" prefWidth="320" minWidth="320"
@@ -81,25 +81,24 @@
                       style="-fx-background-color: -color-bg-subtle; -fx-background-radius: 10;
                              -fx-padding: 20; -fx-border-color: -color-border-muted; -fx-border-radius: 10;">
 
-                    <Label fx:id="labelTituloFormulario" text="Nuevo alumno" styleClass="title-4"/>
-
+                    <Label fx:id="labelTituloFormulario" text="Nuevo docente" styleClass="title-4"/>
                     <Separator/>
 
                     <VBox spacing="8">
-                        <Label text="Matrícula *" styleClass="text-bold"/>
-                        <TextField fx:id="campoMatricula" promptText="Ej. 20230001" prefHeight="35"/>
+                        <Label text="Número de Empleado *" styleClass="text-bold"/>
+                        <TextField fx:id="campoNumEmpleado" promptText="Ej. M12345" prefHeight="35"/>
                         <Label fx:id="errorMatricula" styleClass="text-danger" visible="false" managed="false"/>
                     </VBox>
 
                     <VBox spacing="8">
                         <Label text="Nombre completo *" styleClass="text-bold"/>
-                        <TextField fx:id="campoNombre" promptText="Ej. Juan Pérez García" prefHeight="35"/>
+                        <TextField fx:id="campoNombre" promptText="Ej. Dr. Armando Paredes" prefHeight="35"/>
                         <Label fx:id="errorNombre" styleClass="text-danger" visible="false" managed="false"/>
                     </VBox>
 
                     <VBox spacing="8">
-                        <Label text="Correo electrónico" styleClass="text-bold"/>
-                        <TextField fx:id="campoEmail" promptText="Ej. juan@correo.com" prefHeight="35"/>
+                        <Label text="Correo electrónico *" styleClass="text-bold"/>
+                        <TextField fx:id="campoEmail" promptText="Ej. maestro@escuela.edu" prefHeight="35"/>
                         <Label fx:id="errorEmail" styleClass="text-danger" visible="false" managed="false"/>
                     </VBox>
 
@@ -108,13 +107,11 @@
                     <HBox spacing="10">
                         <Button text="Cancelar" styleClass="flat" maxWidth="Infinity" HBox.hgrow="ALWAYS"
                                 prefHeight="40" onAction="#handleCancelar"/>
-                        <Button fx:id="botonGuardar" text="Guardar" styleClass="accent" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                        <Button text="Guardar" styleClass="accent" maxWidth="Infinity" HBox.hgrow="ALWAYS"
                                 prefHeight="40" onAction="#handleGuardar"/>
                     </HBox>
                 </VBox>
-
             </HBox>
         </StackPane>
     </center>
-
 </BorderPane>

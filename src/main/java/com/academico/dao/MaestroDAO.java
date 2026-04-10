@@ -19,6 +19,7 @@ public class MaestroDAO {
         m.setNumEmpleado(rs.getString("num_empleado"));
         m.setNombre(rs.getString("nombre"));
         m.setEmail(rs.getString("email"));
+        m.setActivo(rs.getBoolean("activo"));
         return m;
     }
 
@@ -27,7 +28,7 @@ public class MaestroDAO {
 
     public Optional<Maestro> findById(int id) throws SQLException {
         String sql = """
-                SELECT m.*, u.nombre, u.email
+                SELECT m.*, u.nombre, u.email, u.activo
                 FROM maestro m
                 JOIN usuario u ON u.id = m.usuario_id
                 WHERE m.id = ?
@@ -43,7 +44,7 @@ public class MaestroDAO {
 
     public Optional<Maestro> findByUsuarioId(int usuarioId) throws SQLException {
         String sql = """
-                SELECT m.*, u.nombre, u.email
+                SELECT m.*, u.nombre, u.email, u.activo
                 FROM maestro m
                 JOIN usuario u ON u.id = m.usuario_id
                 WHERE m.usuario_id = ?
@@ -59,7 +60,7 @@ public class MaestroDAO {
 
     public List<Maestro> findAll() throws SQLException {
         String sql = """
-                SELECT m.*, u.nombre, u.email
+                SELECT m.*, u.nombre, u.email, u.activo
                 FROM maestro m
                 JOIN usuario u ON u.id = m.usuario_id
                 ORDER BY u.nombre
@@ -95,7 +96,7 @@ public class MaestroDAO {
         return m;
     }
 
-    public void crear(Maestro m) throws SQLException {
+    public void crear(Maestro m, String passwordHash) throws SQLException {
         String sqlUsuario = """
                 INSERT INTO usuario (nombre, email, password_hash, rol, activo)
                 VALUES (?, ?, ?, 'maestro', true) RETURNING id
@@ -115,7 +116,7 @@ public class MaestroDAO {
                     psU.setString(1, m.getNombre());
                     psU.setString(2, m.getEmail());
                     // Hash de "123456"
-                    psU.setString(3, "$2a$10$wE0vA1O3HhXyI2BqD2K1uuA5Q.h5N6q9g/zQZ/oQYy2C1K1c0kO6i"); 
+                    psU.setString(3, passwordHash); 
                     try (ResultSet rs = psU.executeQuery()) {
                         if (rs.next()) nuevoUsuarioId = rs.getInt(1);
                     }
@@ -131,6 +132,84 @@ public class MaestroDAO {
                 conn.commit(); // Éxito total
             } catch (SQLException e) {
                 conn.rollback(); // Error: deshacemos todo
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    public void actualizar(Maestro m) throws SQLException {
+        String sqlUsuario = "UPDATE usuario SET nombre = ?, email = ? WHERE id = ?";
+        String sqlMaestro = "UPDATE maestro SET num_empleado = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
+            conn.setAutoCommit(false); 
+            try {
+                try (PreparedStatement psU = conn.prepareStatement(sqlUsuario)) {
+                    psU.setString(1, m.getNombre());
+                    psU.setString(2, m.getEmail());
+                    psU.setInt(3, m.getUsuarioId());
+                    psU.executeUpdate();
+                }
+                try (PreparedStatement psM = conn.prepareStatement(sqlMaestro)) {
+                    psM.setString(1, m.getNumEmpleado());
+                    psM.setInt(2, m.getId());
+                    psM.executeUpdate();
+                }
+                conn.commit(); 
+            } catch (SQLException e) {
+                conn.rollback(); 
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    public void cambiarEstado(int maestroId, boolean estado) throws SQLException {
+        String sql = "UPDATE usuario SET activo = ? WHERE id = (SELECT usuario_id FROM maestro WHERE id = ?)";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, estado);
+            ps.setInt(2, maestroId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void eliminar(int idMaestro) throws SQLException {
+        String sqlGetUsuario = "SELECT usuario_id FROM maestro WHERE id = ?";
+        String sqlDelMaestro = "DELETE FROM maestro WHERE id = ?";
+        String sqlDelUsuario = "DELETE FROM usuario WHERE id = ?";
+
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // a) Obtener el ID del usuario
+                Integer usuarioId = null;
+                try (PreparedStatement ps = conn.prepareStatement(sqlGetUsuario)) {
+                    ps.setInt(1, idMaestro);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) usuarioId = rs.getInt("usuario_id");
+                    }
+                }
+
+                // b) Eliminar al Maestro (Lanzará error si tiene grupos asignados)
+                try (PreparedStatement ps = conn.prepareStatement(sqlDelMaestro)) {
+                    ps.setInt(1, idMaestro);
+                    ps.executeUpdate();
+                }
+
+                // c) Eliminar Usuario
+                if (usuarioId != null) {
+                    try (PreparedStatement ps = conn.prepareStatement(sqlDelUsuario)) {
+                        ps.setInt(1, usuarioId);
+                        ps.executeUpdate();
+                    }
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
                 throw e;
             } finally {
                 conn.setAutoCommit(true);

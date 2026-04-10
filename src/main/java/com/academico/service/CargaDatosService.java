@@ -101,21 +101,32 @@ public class CargaDatosService {
             List<String[]> lineas = CsvUtil.leerCsv(is);
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
-                if (fila.length < 3) continue;
+                
+                // 1. Detección automática de encabezado (Se salta la fila 1 si parece título)
+                if (i == 0 && (fila[0].toLowerCase().contains("num") || fila[0].toLowerCase().contains("empleado"))) {
+                    continue; 
+                }
+
+                // 2. Validación de estructura (Mínimo Identificador y Nombre)
+                if (fila.length < 2) {
+                    errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias.");
+                    continue;
+                }
 
                 try {
                     Maestro m = new Maestro();
-                    m.setNombre(fila[0].trim());
-                    m.setEmail(fila[1].trim());
-                    m.setNumEmpleado(fila[2].trim());
+                    // Nuevo estándar: ID, NOMBRE, EMAIL
+                    m.setNumEmpleado(fila[0].trim());
+                    m.setNombre(fila[1].trim());
+                    if (fila.length >= 3) m.setEmail(fila[2].trim());
 
-                    maestroService.guardar(m);
+                    maestroService.guardar(m, false);
                 } catch (Exception e) {
                     errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
             }
         } catch (Exception e) {
-            errores.add("Error crítico al leer el archivo de maestros.");
+            errores.add("Error crítico: El archivo no tiene un formato CSV válido.");
         }
         return errores;
     }
