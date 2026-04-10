@@ -11,40 +11,41 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.util.Duration;
 
 import java.util.List;
 
 public class AdminsController {
 
+    // === ELEMENTOS PRINCIPALES ===
     @FXML private TableView<Usuario> tablaAdmins;
     @FXML private TableColumn<Usuario, String> colNombre;
     @FXML private TableColumn<Usuario, String> colEmail;
     @FXML private TableColumn<Usuario, Void> colAcciones;
-
     @FXML private Pagination paginacionAdmins;
-
     @FXML private TextField campoBusqueda;
+
+    // === FORMULARIO ADMIN ===
+    @FXML private StackPane panelFormulario;
+    @FXML private Label labelTituloFormulario;
     @FXML private TextField campoNombre;
     @FXML private TextField campoEmail;
-
-    @FXML private Label labelTituloFormulario;
-    @FXML private Label mensajeGeneral;
     @FXML private Label labelNotaPassword;
-    @FXML private Label lblTituloConfirmacion;
-    @FXML private Label lblMensajeConfirmacion;
-
-    @FXML private Button btnConfirmarAccion;
     @FXML private Button btnRestablecerPassword;
 
+    // === GLOBALES (Confirmación y Notificación) ===
     @FXML private StackPane panelConfirmacion;
-    @FXML private StackPane panelFormulario;
+    @FXML private Label lblTituloConfirmacion;
+    @FXML private Label lblMensajeConfirmacion;
+    @FXML private Button btnConfirmarAccion;
+    @FXML private Label mensajeGeneral;
 
-    private Runnable accionPendiente;
-
+    // === VARIABLES DE ESTADO Y SERVICIOS ===
     private final AdminService adminService = new AdminService();
     private final ObservableList<Usuario> listaAdmins = FXCollections.observableArrayList();
     private FilteredList<Usuario> adminsFiltrados;
     private Usuario adminEnEdicion = null;
+    private Runnable accionPendiente;
     private final int FILAS_POR_PAGINA = 15;
 
     @FXML
@@ -53,6 +54,10 @@ public class AdminsController {
         configurarColumnas();
         cargarDatos();
     }
+
+    // ==========================================
+    // LÓGICA PRINCIPAL DE ADMINISTRADORES
+    // ==========================================
 
     private void configurarColumnas() {
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
@@ -63,6 +68,7 @@ public class AdminsController {
             private final Button btnEstado = new Button(); 
             private final Button btnEliminar = new Button("Eliminar");
             private final HBox panel = new HBox(8, btnEditar, btnEstado); 
+            
             {
                 btnEditar.getStyleClass().addAll("accent", "flat");
                 btnEstado.getStyleClass().addAll("flat");
@@ -94,6 +100,8 @@ public class AdminsController {
                     }
 
                     panel.getChildren().clear();
+                    
+                    // VALIDACIÓN DE SEGURIDAD: Evitar auto-bloqueo/eliminación
                     if (usuarioLogueado != null && u.getId() == usuarioLogueado.getId()) {
                         Label lblTu = new Label("Eres tú. Edita desde 'Mi Perfil'.");
                         lblTu.setStyle("-fx-text-fill: #6c757d; -fx-font-style: italic; -fx-font-size: 11px;");
@@ -101,6 +109,7 @@ public class AdminsController {
                     } else {
                         panel.getChildren().addAll(btnEditar, btnEstado, btnEliminar);
                     }
+                    
                     setGraphic(panel);
                 }
             }
@@ -137,9 +146,13 @@ public class AdminsController {
             int desde = idx * FILAS_POR_PAGINA;
             int hasta = Math.min(desde + FILAS_POR_PAGINA, total);
             tablaAdmins.setItems(FXCollections.observableArrayList(adminsFiltrados.subList(desde, hasta)));
-            return new Region(); // Retornamos un nodo vacío porque la tabla ya se actualizó
+            return new Region(); 
         });
     }
+
+    // ==========================================
+    // GESTIÓN DEL FORMULARIO
+    // ==========================================
 
     @FXML
     private void handleNuevo() { 
@@ -177,18 +190,12 @@ public class AdminsController {
 
         try {
             adminService.guardar(u, adminEnEdicion != null);
-            mostrarNotificacion("Administrador guardado con éxito", false);
+            mostrarNotificacion("Administrador guardado con éxito.", false);
             handleCancelar();
             cargarDatos();
         } catch (Exception e) {
             mostrarNotificacion(e.getMessage(), true);
         }
-    }
-
-    @FXML 
-    private void handleCancelar() { 
-        panelFormulario.setVisible(false); 
-        panelFormulario.setManaged(false); 
     }
 
     @FXML
@@ -199,12 +206,11 @@ public class AdminsController {
             "Restablecer Contraseña",
             "¿Deseas restablecer la contraseña de " + adminEnEdicion.getNombre() + "?\nSu contraseña volverá a ser '123456' temporalmente.",
             "Restablecer",
-            "danger", // Botón rojo
+            "danger",
             () -> {
                 try {
                     adminService.restablecerPassword(adminEnEdicion.getId());
                     mostrarNotificacion("Contraseña restablecida a '123456'.", false);
-                    
                     handleCancelar();
                 } catch (Exception e) {
                     mostrarNotificacion(e.getMessage(), true);
@@ -212,6 +218,22 @@ public class AdminsController {
             }
         );
     }
+
+    @FXML 
+    private void handleCancelar() { 
+        panelFormulario.setVisible(false); 
+        panelFormulario.setManaged(false); 
+        limpiarFormulario();
+    }
+
+    private void limpiarFormulario() { 
+        campoNombre.clear(); 
+        campoEmail.clear(); 
+    }
+
+    // ==========================================
+    // COMPONENTES GLOBALES (Notificaciones y Modales)
+    // ==========================================
 
     private void confirmarCambioEstado(Usuario u) {
         boolean nuevoEstado = !u.isActivo();
@@ -221,7 +243,7 @@ public class AdminsController {
             "Confirmar " + accionText,
             "¿Deseas " + accionText.toLowerCase() + " el acceso de " + u.getNombre() + "?",
             accionText,
-            nuevoEstado ? "accent" : "danger", // Azul si activa, Rojo si desactiva
+            nuevoEstado ? "accent" : "danger",
             () -> {
                 try {
                     adminService.cambiarEstado(u.getId(), nuevoEstado);
@@ -239,7 +261,7 @@ public class AdminsController {
             "Advertencia Crítica",
             "Vas a eliminar permanentemente a " + u.getNombre() + ".\nEsta acción borrará su acceso al sistema de forma irreversible. ¿Deseas continuar?",
             "Eliminar definitivamente",
-            "danger", // Botón rojo
+            "danger",
             () -> {
                 try {
                     adminService.eliminar(u.getId());
@@ -250,11 +272,6 @@ public class AdminsController {
                 }
             }
         );
-    }
-
-    private void limpiarFormulario() { 
-        campoNombre.clear(); 
-        campoEmail.clear(); 
     }
 
     private void mostrarNotificacion(String mensaje, boolean esError) {
@@ -269,28 +286,25 @@ public class AdminsController {
             mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 12 25; -fx-background-radius: 30; -fx-font-weight: bold;");
         }
 
-        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(1), mensajeGeneral);
-        fade.setDelay(javafx.util.Duration.seconds(2));
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.seconds(1), mensajeGeneral);
+        fade.setDelay(Duration.seconds(2));
         fade.setFromValue(1.0);
         fade.setToValue(0.0);
         fade.setOnFinished(e -> {
             mensajeGeneral.setVisible(false);
+            mensajeGeneral.setManaged(false);
         });
         fade.play();
     }
-
-    // === LÓGICA DEL PANEL DE CONFIRMACIÓN ===
 
     private void mostrarConfirmacion(String titulo, String mensaje, String textoBoton, String claseCSSBoton, Runnable accion) {
         lblTituloConfirmacion.setText(titulo);
         lblMensajeConfirmacion.setText(mensaje);
         btnConfirmarAccion.setText(textoBoton);
 
-        // Limpiamos estilos anteriores y aplicamos el nuevo (accent o danger)
         btnConfirmarAccion.getStyleClass().removeAll("accent", "danger");
         btnConfirmarAccion.getStyleClass().add(claseCSSBoton);
 
-        // Guardamos la acción que se ejecutará si hace clic en confirmar
         this.accionPendiente = accion;
 
         panelConfirmacion.setVisible(true);
@@ -307,8 +321,8 @@ public class AdminsController {
     @FXML
     private void handleEjecutarConfirmacion() {
         if (accionPendiente != null) {
-            accionPendiente.run(); // Ejecuta el código guardado
+            accionPendiente.run(); 
         }
-        handleCancelarConfirmacion(); // Cierra el modal
+        handleCancelarConfirmacion();
     }
 }
