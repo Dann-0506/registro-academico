@@ -3,18 +3,23 @@ package com.academico.service.individuals;
 import com.academico.dao.MaestroDAO;
 import com.academico.dao.UsuarioDAO;
 import com.academico.model.Maestro;
+import com.academico.service.AuthService;
+
 import java.sql.SQLException;
 import java.util.List;
 
 public class MaestroService {
     private final MaestroDAO maestroDAO;
+    private final AuthService authService;
 
     public MaestroService(){
         this.maestroDAO = new MaestroDAO();
+        this.authService = new AuthService();
     }
 
-    public MaestroService(MaestroDAO maestroDAO, UsuarioDAO usuarioDAO) {
+    public MaestroService(MaestroDAO maestroDAO, AuthService authService) {
         this.maestroDAO = maestroDAO;
+        this.authService = authService;
     }
 
     public List<Maestro> listarTodos() throws Exception {
@@ -36,7 +41,9 @@ public class MaestroService {
             if (esEdicion) {
                 maestroDAO.actualizar(maestro);
             } else {
-                maestroDAO.crear(maestro);
+                String hashSeguro = authService.hashearPassword("123456");
+
+                maestroDAO.crear(maestro, hashSeguro);
             }
         } catch (SQLException e) {
             if ("23505".equals(e.getSQLState())) {

@@ -222,10 +222,28 @@ public class MaestrosController {
         campoEmail.clear(); 
     }
 
-    private void mostrarNotificacion(String m, boolean e) {
-        mensajeGeneral.setText(m);
+    private void mostrarNotificacion(String mensaje, boolean esError) {
+        mensajeGeneral.setText(mensaje);
+        mensajeGeneral.setOpacity(1.0); // Reset de opacidad obligatorio
         mensajeGeneral.setVisible(true);
         mensajeGeneral.setManaged(true);
-        mensajeGeneral.setStyle(e ? "-fx-background-color: #f8d7da; -fx-text-fill: #721c24;" : "-fx-background-color: #d4edda; -fx-text-fill: #155724;");
+
+        // Colores según el éxito o error
+        if (esError) {
+            mensajeGeneral.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24;");
+        } else {
+            mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724;");
+        }
+
+        // Animación: Se muestra y luego se desvanece suavemente
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(1), mensajeGeneral);
+        fade.setDelay(javafx.util.Duration.seconds(2)); // Se mantiene visible por 2 segundos
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+        fade.setOnFinished(e -> {
+            mensajeGeneral.setVisible(false);
+            mensajeGeneral.setManaged(false);
+        });
+        fade.play();
     }
 }

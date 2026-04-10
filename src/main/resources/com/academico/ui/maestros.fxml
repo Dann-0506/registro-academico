@@ -87,16 +87,19 @@
                     <VBox spacing="8">
                         <Label text="Número de Empleado *" styleClass="text-bold"/>
                         <TextField fx:id="campoNumEmpleado" promptText="Ej. M12345" prefHeight="35"/>
+                        <Label fx:id="errorMatricula" styleClass="text-danger" visible="false" managed="false"/>
                     </VBox>
 
                     <VBox spacing="8">
                         <Label text="Nombre completo *" styleClass="text-bold"/>
                         <TextField fx:id="campoNombre" promptText="Ej. Dr. Armando Paredes" prefHeight="35"/>
+                        <Label fx:id="errorNombre" styleClass="text-danger" visible="false" managed="false"/>
                     </VBox>
 
                     <VBox spacing="8">
                         <Label text="Correo electrónico *" styleClass="text-bold"/>
                         <TextField fx:id="campoEmail" promptText="Ej. maestro@escuela.edu" prefHeight="35"/>
+                        <Label fx:id="errorEmail" styleClass="text-danger" visible="false" managed="false"/>
                     </VBox>
 
                     <Region VBox.vgrow="ALWAYS"/>

@@ -2,18 +2,23 @@ package com.academico.service.individuals;
 
 import com.academico.dao.AlumnoDAO;
 import com.academico.model.Alumno;
+import com.academico.service.AuthService;
+
 import java.sql.SQLException;
 import java.util.List;
 
 public class AlumnoService {
     private final AlumnoDAO alumnoDAO;
+    private final AuthService authService;
 
     public AlumnoService() {
         this.alumnoDAO = new AlumnoDAO();
+        this.authService = new AuthService();
     }
 
-    public AlumnoService(AlumnoDAO alumnoDAO) {
+    public AlumnoService(AlumnoDAO alumnoDAO, AuthService authService) {
         this.alumnoDAO = alumnoDAO;
+        this.authService = authService;
     }
 
     public List<Alumno> listarTodos() throws Exception {
@@ -34,7 +39,9 @@ public class AlumnoService {
             if (esEdicion) {
                 alumnoDAO.actualizar(alumno);
             } else {
-                alumnoDAO.crear(alumno);
+                String hashSeguro = authService.hashearPassword("12345");
+
+                alumnoDAO.crear(alumno, hashSeguro);
             }
         } catch (SQLException e) {
             // TRADUCCIÓN DE ERRORES DE POSTGRES

@@ -35,17 +35,14 @@
                 <HBox alignment="CENTER_LEFT" spacing="30">
                     <TextField fx:id="campoBusqueda"
                             promptText="Buscar por nombre o matrícula..."
-                            maxWidth="500" 
-                            prefHeight="40"
+                            maxWidth="600" 
+                            prefHeight="45"
                             HBox.hgrow="ALWAYS"
+                            style="-fx-font-size: 15px; -fx-background-radius: 8;"
                             onKeyReleased="#handleBusqueda"/>
 
-                    <Label fx:id="mensajeGeneral" 
-                            wrapText="true" 
-                            alignment="CENTER"
-                            maxWidth="Infinity"
-                            visible="false" 
-                            managed="false" 
+                    <Label fx:id="mensajeGeneral" wrapText="true" alignment="CENTER"
+                            maxWidth="Infinity" visible="false" managed="false" 
                             style="-fx-font-size: 14px; -fx-padding: 8 15; -fx-background-radius: 5;"/>
                 </HBox>
             </VBox>
@@ -60,10 +57,10 @@
 
             <HBox spacing="20" maxWidth="1300" alignment="TOP_CENTER">
 
-                <VBox HBox.hgrow="ALWAYS" spacing="22">
+                <VBox HBox.hgrow="ALWAYS" spacing="15">
                     <TableView fx:id="tablaAlumnos" VBox.vgrow="ALWAYS">
                         <placeholder>
-                            <Label text="No se encontraron alumnos con los criterios de búsqueda."/>
+                            <Label text="No se encontraron alumnos registrados."/>
                         </placeholder>
                         <columns>
                             <TableColumn fx:id="colMatricula" text="Matrícula" prefWidth="150" reorderable="false"/>
@@ -79,21 +76,12 @@
                     <Pagination fx:id="paginacionAlumnos" maxPageIndicatorCount="5" styleClass="flat"/>
                 </VBox>
 
-                <VBox fx:id="panelFormulario"
-                      spacing="20"
-                      prefWidth="320"
-                      minWidth="320"
-                      visible="false"
-                      managed="false"
-                      style="-fx-background-color: -color-bg-subtle;
-                             -fx-background-radius: 10;
-                             -fx-padding: 20;
-                             -fx-border-color: -color-border-muted;
-                             -fx-border-radius: 10;">
+                <VBox fx:id="panelFormulario" spacing="20" prefWidth="320" minWidth="320"
+                      visible="false" managed="false"
+                      style="-fx-background-color: -color-bg-subtle; -fx-background-radius: 10;
+                             -fx-padding: 20; -fx-border-color: -color-border-muted; -fx-border-radius: 10;">
 
-                    <Label fx:id="labelTituloFormulario"
-                           text="Nuevo alumno"
-                           styleClass="title-4"/>
+                    <Label fx:id="labelTituloFormulario" text="Nuevo alumno" styleClass="title-4"/>
 
                     <Separator/>
 
@@ -118,19 +106,10 @@
                     <Region VBox.vgrow="ALWAYS"/>
 
                     <HBox spacing="10">
-                        <Button text="Cancelar"
-                                styleClass="flat"
-                                maxWidth="Infinity"
-                                HBox.hgrow="ALWAYS"
-                                prefHeight="40"
-                                onAction="#handleCancelar"/>
-                        <Button fx:id="botonGuardar"
-                                text="Guardar"
-                                styleClass="accent"
-                                maxWidth="Infinity"
-                                HBox.hgrow="ALWAYS"
-                                prefHeight="40"
-                                onAction="#handleGuardar"/>
+                        <Button text="Cancelar" styleClass="flat" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                                prefHeight="40" onAction="#handleCancelar"/>
+                        <Button fx:id="botonGuardar" text="Guardar" styleClass="accent" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                                prefHeight="40" onAction="#handleGuardar"/>
                     </HBox>
                 </VBox>
 

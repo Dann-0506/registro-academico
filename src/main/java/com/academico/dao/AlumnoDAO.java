@@ -206,39 +206,33 @@ public class AlumnoDAO {
     /**
      * Inserta un nuevo Alumno y su cuenta de Usuario simultáneamente.
      */
-    public void crear(Alumno a) throws SQLException {
-        // 1. Query para crear el usuario (rol 'alumno' por defecto y contraseña genérica '123456')
+    public void crear(Alumno a, String passwordHash) throws SQLException {
         String sqlUsuario = "INSERT INTO usuario (nombre, email, password_hash, rol, activo) VALUES (?, ?, ?, 'alumno', true) RETURNING id";
         String sqlAlumno = "INSERT INTO alumno (usuario_id, matricula) VALUES (?, ?)";
 
         try (Connection conn = DatabaseManagerUtil.getConnection()) {
-            conn.setAutoCommit(false); // Iniciamos transacción
+            conn.setAutoCommit(false); 
             try {
                 int nuevoUsuarioId = -1;
 
-                // Insertar Usuario
                 try (PreparedStatement psUsuario = conn.prepareStatement(sqlUsuario)) {
                     psUsuario.setString(1, a.getNombre());
                     psUsuario.setString(2, a.getEmail());
-                    // Hash pre-generado para "123456" usando BCrypt
-                    psUsuario.setString(3, "$2a$10$wE0vA1O3HhXyI2BqD2K1uuA5Q.h5N6q9g/zQZ/oQYy2C1K1c0kO6i"); 
+                    psUsuario.setString(3, passwordHash);
                     try (ResultSet rs = psUsuario.executeQuery()) {
-                        if (rs.next()) {
-                            nuevoUsuarioId = rs.getInt(1);
-                        }
+                        if (rs.next()) nuevoUsuarioId = rs.getInt(1);
                     }
                 }
 
-                // Insertar Alumno
                 try (PreparedStatement psAlumno = conn.prepareStatement(sqlAlumno)) {
                     psAlumno.setInt(1, nuevoUsuarioId);
                     psAlumno.setString(2, a.getMatricula());
                     psAlumno.executeUpdate();
                 }
 
-                conn.commit(); // Guardamos los cambios en ambas tablas
+                conn.commit(); 
             } catch (SQLException e) {
-                conn.rollback(); // Si algo falla, deshacemos todo
+                conn.rollback(); 
                 throw e;
             } finally {
                 conn.setAutoCommit(true);

@@ -96,7 +96,7 @@ public class MaestroDAO {
         return m;
     }
 
-    public void crear(Maestro m) throws SQLException {
+    public void crear(Maestro m, String passwordHash) throws SQLException {
         String sqlUsuario = """
                 INSERT INTO usuario (nombre, email, password_hash, rol, activo)
                 VALUES (?, ?, ?, 'maestro', true) RETURNING id
@@ -116,7 +116,7 @@ public class MaestroDAO {
                     psU.setString(1, m.getNombre());
                     psU.setString(2, m.getEmail());
                     // Hash de "123456"
-                    psU.setString(3, "$2a$10$wE0vA1O3HhXyI2BqD2K1uuA5Q.h5N6q9g/zQZ/oQYy2C1K1c0kO6i"); 
+                    psU.setString(3, passwordHash); 
                     try (ResultSet rs = psU.executeQuery()) {
                         if (rs.next()) nuevoUsuarioId = rs.getInt(1);
                     }
