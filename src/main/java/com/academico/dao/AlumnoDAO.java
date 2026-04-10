@@ -139,15 +139,120 @@ public class AlumnoDAO {
         return duplicados;
     }
 
-
     // === Actualización ===
 
+    /**
+     * Actualiza los datos del Alumno y su cuenta de Usuario vinculada.
+     * Utiliza una transacción para asegurar que ambos cambios ocurran o ninguno.
+     */
     public void actualizar(Alumno a) throws SQLException {
-        String sql = "UPDATE alumno SET matricula = ? WHERE id = ?";
+        // Queries basadas en tu schema.sql
+        String sqlUsuario = "UPDATE usuario SET nombre = ?, email = ? WHERE id = ?";
+        String sqlAlumno = "UPDATE alumno SET matricula = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
+            conn.setAutoCommit(false); // Iniciamos transacción [cite: 446]
+            try {
+                // 1. Actualizar datos en la tabla Usuario
+                try (PreparedStatement psUsuario = conn.prepareStatement(sqlUsuario)) {
+                    psUsuario.setString(1, a.getNombre());
+                    psUsuario.setString(2, a.getEmail());
+                    psUsuario.setInt(3, a.getUsuarioId());
+                    psUsuario.executeUpdate();
+                }
+
+                // 2. Actualizar datos en la tabla Alumno
+                try (PreparedStatement psAlumno = conn.prepareStatement(sqlAlumno)) {
+                    psAlumno.setString(1, a.getMatricula());
+                    psAlumno.setInt(2, a.getId());
+                    psAlumno.executeUpdate();
+                }
+
+                conn.commit(); // Éxito: Guardamos ambos cambios
+            } catch (SQLException e) {
+                conn.rollback(); // Error: Deshacemos todo para evitar inconsistencias [cite: 373]
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+
+    // === Operaciones para la Interfaz Gráfica ===
+
+    /**
+     * Obtiene todos los alumnos con sus datos de usuario.
+     */
+    public List<Alumno> obtenerTodos() throws SQLException {
+        List<Alumno> lista = new ArrayList<>();
+        String sql = """
+                SELECT a.*, u.nombre, u.email
+                FROM alumno a
+                LEFT JOIN usuario u ON u.id = a.usuario_id
+                ORDER BY a.id ASC
+                """;
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
+    /**
+     * Inserta un nuevo Alumno y su cuenta de Usuario simultáneamente.
+     */
+    public void crear(Alumno a) throws SQLException {
+        // 1. Query para crear el usuario (rol 'alumno' por defecto y contraseña genérica '123456')
+        String sqlUsuario = "INSERT INTO usuario (nombre, email, password_hash, rol, activo) VALUES (?, ?, ?, 'alumno', true) RETURNING id";
+        String sqlAlumno = "INSERT INTO alumno (usuario_id, matricula) VALUES (?, ?)";
+
+        try (Connection conn = DatabaseManagerUtil.getConnection()) {
+            conn.setAutoCommit(false); // Iniciamos transacción
+            try {
+                int nuevoUsuarioId = -1;
+
+                // Insertar Usuario
+                try (PreparedStatement psUsuario = conn.prepareStatement(sqlUsuario)) {
+                    psUsuario.setString(1, a.getNombre());
+                    psUsuario.setString(2, a.getEmail());
+                    // Hash pre-generado para "123456" usando BCrypt
+                    psUsuario.setString(3, "$2a$10$wE0vA1O3HhXyI2BqD2K1uuA5Q.h5N6q9g/zQZ/oQYy2C1K1c0kO6i"); 
+                    try (ResultSet rs = psUsuario.executeQuery()) {
+                        if (rs.next()) {
+                            nuevoUsuarioId = rs.getInt(1);
+                        }
+                    }
+                }
+
+                // Insertar Alumno
+                try (PreparedStatement psAlumno = conn.prepareStatement(sqlAlumno)) {
+                    psAlumno.setInt(1, nuevoUsuarioId);
+                    psAlumno.setString(2, a.getMatricula());
+                    psAlumno.executeUpdate();
+                }
+
+                conn.commit(); // Guardamos los cambios en ambas tablas
+            } catch (SQLException e) {
+                conn.rollback(); // Si algo falla, deshacemos todo
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    /**
+     * Elimina un alumno por su ID.
+     */
+    public void eliminar(int idAlumno) throws SQLException {
+        String sql = "DELETE FROM alumno WHERE id = ?";
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, a.getMatricula());
-            ps.setInt(2, a.getId());
+            ps.setInt(1, idAlumno);
             ps.executeUpdate();
         }
     }

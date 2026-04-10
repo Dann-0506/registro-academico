@@ -23,12 +23,22 @@
                         styleClass="accent"
                         onAction="#handleNuevo"/>
             </HBox>
+            
+            <HBox alignment="CENTER_LEFT" spacing="26">
+                <!-- Barra de búsqueda -->
+                <TextField fx:id="campoBusqueda"
+                        promptText="Buscar por nombre o matrícula..."
+                        maxWidth="320"
+                        onKeyReleased="#handleBusqueda"/>
 
-            <!-- Barra de búsqueda -->
-            <TextField fx:id="campoBusqueda"
-                       promptText="Buscar por nombre o matrícula..."
-                       maxWidth="320"
-                       onKeyReleased="#handleBusqueda"/>
+                <Label fx:id="mensajeGeneral" 
+                        wrapText="true" 
+                        alignment="CENTER"
+                        maxWidth="Infinity"
+                        visible="false" 
+                        managed="false" />
+            </HBox>
+            
         </VBox>
     </top>
 
@@ -37,24 +47,21 @@
         <HBox spacing="16">
 
             <!-- Tabla -->
-            <TableView fx:id="tablaAlumnos"
-                       HBox.hgrow="ALWAYS"
-                       placeholder="No hay alumnos registrados.">
-                <columns>
-                    <TableColumn fx:id="colMatricula"
-                                 text="Matrícula"
-                                 prefWidth="120"/>
-                    <TableColumn fx:id="colNombre"
-                                 text="Nombre"
-                                 prefWidth="240"/>
-                    <TableColumn fx:id="colEmail"
-                                 text="Correo"
-                                 prefWidth="240"/>
-                    <TableColumn fx:id="colAcciones"
-                                 text="Acciones"
-                                 prefWidth="120"/>
-                </columns>
-            </TableView>
+            <VBox HBox.hgrow="ALWAYS" spacing="12">
+                <TableView fx:id="tablaAlumnos" VBox.vgrow="ALWAYS">
+                    <placeholder>
+                        <Label text="No hay alumnos registrados."/>
+                    </placeholder>
+                    <columns>
+                        <TableColumn fx:id="colMatricula" text="Matrícula" prefWidth="120" reorderable="false"/>
+                        <TableColumn fx:id="colNombre" text="Nombre" prefWidth="200" reorderable="false"/>
+                        <TableColumn fx:id="colEmail" text="Correo" prefWidth="240" reorderable="false"/>
+                        <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="160" reorderable="false"/>
+                    </columns>
+                </TableView>
+                
+                <Pagination fx:id="paginacionAlumnos" maxPageIndicatorCount="5" styleClass="flat"/>
+            </VBox>
 
             <!-- Formulario lateral -->
             <VBox fx:id="panelFormulario"
@@ -103,11 +110,6 @@
                 </VBox>
 
                 <Region VBox.vgrow="ALWAYS"/>
-
-                <Label fx:id="mensajeGeneral"
-                       wrapText="true"
-                       visible="false"
-                       managed="false"/>
 
                 <HBox spacing="8">
                     <Button text="Cancelar"

@@ -70,13 +70,16 @@ public class NavegationUtil {
      */
     public static void cargarEnArea(StackPane area, String ruta) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                NavegationUtil.class.getResource(ruta));
+            FXMLLoader loader = new FXMLLoader(NavegationUtil.class.getResource(ruta));
             Node vista = loader.load();
             area.getChildren().setAll(vista);
-        } catch (IOException e) {
-            Label placeholder = new Label("Vista en construcción");
-            placeholder.setStyle("-fx-text-fill: -color-fg-muted; -fx-font-size: 14px;");
+        } catch (Exception e) { 
+            // ¡ESTO ES CLAVE! Imprime el error real en tu terminal
+            System.err.println("❌ ERROR FATAL AL CARGAR LA VISTA: " + ruta);
+            e.printStackTrace(); 
+            
+            Label placeholder = new Label("Error al cargar la vista (revisa la terminal)");
+            placeholder.setStyle("-fx-text-fill: red; -fx-font-size: 14px; -fx-font-weight: bold;");
             area.getChildren().setAll(placeholder);
         }
     }

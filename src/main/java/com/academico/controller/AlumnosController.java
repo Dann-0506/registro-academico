@@ -1,288 +1,215 @@
 package com.academico.controller;
 
-import com.academico.dao.AlumnoDAO;
-import com.academico.dao.UsuarioDAO;
+import com.academico.service.AlumnoService;
 import com.academico.model.Alumno;
-import com.academico.model.Usuario;
-import com.academico.service.CargaDatosService;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
+import javafx.scene.layout.Region;
+import javafx.util.Callback;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public class AlumnosController {
-
-    @FXML private TextField   campoBusqueda;
+    
     @FXML private TableView<Alumno> tablaAlumnos;
     @FXML private TableColumn<Alumno, String> colMatricula;
     @FXML private TableColumn<Alumno, String> colNombre;
     @FXML private TableColumn<Alumno, String> colEmail;
-    @FXML private TableColumn<Alumno, Void>   colAcciones;
+    @FXML private TableColumn<Alumno, Void> colAcciones;
+    @FXML private Pagination paginacionAlumnos;
+    @FXML private TextField campoBusqueda;
+    @FXML private Label errorMatricula;
+    @FXML private Label errorNombre;
+    @FXML private Label errorEmail;
 
-    @FXML private VBox   panelFormulario;
-    @FXML private Label  labelTituloFormulario;
+    @FXML private VBox panelFormulario;
+    @FXML private Label labelTituloFormulario;
     @FXML private TextField campoMatricula;
     @FXML private TextField campoNombre;
     @FXML private TextField campoEmail;
-    @FXML private Label  errorMatricula;
-    @FXML private Label  errorNombre;
-    @FXML private Label  errorEmail;
-    @FXML private Label  mensajeGeneral;
+    @FXML private Label mensajeGeneral;
     @FXML private Button botonGuardar;
 
-    private final AlumnoDAO      alumnoDAO      = new AlumnoDAO();
-    private final UsuarioDAO     usuarioDAO     = new UsuarioDAO();
-    private final CargaDatosService cargaService = new CargaDatosService();
-
+    private AlumnoService alumnoService = new AlumnoService();
     private ObservableList<Alumno> listaAlumnos = FXCollections.observableArrayList();
-    private FilteredList<Alumno>   listaFiltrada;
     private Alumno alumnoEnEdicion = null;
+    private final int FILAS_POR_PAGINA = 10;
 
     @FXML
     public void initialize() {
-        configurarColumnas();
-        cargarAlumnos();
-    }
 
-    // ── Configuración de tabla ────────────────────────────────────────────────
+        tablaAlumnos.getColumns().forEach(column -> column.setReorderable(false));
+    
+        tablaAlumnos.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
+        configurarColumnas();
+        cargarDatos();
+    }
 
     private void configurarColumnas() {
         colMatricula.setCellValueFactory(new PropertyValueFactory<>("matricula"));
         colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-        colAcciones.setCellFactory(col -> new TableCell<>() {
-            private final Button btnEditar  = new Button("Editar");
-            private final HBox   contenedor = new HBox(8, btnEditar);
+
+        Callback<TableColumn<Alumno, Void>, TableCell<Alumno, Void>> cellFactory = param -> new TableCell<>() {
+            private final Button btnEditar = new Button("Editar");
+            private final Button btnEliminar = new Button("Eliminar");
+            private final HBox panel = new HBox(8, btnEditar, btnEliminar);
 
             {
-                btnEditar.getStyleClass().add("flat");
-                btnEditar.setOnAction(e -> {
-                    Alumno alumno = getTableView().getItems().get(getIndex());
-                    handleEditar(alumno);
-                });
+                btnEditar.getStyleClass().addAll("accent", "flat");
+                btnEliminar.getStyleClass().addAll("danger", "flat");
+                panel.setStyle("-fx-alignment: center;");
+
+                btnEditar.setOnAction(e -> abrirEdicion(getTableView().getItems().get(getIndex())));
+                btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : contenedor);
+                setGraphic(empty ? null : panel);
             }
-        });
-
-        listaFiltrada = new FilteredList<>(listaAlumnos, p -> true);
-        tablaAlumnos.setItems(listaFiltrada);
+        };
+        colAcciones.setCellFactory(cellFactory);
     }
 
-    private void cargarAlumnos() {
+    private void cargarDatos() {
         try {
-            listaAlumnos.setAll(alumnoDAO.findAll());
-        } catch (SQLException e) {
-            mostrarError(mensajeGeneral, "Error al cargar alumnos: " + e.getMessage());
+            List<Alumno> alumnos = alumnoService.listarTodos();
+            listaAlumnos.setAll(alumnos);
+            configurarPaginacion();
+        } catch (Exception e) {
+            mostrarNotificacion(e.getMessage(), true);
         }
     }
 
-    // ── Búsqueda ─────────────────────────────────────────────────────────────
-
-    @FXML
-    private void handleBusqueda() {
-        String texto = campoBusqueda.getText().toLowerCase().trim();
-        listaFiltrada.setPredicate(alumno -> {
-            if (texto.isEmpty()) return true;
-            return alumno.getMatricula().toLowerCase().contains(texto)
-                || (alumno.getNombre() != null
-                    && alumno.getNombre().toLowerCase().contains(texto));
+    private void configurarPaginacion() {
+        int totalPaginas = (int) Math.ceil((double) listaAlumnos.size() / FILAS_POR_PAGINA);
+        paginacionAlumnos.setPageCount(totalPaginas > 0 ? totalPaginas : 1);
+        
+        paginacionAlumnos.setPageFactory(pageIndex -> {
+            int desde = pageIndex * FILAS_POR_PAGINA;
+            int hasta = Math.min(desde + FILAS_POR_PAGINA, listaAlumnos.size());
+            
+            if (desde < listaAlumnos.size()) {
+                tablaAlumnos.setItems(FXCollections.observableArrayList(listaAlumnos.subList(desde, hasta)));
+            } else {
+                tablaAlumnos.setItems(FXCollections.observableArrayList());
+            }
+            // Devolvemos un Region vacío para que no interfiera con la tabla del FXML
+            return new Region(); 
         });
-    }
-
-    // ── Formulario ───────────────────────────────────────────────────────────
-
-    @FXML
-    private void handleNuevo() {
-        alumnoEnEdicion = null;
-        labelTituloFormulario.setText("Nuevo alumno");
-        limpiarFormulario();
-        mostrarFormulario(true);
-    }
-
-    private void handleEditar(Alumno alumno) {
-        alumnoEnEdicion = alumno;
-        labelTituloFormulario.setText("Editar alumno");
-        campoMatricula.setText(alumno.getMatricula());
-        campoMatricula.setDisable(true); // matrícula no editable
-        campoNombre.setText(alumno.getNombre() != null ? alumno.getNombre() : "");
-        campoEmail.setText(alumno.getEmail() != null ? alumno.getEmail() : "");
-        limpiarErrores();
-        mostrarFormulario(true);
-    }
-
-    @FXML
-    private void handleCancelar() {
-        mostrarFormulario(false);
-        limpiarFormulario();
     }
 
     @FXML
     private void handleGuardar() {
-        if (!validarFormulario()) return;
+        // 1. Recolectar datos de la UI
+        Alumno temporal = (alumnoEnEdicion != null) ? alumnoEnEdicion : new Alumno();
+        temporal.setMatricula(campoMatricula.getText().trim());
+        temporal.setNombre(campoNombre.getText().trim());
+        temporal.setEmail(campoEmail.getText().trim());
 
         try {
-            if (alumnoEnEdicion == null) {
-                // Crear usuario y alumno nuevos
-                Usuario usuario = new Usuario();
-                usuario.setNombre(campoNombre.getText().trim());
-                usuario.setEmail(campoEmail.getText().trim().isEmpty()
-                    ? campoMatricula.getText().trim() + "@academico.local"
-                    : campoEmail.getText().trim());
-                usuario.setPasswordHash(
-                    new com.academico.service.AuthService()
-                        .hashearPassword(campoMatricula.getText().trim()));
-                usuario.setRol("alumno");
-                usuario.setActivo(true);
-                Usuario usuarioGuardado = usuarioDAO.insertar(usuario);
-
-                Alumno alumno = new Alumno();
-                alumno.setUsuarioId(usuarioGuardado.getId());
-                alumno.setMatricula(campoMatricula.getText().trim());
-                alumnoDAO.insertar(alumno);
-
-            } else {
-                // Actualizar usuario vinculado
-                if (alumnoEnEdicion.getUsuarioId() != null) {
-                    Usuario usuario = usuarioDAO
-                        .findById(alumnoEnEdicion.getUsuarioId())
-                        .orElse(null);
-                    if (usuario != null) {
-                        usuario.setNombre(campoNombre.getText().trim());
-                        if (!campoEmail.getText().trim().isEmpty()) {
-                            usuario.setEmail(campoEmail.getText().trim());
-                        }
-                        usuarioDAO.actualizar(usuario);
-                    }
-                }
-                alumnoDAO.actualizar(alumnoEnEdicion);
-            }
-
-            cargarAlumnos();
-            mostrarFormulario(false);
-            limpiarFormulario();
-
-        } catch (SQLException e) {
-            mostrarError(mensajeGeneral,
-                "Error al guardar: " + e.getMessage());
-        }
-    }
-
-    // ── Importación CSV ──────────────────────────────────────────────────────
-
-    @FXML
-    private void handleImportarCsv() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Seleccionar archivo CSV de alumnos");
-        chooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Archivos CSV", "*.csv"));
-
-        File archivo = chooser.showOpenDialog(
-            tablaAlumnos.getScene().getWindow());
-
-        if (archivo == null) return;
-
-        try (FileInputStream fis = new FileInputStream(archivo)) {
-            List<String> duplicados = cargaService.importarAlumnosCsv(fis);
-            cargarAlumnos();
-
-            String mensaje = "Importación completada.";
-            if (!duplicados.isEmpty()) {
-                mensaje += " Matrículas ignoradas por duplicado: "
-                    + String.join(", ", duplicados);
-            }
-            mostrarExito(mensajeGeneral, mensaje);
-            mostrarFormulario(true);
-
+            // 2. Llamar al servicio
+            alumnoService.guardar(temporal, alumnoEnEdicion != null);
+            
+            // 3. Notificar éxito
+            mostrarNotificacion("Operación realizada con éxito", false);
+            handleCancelar();
+            cargarDatos();
         } catch (Exception e) {
-            mostrarError(mensajeGeneral,
-                "Error al importar CSV: " + e.getMessage());
-            mostrarFormulario(true);
+            // 4. Notificar error traducido
+            mostrarNotificacion(e.getMessage(), true);
         }
     }
 
-    // ── Validación ───────────────────────────────────────────────────────────
-
-    private boolean validarFormulario() {
-        limpiarErrores();
-        boolean valido = true;
-
-        if (campoMatricula.getText().trim().isEmpty()) {
-            mostrarError(errorMatricula, "La matrícula es obligatoria.");
-            valido = false;
-        }
-
-        if (campoNombre.getText().trim().isEmpty()) {
-            mostrarError(errorNombre, "El nombre es obligatorio.");
-            valido = false;
-        }
-
-        String email = campoEmail.getText().trim();
-        if (!email.isEmpty() && !email.contains("@")) {
-            mostrarError(errorEmail, "El correo no tiene un formato válido.");
-            valido = false;
-        }
-
-        return valido;
+    private void abrirEdicion(Alumno a) {
+        alumnoEnEdicion = a;
+        campoMatricula.setText(a.getMatricula());
+        campoNombre.setText(a.getNombre());
+        campoEmail.setText(a.getEmail());
+        labelTituloFormulario.setText("Editar Alumno");
+        panelFormulario.setVisible(true);
+        panelFormulario.setManaged(true);
     }
 
-    // ── Helpers visuales ─────────────────────────────────────────────────────
+    private void confirmarEliminacion(Alumno a) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmar eliminación");
+        alert.setHeaderText("¿Deseas eliminar a " + a.getNombre() + "?");
+        alert.setContentText("Esta acción no se puede deshacer.");
+        
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                // El controlador solo pide eliminar, el servicio se encarga de la lógica
+                alumnoService.eliminar(a.getId());
+                
+                // Si tiene éxito, refrescamos y notificamos
+                cargarDatos();
+                mostrarNotificacion("Alumno eliminado correctamente.", false);
+            } catch (Exception e) {
+                // Si el servicio detecta que tiene calificaciones (FK), 
+                // nos lanzará la excepción con el mensaje: 
+                // "No se puede eliminar: El alumno tiene historial académico."
+                mostrarNotificacion(e.getMessage(), true);
+            }
+        }
+    }
 
-    private void mostrarFormulario(boolean visible) {
-        panelFormulario.setVisible(visible);
-        panelFormulario.setManaged(visible);
-        if (!visible) campoMatricula.setDisable(false);
+    @FXML private void handleNuevo() { 
+        alumnoEnEdicion = null;
+        limpiarFormulario();
+        labelTituloFormulario.setText("Nuevo Alumno");
+        panelFormulario.setVisible(true);
+        panelFormulario.setManaged(true);
+    }
+
+    @FXML private void handleCancelar() { 
+        panelFormulario.setVisible(false);
+        panelFormulario.setManaged(false);
+        limpiarFormulario();
     }
 
     private void limpiarFormulario() {
         campoMatricula.clear();
         campoNombre.clear();
         campoEmail.clear();
-        campoMatricula.setDisable(false);
-        limpiarErrores();
-        ocultarMensaje(mensajeGeneral);
     }
 
-    private void limpiarErrores() {
-        ocultarMensaje(errorMatricula);
-        ocultarMensaje(errorNombre);
-        ocultarMensaje(errorEmail);
+    private void mostrarNotificacion(String mensaje, boolean esError) {
+        mensajeGeneral.setText(mensaje);
+        mensajeGeneral.setOpacity(1.0); // Reset de opacidad obligatorio
+        mensajeGeneral.setVisible(true);
+        mensajeGeneral.setManaged(true);
+
+        // Colores según el éxito o error (usando estilos de tu proyecto)
+        if (esError) {
+            mensajeGeneral.setStyle("-fx-background-color: #f8d7da; -fx-text-fill: #721c24;");
+        } else {
+            mensajeGeneral.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724;");
+        }
+
+        // Animación: Se muestra y luego se desvanece
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.seconds(1), mensajeGeneral);
+        fade.setDelay(javafx.util.Duration.seconds(2)); // Visible por 2 segundos
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+        fade.setOnFinished(e -> {
+            mensajeGeneral.setVisible(false);
+            mensajeGeneral.setManaged(false);
+        });
+        fade.play();
     }
 
-    private void mostrarError(Label label, String mensaje) {
-        label.setText(mensaje);
-        label.getStyleClass().removeAll("text-success");
-        label.getStyleClass().add("text-danger");
-        label.setVisible(true);
-        label.setManaged(true);
-    }
-
-    private void mostrarExito(Label label, String mensaje) {
-        label.setText(mensaje);
-        label.getStyleClass().removeAll("text-danger");
-        label.getStyleClass().add("text-success");
-        label.setVisible(true);
-        label.setManaged(true);
-    }
-
-    private void ocultarMensaje(Label label) {
-        label.setVisible(false);
-        label.setManaged(false);
-        label.setText("");
-    }
+    @FXML private void handleBusqueda() {}
+    @FXML private void handleImportarCsv() {}
 }
