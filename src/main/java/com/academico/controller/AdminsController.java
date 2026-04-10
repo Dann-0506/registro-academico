@@ -28,6 +28,8 @@ public class AdminsController {
     @FXML private TextField campoNombre;
     @FXML private TextField campoEmail;
     @FXML private Label mensajeGeneral;
+    @FXML private Label labelNotaPassword;
+    @FXML private Button btnRestablecerPassword;
 
     private final AdminService adminService = new AdminService();
     private final ObservableList<Usuario> listaAdmins = FXCollections.observableArrayList();
@@ -154,6 +156,11 @@ public class AdminsController {
         adminEnEdicion = null; 
         limpiarFormulario(); 
         labelTituloFormulario.setText("Nuevo Administrador");
+
+        labelNotaPassword.setText("Nota: Los administradores nuevos se crean con la contraseña predeterminada '123456'.");
+        btnRestablecerPassword.setVisible(false);
+        btnRestablecerPassword.setManaged(false);
+
         panelFormulario.setVisible(true); 
         panelFormulario.setManaged(true); 
     }
@@ -163,6 +170,11 @@ public class AdminsController {
         campoNombre.setText(u.getNombre());
         campoEmail.setText(u.getEmail());
         labelTituloFormulario.setText("Editar Administrador");
+
+        labelNotaPassword.setText("Nota: Si el usuario olvidó su acceso, puedes restablecer su contraseña.");
+        btnRestablecerPassword.setVisible(true);
+        btnRestablecerPassword.setManaged(true);
+
         panelFormulario.setVisible(true);
         panelFormulario.setManaged(true);
     }
@@ -207,6 +219,27 @@ public class AdminsController {
     private void handleCancelar() { 
         panelFormulario.setVisible(false); 
         panelFormulario.setManaged(false); 
+    }
+
+    @FXML
+    private void handleRestablecerPassword() {
+        if (adminEnEdicion == null) return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Restablecer Contraseña");
+        alert.setHeaderText("¿Deseas restablecer la contraseña de " + adminEnEdicion.getNombre() + "?");
+        alert.setContentText("Su contraseña volverá a ser '123456' temporalmente.");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                adminService.restablecerPassword(adminEnEdicion.getId());
+                mostrarNotificacion("Contraseña restablecida a '123456'.", false);
+                handleCancelar(); // Cerramos el panel por comodidad
+            } catch (Exception e) {
+                mostrarNotificacion(e.getMessage(), true);
+            }
+        }
     }
 
     private void limpiarFormulario() { 

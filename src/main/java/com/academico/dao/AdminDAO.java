@@ -68,4 +68,14 @@ public class AdminDAO {
             ps.executeUpdate();
         }
     }
+
+    public void actualizarPassword(int id, String passwordHash) throws SQLException {
+        String sql = "UPDATE usuario SET password_hash = ? WHERE id = ? AND rol = 'admin'";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, passwordHash);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        }
+    }
 }

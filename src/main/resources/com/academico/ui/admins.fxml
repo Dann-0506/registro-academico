@@ -46,10 +46,11 @@
 
             <Label fx:id="mensajeGeneral" visible="false" managed="false" wrapText="true"/>
             
-            <Label text="Nota: Los administradores nuevos se crean con la contraseña predeterminada '123456'." style="-fx-text-fill: #6c757d; -fx-font-size: 11px;" wrapText="true"/>
+            <Label fx:id="labelNotaPassword" text="Nota: Los administradores nuevos se crean con la contraseña predeterminada '123456'." style="-fx-text-fill: #6c757d; -fx-font-size: 11px;" wrapText="true"/>
 
             <HBox spacing="10" alignment="CENTER_RIGHT">
-                <Button text="Cancelar" onAction="#handleCancelar" styleClass="flat" style="-fx-pref-height: 35;"/>
+                <Button fx:id="btnRestablecerPassword" text="Restablecer Contraseña" onAction="#handleRestablecerPassword" styleClass="danger, flat" style="-fx-pref-height: 35;" visible="false" managed="false"/>
+                <Region HBox.hgrow="ALWAYS"/> <Button text="Cancelar" onAction="#handleCancelar" styleClass="flat" style="-fx-pref-height: 35;"/>
                 <Button text="Guardar" onAction="#handleGuardar" styleClass="accent" style="-fx-pref-height: 35;"/>
             </HBox>
         </VBox>

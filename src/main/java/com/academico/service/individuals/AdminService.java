@@ -59,4 +59,14 @@ public class AdminService {
             throw new Exception("Error al eliminar el administrador.");
         }
     }
+
+    public void restablecerPassword(int id) throws Exception {
+        try {
+            // Reutilizamos authService para encriptar la contraseña genérica
+            String hashSeguro = authService.hashearPassword("123456");
+            adminDAO.actualizarPassword(id, hashSeguro);
+        } catch (SQLException e) {
+            throw new Exception("Error al restablecer la contraseña.");
+        }
+    }
 }
