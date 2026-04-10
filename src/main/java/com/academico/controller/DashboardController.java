@@ -47,6 +47,13 @@ public class DashboardController {
         labelBienvenida.setText("Bienvenido, " + usuario.getNombre().split(" ")[0] + ".");
 
         construirMenu(usuario.getRol());
+
+        if (usuario.isRequiereCambioPassword()) {
+            javafx.application.Platform.runLater(() -> {
+                abrirPerfilFlotante();
+                mostrarNotificacionPerfil("¡Atención! Estás usando la contraseña predeterminada. Por tu seguridad, cámbiala ahora.", true, true);
+            });
+        }
     }
 
     private void construirMenu(String rol) {
@@ -163,6 +170,11 @@ public class DashboardController {
         String nuevoEmail = campoPerfilEmail.getText().trim();
         String nuevaPass = campoPerfilPassword.getText();
 
+        if (nuevoNombre.isEmpty() || nuevoEmail.isEmpty()) {
+            mostrarNotificacionPerfil("El nombre y correo no pueden estar vacíos.", true, false); 
+            return;
+        }
+
         try {
             usuarioService.actualizarPerfil(actual.getId(), nuevoNombre, nuevoEmail, nuevaPass);
             
@@ -172,20 +184,21 @@ public class DashboardController {
             labelNombreUsuario.setText(nuevoNombre);
             labelBienvenida.setText("Bienvenido, " + nuevoNombre.split(" ")[0] + ".");
             
-            mostrarNotificacionPerfil("Perfil actualizado con éxito.", false);
+            mostrarNotificacionPerfil("Perfil actualizado con éxito.", false, false);
             
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
             pause.setOnFinished(e -> handleCerrarPerfil());
             pause.play();
 
         } catch (Exception e) {
-            mostrarNotificacionPerfil(e.getMessage(), true);
+            mostrarNotificacionPerfil(e.getMessage(), true, false);
         }
     }
 
-    private void mostrarNotificacionPerfil(String mensaje, boolean esError) {
+    private void mostrarNotificacionPerfil(String mensaje, boolean esError, boolean persistente) {
         mensajePerfil.setText(mensaje);
-        mensajePerfil.setOpacity(1.0);
+        // Reset obligatorio para que vuelva a verse si antes se desvaneció
+        mensajePerfil.setOpacity(1.0); 
         mensajePerfil.setVisible(true);
         mensajePerfil.setManaged(true);
 
@@ -195,13 +208,16 @@ public class DashboardController {
             mensajePerfil.setStyle("-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 8; -fx-background-radius: 5;");
         }
 
-        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.seconds(1), mensajePerfil);
-        fade.setDelay(Duration.seconds(2));
-        fade.setToValue(0.0);
-        fade.setOnFinished(e -> {
-            mensajePerfil.setVisible(false);
-            mensajePerfil.setManaged(false);
-        });
-        fade.play();
+        // Si NO es persistente, aplicamos la animación de desvanecimiento
+        if (!persistente) {
+            javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(Duration.seconds(1), mensajePerfil);
+            fade.setDelay(Duration.seconds(2));
+            fade.setToValue(0.0);
+            fade.setOnFinished(e -> {
+                mensajePerfil.setVisible(false);
+                mensajePerfil.setManaged(false);
+            });
+            fade.play();
+        }
     }
 }
