@@ -57,6 +57,26 @@ public class GrupoDAO {
         }
     }
 
+    public Optional<Grupo> findByClave(String clave) throws SQLException {
+        String sql = """
+                SELECT g.*,
+                       mat.nombre AS materia_nombre,
+                       u.nombre   AS maestro_nombre
+                FROM grupo g
+                JOIN materia mat ON mat.id = g.materia_id
+                JOIN maestro m   ON m.id   = g.maestro_id
+                JOIN usuario u   ON u.id   = m.usuario_id
+                WHERE g.clave = ?
+                """;
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, clave);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+            }
+        }
+    }
+
     public List<Grupo> findAll() throws SQLException {
         String sql = """
                 SELECT g.*,

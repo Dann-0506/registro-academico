@@ -35,6 +35,15 @@ public class GrupoService {
         }
     }
 
+    public Grupo buscarPorClave(String clave) throws Exception {
+        try {
+            return grupoDAO.findByClave(clave)
+                .orElseThrow(() -> new Exception("El grupo con clave '" + clave + "' no existe."));
+        } catch (SQLException e) {
+            throw new Exception("Error de conexión al buscar el grupo por clave.");
+        }
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA
     // ==========================================

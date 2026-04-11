@@ -97,18 +97,30 @@ public class AdminsController {
                 btnEliminar.getStyleClass().addAll("danger", "flat");
                 panel.setStyle("-fx-alignment: center;");
 
-                btnEditar.setOnAction(e -> abrirEdicion(getTableView().getItems().get(getIndex())));
-                btnEstado.setOnAction(e -> confirmarCambioEstado(getTableView().getItems().get(getIndex())));
-                btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
+                btnEditar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        abrirEdicion((Usuario) getTableRow().getItem()); 
+                    }
+                });
+                btnEstado.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarCambioEstado((Usuario) getTableRow().getItem());
+                    }
+                });
+                btnEliminar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarEliminacion((Usuario) getTableRow().getItem());
+                    }
+                });
             }
             
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getTableView().getItems().get(getIndex()) == null) {
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                 } else {
-                    Usuario u = getTableView().getItems().get(getIndex());
+                    Usuario u = (Usuario) getTableRow().getItem();
                     Usuario usuarioLogueado = SessionManagerUtil.getUsuarioActual();
 
                     btnEstado.getStyleClass().removeAll("success", "warning");
@@ -183,6 +195,7 @@ public class AdminsController {
             int desde = idx * FILAS_POR_PAGINA;
             int hasta = Math.min(desde + FILAS_POR_PAGINA, total);
             tablaAdmins.setItems(FXCollections.observableArrayList(adminsFiltrados.subList(desde, hasta)));
+            tablaAdmins.refresh();
             return new Region(); 
         });
     }

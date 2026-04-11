@@ -65,6 +65,14 @@ public class InscripcionService {
         }
     }
 
+    public List<Inscripcion> listarTodas() throws Exception {
+        try {
+            return inscripcionDAO.findAll();
+        } catch (SQLException e) {
+            throw new Exception("Error al cargar el catálogo de inscripciones globales.");
+        }
+    }
+
     public void eliminar(int id) throws Exception {
         try {
             inscripcionDAO.eliminar(id);

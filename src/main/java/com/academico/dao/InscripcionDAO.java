@@ -38,6 +38,8 @@ public class InscripcionDAO {
         try { i.setAlumnoNombre(rs.getString("alumno_nombre")); } catch (SQLException ignored) {}
         try { i.setAlumnoMatricula(rs.getString("alumno_matricula")); } catch (SQLException ignored) {}
         try { i.setGrupoClave(rs.getString("grupo_clave")); } catch (SQLException ignored) {}
+        try { i.setMateriaNombre(rs.getString("materia_nombre")); } catch (SQLException ignored) {}
+        try { i.setSemestre(rs.getString("semestre")); } catch (SQLException ignored) {}
 
         return i;
     }
@@ -87,6 +89,30 @@ public class InscripcionDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) lista.add(mapear(rs));
             }
+        }
+        return lista;
+    }
+
+    public List<Inscripcion> findAll() throws SQLException {
+        String sql = """
+                SELECT i.*, 
+                       a.matricula AS alumno_matricula, 
+                       u.nombre AS alumno_nombre,
+                       g.clave AS grupo_clave,
+                       g.semestre AS semestre,
+                       m.nombre AS materia_nombre
+                FROM inscripcion i
+                JOIN alumno a ON a.id = i.alumno_id
+                JOIN usuario u ON u.id = a.usuario_id
+                JOIN grupo g ON g.id = i.grupo_id
+                JOIN materia m ON m.id = g.materia_id
+                ORDER BY i.fecha DESC, u.nombre
+                """;
+        List<Inscripcion> lista = new ArrayList<>();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) lista.add(mapear(rs));
         }
         return lista;
     }
