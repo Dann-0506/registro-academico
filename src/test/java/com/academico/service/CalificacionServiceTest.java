@@ -64,8 +64,6 @@ class CalificacionServiceTest {
     @Test
     @DisplayName("Promedio ponderado se calcula correctamente")
     void calcularResultadoBase_casoNormal() {
-        // Examen 85 × 50% + Tarea 90 × 30% + Práctica 70 × 20%
-        // = 42.50 + 27.00 + 14.00 = 83.50
         List<Resultado> resultados = List.of(
                 resultado(85, 50),
                 resultado(90, 30),
@@ -80,8 +78,6 @@ class CalificacionServiceTest {
     @Test
     @DisplayName("Actividad no presentada aporta cero al promedio")
     void calcularResultadoBase_conNulo() {
-        // Examen 85 × 50% + No presentó × 50%
-        // = 42.50 + 0 = 42.50
         List<Resultado> resultados = List.of(
                 resultado(85, 50),
                 resultadoNulo(50)
@@ -104,7 +100,7 @@ class CalificacionServiceTest {
 
     @Test
     @DisplayName("Bonus de unidad se suma al resultado base")
-    void aplicarBonusUnidad_sumaCorrectamente() {
+    void aplicarBonusUnidad_sumaCorrectamente() throws Exception { // Se agregó throws
         BigDecimal base  = new BigDecimal("83.50");
         BigDecimal bonus = new BigDecimal("2.00");
         assertEquals(
@@ -115,7 +111,7 @@ class CalificacionServiceTest {
 
     @Test
     @DisplayName("Sin bonus devuelve el resultado base sin modificar")
-    void aplicarBonusUnidad_sinBonus() {
+    void aplicarBonusUnidad_sinBonus() throws Exception { // Se agregó throws
         BigDecimal base = new BigDecimal("83.50");
         assertEquals(base, service.aplicarBonusUnidad(base, null));
     }
@@ -125,7 +121,6 @@ class CalificacionServiceTest {
     @Test
     @DisplayName("Promedio de unidades se calcula correctamente")
     void calcularPromedioUnidades_casoNormal() {
-        // (85.50 + 78.00 + 91.00) / 3 = 84.83
         List<ResultadoUnidad> unidades = List.of(
                 unidadConFinal("85.50"),
                 unidadConFinal("78.00"),
@@ -140,8 +135,6 @@ class CalificacionServiceTest {
     @Test
     @DisplayName("Unidad pendiente se excluye del promedio")
     void calcularPromedioUnidades_conPendiente() {
-        // Solo se promedian las unidades con calificación
-        // (85.50 + 91.00) / 2 = 88.25
         List<ResultadoUnidad> unidades = List.of(
                 unidadConFinal("85.50"),
                 unidadPendiente(),
@@ -155,7 +148,7 @@ class CalificacionServiceTest {
 
     @Test
     @DisplayName("Override del docente pisa el cálculo automático")
-    void calcularCalificacionFinal_override() {
+    void calcularCalificacionFinal_override() throws Exception { // Se agregó throws
         Alumno alumno = new Alumno(1, null, "A001", "Juan Pérez", "juan@test.com");
         List<ResultadoUnidad> unidades = List.of(unidadConFinal("65.00"));
 
@@ -173,7 +166,7 @@ class CalificacionServiceTest {
 
     @Test
     @DisplayName("Sin override usa el cálculo automático")
-    void calcularCalificacionFinal_sinOverride() {
+    void calcularCalificacionFinal_sinOverride() throws Exception { // Se agregó throws
         Alumno alumno = new Alumno(1, null, "A001", "Ana López", "ana@test.com");
         List<ResultadoUnidad> unidades = List.of(
                 unidadConFinal("80.00"),
@@ -188,31 +181,26 @@ class CalificacionServiceTest {
         assertFalse(cf.isEsOverride());
     }
 
-    // ── Estado ───────────────────────────────────────────────────────────────
+    // ── Estado (Nota: Asume que el mínimo por defecto es 70) ──────────────────
 
     @Test
-    @DisplayName("Calificación >= 70 es APROBADO")
-    void determinarEstado_aprobado() {
+    @DisplayName("Calificación >= Minimo es APROBADO")
+    void determinarEstado_aprobado() throws Exception { // Solo un parámetro ahora
         assertEquals("APROBADO",
-            service.determinarEstado(
-                new BigDecimal("70.00"),
-                new BigDecimal("70")));
+            service.determinarEstado(new BigDecimal("70.00")));
     }
 
     @Test
-    @DisplayName("Calificación < 70 es REPROBADO")
-    void determinarEstado_reprobado() {
+    @DisplayName("Calificación < Minimo es REPROBADO")
+    void determinarEstado_reprobado() throws Exception { // Solo un parámetro ahora
         assertEquals("REPROBADO",
-            service.determinarEstado(
-                new BigDecimal("69.99"),
-                new BigDecimal("70")));
+            service.determinarEstado(new BigDecimal("69.99")));
     }
 
     @Test
     @DisplayName("Calificación null es PENDIENTE")
-    void determinarEstado_pendiente() {
-        assertEquals("PENDIENTE",
-            service.determinarEstado(null, new BigDecimal("70")));
+    void determinarEstado_pendiente() throws Exception {
+        assertEquals("PENDIENTE", service.determinarEstado(null));
     }
 
     // ── Helpers de construcción ──────────────────────────────────────────────

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" style="-fx-background-color: -color-bg-default; -fx-padding: 30;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.GrupoCalificacionesController">
+
+    <VBox spacing="5">
+        <Label text="Calificar Alumnos" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        <Label text="Ingresa los resultados obtenidos (0-100) en cada actividad. Presiona 'Enter' para confirmar cada captura." style="-fx-text-fill: #57606a;"/>
+    </VBox>
+
+    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #f6f8fa; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #d0d7de; -fx-border-radius: 8;">
+        <Label text="Selecciona la Unidad:" style="-fx-font-weight: bold;"/>
+        <ComboBox fx:id="comboUnidades" prefWidth="250" promptText="-- Elegir Unidad --"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnGuardar" text="Guardar Calificaciones" onAction="#handleGuardarCalificaciones" styleClass="accent" disable="true"/>
+    </HBox>
+
+    <HBox fx:id="panelAdvertencia" visible="false" managed="false" style="-fx-background-color: #fff3cd; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #ffeeba; -fx-border-radius: 8;">
+        <Label fx:id="lblAdvertencia" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #856404;"/>
+    </HBox>
+
+    <TableView fx:id="tablaCalificaciones" editable="true" VBox.vgrow="ALWAYS" style="-fx-border-color: #d0d7de; -fx-border-radius: 4;">
+        <placeholder>
+            <Label text="Selecciona una unidad con rúbrica completa para comenzar a calificar." style="-fx-text-fill: #57606a;"/>
+        </placeholder>
+    </TableView>
+
+</VBox>

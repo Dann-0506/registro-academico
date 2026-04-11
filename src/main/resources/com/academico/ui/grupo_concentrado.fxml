@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" style="-fx-background-color: -color-bg-default; -fx-padding: 30;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.GrupoConcentradoController">
+
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <VBox spacing="5" HBox.hgrow="ALWAYS">
+            <Label text="Concentrado Final y Actas" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Label fx:id="lblInstrucciones" 
+               text="Resumen definitivo de calificaciones. Una vez cerrado el curso, no se podrán realizar más modificaciones." 
+               style="-fx-text-fill: #57606a;"/>
+        </VBox>
+        
+        <VBox alignment="CENTER_RIGHT" spacing="5">
+            <Label text="Estado de Evaluación:" style="-fx-text-fill: #57606a;"/>
+            <Label fx:id="lblEstadoCurso" text="ABIERTO" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #0969da; -fx-background-color: #ddf4ff; -fx-padding: 5 15; -fx-background-radius: 15;"/>
+        </VBox>
+        <Button fx:id="btnCerrarCurso" text="Cerrar Curso Definitivamente" onAction="#handleCerrarCurso" styleClass="danger"/>
+    </HBox>
+
+    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #f6f8fa; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #d0d7de; -fx-border-radius: 8;">
+        <Label text="Buscar Alumno:" style="-fx-font-weight: bold;"/>
+        <TextField fx:id="campoBusqueda" promptText="Matrícula o Nombre" prefWidth="250" onKeyReleased="#handleBusqueda"/>
+    </HBox>
+
+    <TableView fx:id="tablaConcentrado" VBox.vgrow="ALWAYS" style="-fx-border-color: #d0d7de; -fx-border-radius: 4;">
+        <placeholder>
+            <Label text="Generando concentrado final..." style="-fx-text-fill: #57606a;"/>
+        </placeholder>
+    </TableView>
+
+    <VBox fx:id="panelOverride" spacing="15" visible="false" managed="false" style="-fx-background-color: #fff8c5; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: #d4a72c; -fx-border-radius: 8;">
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Forzar Calificación (Override) para:" style="-fx-text-fill: #57606a;"/>
+            <Label fx:id="lblNombreOverride" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+            <Label text="(Esta acción reemplazará permanentemente el cálculo matemático)" style="-fx-text-fill: #9a6700; -fx-font-style: italic;"/>
+        </HBox>
+        
+        <HBox spacing="20">
+            <VBox spacing="5">
+                <Label text="Nueva Calificación Final" style="-fx-font-weight: bold;"/>
+                <TextField fx:id="campoCalificacionManual" prefWidth="150" promptText="Ej. 70.00"/>
+            </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="Justificación Administrativa (Obligatoria)" style="-fx-font-weight: bold;"/>
+                <TextField fx:id="campoMotivoOverride" promptText="Ej. Acuerdo de academia / Corrección por fallo en sistema"/>
+            </VBox>
+        </HBox>
+        
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Cancelar" onAction="#handleCancelarOverride" styleClass="flat"/>
+            <Button text="Aplicar Override" onAction="#handleGuardarOverride" styleClass="warning"/>
+        </HBox>
+        <Label fx:id="lblMensajeOverride" visible="false" managed="false" style="-fx-font-weight: bold;"/>
+    </VBox>
+
+</VBox>

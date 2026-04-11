@@ -26,6 +26,7 @@ public class GrupoDAO {
         g.setClave(rs.getString("clave"));
         g.setSemestre(rs.getString("semestre"));
         g.setActivo(rs.getBoolean("activo"));
+        g.setEstadoEvaluacion(rs.getString("estado_evaluacion"));
         
         try { g.setMateriaNombre(rs.getString("materia_nombre")); } catch (SQLException ignored) {}
         try { g.setMaestroNombre(rs.getString("maestro_nombre")); } catch (SQLException ignored) {}
@@ -99,22 +100,26 @@ public class GrupoDAO {
 
     public List<Grupo> findByMaestro(int maestroId) throws SQLException {
         String sql = """
-                SELECT g.*,
-                       mat.nombre AS materia_nombre,
-                       u.nombre   AS maestro_nombre
+                SELECT g.*, 
+                       mat.nombre AS materia_nombre, 
+                       u.nombre AS maestro_nombre
                 FROM grupo g
-                JOIN materia mat ON mat.id = g.materia_id
-                JOIN maestro m   ON m.id   = g.maestro_id
-                JOIN usuario u   ON u.id   = m.usuario_id
-                WHERE g.maestro_id = ?
-                ORDER BY g.semestre DESC, g.clave
+                JOIN materia mat ON g.materia_id = mat.id
+                JOIN maestro m ON g.maestro_id = m.id
+                JOIN usuario u ON m.usuario_id = u.id
+                WHERE g.maestro_id = ? AND g.activo = true
+                ORDER BY g.semestre DESC, g.clave ASC
                 """;
+        
         List<Grupo> lista = new ArrayList<>();
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setInt(1, maestroId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) lista.add(mapear(rs));
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
             }
         }
         return lista;
@@ -199,6 +204,27 @@ public class GrupoDAO {
             ps.executeUpdate();
         }
     }
+
+    public void actualizarEstadoEvaluacion(int id, String estado) throws SQLException {
+        String sql = "UPDATE grupo SET estado_evaluacion = ? WHERE id = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, estado);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public void actualizarEstadoActa(int id, String estadoEvaluacion, boolean activo) throws SQLException {
+    String sql = "UPDATE grupo SET estado_evaluacion = ?, activo = ? WHERE id = ?";
+    try (Connection conn = DatabaseManagerUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, estadoEvaluacion);
+        ps.setBoolean(2, activo);
+        ps.setInt(3, id);
+        ps.executeUpdate();
+    }
+}
 
     // ==========================================
     // OPERACIONES DE ELIMINACIÓN

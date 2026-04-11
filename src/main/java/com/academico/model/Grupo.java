@@ -13,6 +13,7 @@ public class Grupo {
     private String clave;
     private String semestre;
     private boolean activo;
+    private String estadoEvaluacion;
 
     // === ATRIBUTOS DE VISUALIZACIÓN (JOINS) ===
     private String materiaNombre;
@@ -55,8 +56,13 @@ public class Grupo {
     public String getMaestroNombre() { return maestroNombre; }
     public void setMaestroNombre(String maestroNombre) { this.maestroNombre = maestroNombre; }
 
+    public String getEstadoEvaluacion() { return estadoEvaluacion; }
+    public void setEstadoEvaluacion(String estadoEvaluacion) { this.estadoEvaluacion = estadoEvaluacion; }
+
     @Override
     public String toString() {
         return "[" + clave + "] " + (materiaNombre != null ? materiaNombre : "Materia " + materiaId);
     }
+
+    public boolean isCerrado() { return "CERRADO".equals(estadoEvaluacion); }
 }

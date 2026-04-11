@@ -52,13 +52,13 @@ CREATE TABLE unidad (
 );
 
 CREATE TABLE IF NOT EXISTS grupo (
-    id         SERIAL      PRIMARY KEY,
-    materia_id INT         NOT NULL REFERENCES materia(id)  ON DELETE RESTRICT,
-    maestro_id INT         NOT NULL REFERENCES maestro(id)  ON DELETE RESTRICT,
-    clave      VARCHAR(20) NOT NULL UNIQUE,
-    semestre   VARCHAR(20) NOT NULL,
-    activo     BOOLEAN     NOT NULL DEFAULT TRUE,
-    creado_en  TIMESTAMP   NOT NULL DEFAULT NOW()
+    id SERIAL PRIMARY KEY,
+    materia_id INT NOT NULL REFERENCES materia(id),
+    maestro_id INT NOT NULL REFERENCES maestro(id),
+    clave VARCHAR(20) NOT NULL UNIQUE,
+    semestre VARCHAR(50) NOT NULL,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    estado_evaluacion VARCHAR(20) NOT NULL DEFAULT 'ABIERTO' CHECK (estado_evaluacion IN ('ABIERTO', 'CERRADO'))
 );
 
 CREATE TABLE IF NOT EXISTS inscripcion (

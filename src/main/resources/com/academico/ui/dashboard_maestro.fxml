@@ -4,23 +4,27 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.DashboardController">
+<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.DashboardMaestroController">
 
     <BorderPane>
         <left>
-            <VBox spacing="0" prefWidth="220" minWidth="220" style="-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-border-width: 0 1 0 0;">
+            <VBox spacing="0" prefWidth="240" minWidth="240" style="-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-border-width: 0 1 0 0;">
                 <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
 
                 <VBox spacing="2">
                     <padding><Insets bottom="12"/></padding>
                     <Label fx:id="labelNombreUsuario" text="Cargando..." styleClass="text-bold" style="-fx-font-size: 14px;"/>
-                    <Label fx:id="labelRolUsuario" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                    <Label fx:id="labelNumEmpleado" styleClass="text-muted" style="-fx-font-size: 12px;"/>
                 </VBox>
 
                 <Separator/>
-                <Region prefHeight="8"/>
+                <Region prefHeight="15"/>
 
-                <VBox fx:id="menuNavegacion" spacing="2" VBox.vgrow="ALWAYS"/>
+                <VBox fx:id="menuPrincipal" spacing="2"/>
+
+                <Region prefHeight="20"/>
+
+                <VBox fx:id="menuGrupoContextual" spacing="2" visible="false" managed="false"/>
 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Separator/>
@@ -31,12 +35,7 @@
         </left>
 
         <center>
-            <StackPane fx:id="areaPrincipal" style="-fx-background-color: -color-bg-default; -fx-padding: 32;">
-                <VBox alignment="CENTER" spacing="8">
-                    <Label fx:id="labelBienvenida" styleClass="title-3"/>
-                    <Label text="Selecciona una opción del menú para comenzar." styleClass="text-muted"/>
-                </VBox>
-            </StackPane>
+            <StackPane fx:id="areaPrincipal" style="-fx-background-color: -color-bg-default;"/>
         </center>
     </BorderPane>
 
@@ -63,8 +62,8 @@
             <Label fx:id="mensajePerfil" visible="false" managed="false" wrapText="true"/>
 
             <HBox spacing="10" alignment="CENTER_RIGHT">
-                <Button text="Cancelar" onAction="#handleCerrarPerfil" styleClass="flat" style="-fx-pref-height: 35;"/>
-                <Button text="Guardar Cambios" onAction="#handleGuardarPerfil" styleClass="accent" style="-fx-pref-height: 35;"/>
+                <Button text="Cancelar" onAction="#handleCerrarPerfil" styleClass="flat"/>
+                <Button text="Guardar Cambios" onAction="#handleGuardarPerfil" styleClass="accent"/>
             </HBox>
         </VBox>
     </StackPane>

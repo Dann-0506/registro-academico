@@ -57,6 +57,18 @@ public class AlumnoService {
         }
     }
 
+    public List<Alumno> buscarPorGrupo(int grupoId) throws Exception {
+        if (grupoId <= 0) {
+            throw new IllegalArgumentException("ID de grupo inválido.");
+        }
+        try {
+            // Aquí llamamos a tu método existente
+            return alumnoDAO.findByGrupo(grupoId);
+        } catch (SQLException e) {
+            throw new Exception("Error al cargar la lista de alumnos inscritos en el grupo.");
+        }
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA Y ACTUALIZACIÓN
     // ==========================================

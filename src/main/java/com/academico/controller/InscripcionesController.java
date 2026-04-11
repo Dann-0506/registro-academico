@@ -171,16 +171,23 @@ public class InscripcionesController {
         // 2. Mantenemos tu excelente lógica de búsqueda en tiempo real
         combo.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
             Platform.runLater(() -> {
+                // Si el nuevo valor es nulo o coincide con el item seleccionado, no hacemos nada
                 if (newVal == null || (combo.getSelectionModel().getSelectedItem() != null 
                     && combo.getSelectionModel().getSelectedItem().toString().equals(newVal))) {
                     return;
                 }
+
                 listaFiltrada.setPredicate(item -> {
                     if (newVal.isEmpty()) return true;
                     return item.toString().toLowerCase().contains(newVal.toLowerCase());
                 });
-                if (!listaFiltrada.isEmpty()) combo.show();
-                else combo.hide();
+
+                // AJUSTE: Solo mostrar si el combo tiene el foco (interacción del usuario)
+                if (!listaFiltrada.isEmpty() && combo.getEditor().isFocused()) {
+                    combo.show();
+                } else {
+                    combo.hide();
+                }
             });
         });
     }
@@ -286,12 +293,23 @@ public class InscripcionesController {
     @FXML 
     private void handleCancelar() { 
         panelFormulario.setVisible(false); 
-        panelFormulario.setManaged(false); 
+        panelFormulario.setManaged(false);
+        limpiarFormulario();
+        tablaInscripciones.requestFocus(); 
     }
     
-    private void limpiarFormulario() { 
-        cbAlumno.setValue(null); 
-        cbGrupo.setValue(null); 
+    private void limpiarFormulario() {
+        // 1. Cerramos los popups para evitar el error visual
+        cbAlumno.hide();
+        cbGrupo.hide();
+
+        // 2. Limpiamos la selección
+        cbAlumno.setValue(null);
+        cbGrupo.setValue(null);
+        
+        // 3. Limpiamos el texto interno por si acaso
+        cbAlumno.getSelectionModel().clearSelection();
+        cbGrupo.getSelectionModel().clearSelection();
     }
 
     // ==========================================

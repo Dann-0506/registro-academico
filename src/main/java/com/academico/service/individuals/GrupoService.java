@@ -35,6 +35,14 @@ public class GrupoService {
         }
     }
 
+    public List<Grupo> buscarGruposPorMaestro(int maestroId) throws Exception {
+        try {
+            return grupoDAO.findByMaestro(maestroId);
+        } catch (SQLException e) {
+            throw new Exception("Error al cargar los grupos del maestro desde la base de datos.");
+        }
+    }
+
     public Grupo buscarPorClave(String clave) throws Exception {
         try {
             return grupoDAO.findByClave(clave)
@@ -89,6 +97,32 @@ public class GrupoService {
             grupoDAO.actualizar(g);
         } catch (SQLException e) {
             throw new Exception("Error al actualizar el estado del grupo.");
+        }
+    }
+
+    public void cerrarCurso(int id) throws Exception {
+        try {
+            grupoDAO.actualizarEstadoEvaluacion(id, "CERRADO");
+        } catch (SQLException e) {
+            throw new Exception("Error al intentar cerrar el acta del grupo.");
+        }
+    }
+
+    public void reabrirCurso(int id) throws Exception {
+        try {
+            // Abre evaluación y REACTIVA el grupo
+            grupoDAO.actualizarEstadoActa(id, "ABIERTO", true);
+        } catch (SQLException e) {
+            throw new Exception("Error al intentar reabrir el curso.");
+        }
+    }
+
+    public void cerrarCursoDefinitivamente(int id) throws Exception {
+        try {
+            // Cierra evaluación y DESACTIVA el grupo
+            grupoDAO.actualizarEstadoActa(id, "CERRADO", false);
+        } catch (SQLException e) {
+            throw new Exception("Error al intentar finalizar el curso.");
         }
     }
 
