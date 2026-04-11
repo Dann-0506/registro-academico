@@ -42,6 +42,15 @@ public class MaestroService {
         }
     }
 
+    public Maestro buscarPorUsuarioId(int usuarioId) throws Exception {
+        try {
+            return maestroDAO.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new Exception("Error: No se encontró el perfil docente asociado a este usuario."));
+        } catch (SQLException e) {
+            throw new Exception("Error al buscar el perfil del docente en la base de datos.");
+        }
+    }
+
     public List<Maestro> listarTodos() throws Exception {
         try { 
             return maestroDAO.findAll(); 
