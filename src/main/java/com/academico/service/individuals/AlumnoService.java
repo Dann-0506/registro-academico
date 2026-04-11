@@ -48,6 +48,15 @@ public class AlumnoService {
         }
     }
 
+    public Alumno buscarPorMatricula(String matricula) throws Exception {
+        try {
+            return alumnoDAO.findByMatricula(matricula)
+                .orElseThrow(() -> new Exception("El alumno con matrícula '" + matricula + "' no existe."));
+        } catch (SQLException e) {
+            throw new Exception("Error de conexión al buscar el alumno por matrícula.");
+        }
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA Y ACTUALIZACIÓN
     // ==========================================

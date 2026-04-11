@@ -106,18 +106,30 @@ public class GruposController {
                 
                 panel.setStyle("-fx-alignment: center;");
 
-                btnEditar.setOnAction(e -> abrirEdicion(getTableView().getItems().get(getIndex())));
-                btnEstado.setOnAction(e -> confirmarCambioEstado(getTableView().getItems().get(getIndex())));
-                btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
+                btnEditar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        abrirEdicion((Grupo) getTableRow().getItem()); 
+                    }
+                });
+                btnEstado.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarCambioEstado((Grupo) getTableRow().getItem());
+                    }
+                });
+                btnEliminar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarEliminacion((Grupo) getTableRow().getItem());
+                    }
+                });
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getTableView().getItems().get(getIndex()) == null) {
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                 } else {
-                    Grupo g = getTableView().getItems().get(getIndex());
+                    Grupo g = (Grupo) getTableRow().getItem();
                     
                     btnEstado.setText(g.isActivo() ? "Desactivar" : "Activar");
                     
@@ -164,6 +176,23 @@ public class GruposController {
     }
 
     private <T> void configurarFiltroPersonalizado(ComboBox<T> combo, FilteredList<T> listaFiltrada) {
+        // 1. EL SALVAVIDAS: Le enseñamos a JavaFX a convertir el Texto (String) de vuelta al Objeto (T)
+        combo.setConverter(new javafx.util.StringConverter<T>() {
+            @Override
+            public String toString(T object) {
+                return object == null ? "" : object.toString();
+            }
+
+            @Override
+            public T fromString(String string) {
+                // Busca en la lista el objeto que coincida exactamente con el texto escrito
+                return combo.getItems().stream()
+                        .filter(item -> item.toString().equals(string))
+                        .findFirst().orElse(null);
+            }
+        });
+
+        // 2. Mantenemos tu excelente lógica de búsqueda en tiempo real
         combo.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
             Platform.runLater(() -> {
                 if (newVal == null || (combo.getSelectionModel().getSelectedItem() != null 
@@ -179,7 +208,7 @@ public class GruposController {
             });
         });
     }
-
+    
     private void cargarDatos() {
         try {
             List<Grupo> grupos = grupoService.listarTodos();
@@ -211,6 +240,7 @@ public class GruposController {
             int desde = idx * FILAS_POR_PAGINA;
             int hasta = Math.min(desde + FILAS_POR_PAGINA, total);
             tablaGrupos.setItems(FXCollections.observableArrayList(gruposFiltrados.subList(desde, hasta)));
+            tablaGrupos.refresh();
             return new Region();
         });
     }
@@ -233,11 +263,10 @@ public class GruposController {
                 if (errores.isEmpty()) {
                     mostrarNotificacion("Archivo CSV importado exitosamente.", false);
                 } else {
-                    mostrarNotificacion("Importación completada con " + errores.size() + " errores. Revisa la consola.", true);
-                    // Opcional: Imprimir errores en consola para revisión técnica
-                    errores.forEach(System.err::println);
+                    mostrarNotificacion("Importación completada con " + errores.size() + " errores.", true);
+                    mostrarDetallesErrores(errores, tablaGrupos.getScene().getWindow());
                 }
-                cargarDatos(); // Refrescamos la tabla
+                cargarDatos();
             } catch (Exception e) {
                 mostrarNotificacion("Error al procesar el archivo: " + e.getMessage(), true);
             }
@@ -319,6 +348,20 @@ public class GruposController {
                 mostrarNotificacion("Grupo eliminado exitosamente.", false);
             } catch (Exception e) { mostrarNotificacion(e.getMessage(), true); }
         });
+    }
+
+    private void mostrarDetallesErrores(List<String> errores, javafx.stage.Window ventanaPadre) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.initOwner(ventanaPadre); 
+        alert.setTitle("Detalle de la Importación");
+        alert.setHeaderText("Algunas filas no pudieron procesarse:");
+        TextArea textArea = new TextArea(String.join("\n", errores));
+        textArea.setEditable(false);
+        textArea.setWrapText(false);
+        textArea.setPrefWidth(550);
+        textArea.setPrefHeight(250);
+        alert.getDialogPane().setContent(textArea);
+        alert.showAndWait();
     }
 
     private void mostrarNotificacion(String msj, boolean error) {

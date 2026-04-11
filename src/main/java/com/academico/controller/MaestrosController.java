@@ -109,18 +109,30 @@ public class MaestrosController {
                 btnEliminar.getStyleClass().addAll("danger", "flat");
                 panel.setStyle("-fx-alignment: center;");
 
-                btnEditar.setOnAction(e -> abrirEdicion(getTableView().getItems().get(getIndex())));
-                btnEstado.setOnAction(e -> confirmarCambioEstado(getTableView().getItems().get(getIndex())));
-                btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
+                btnEditar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        abrirEdicion((Maestro) getTableRow().getItem()); 
+                    }
+                });
+                btnEstado.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarCambioEstado((Maestro) getTableRow().getItem());
+                    }
+                });
+                btnEliminar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarEliminacion((Maestro) getTableRow().getItem());
+                    }
+                });
             }
             
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getTableView().getItems().get(getIndex()) == null) {
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                 } else {
-                    Maestro m = getTableView().getItems().get(getIndex());
+                    Maestro m = (Maestro) getTableRow().getItem();
                     
                     btnEstado.getStyleClass().removeAll("success", "warning");
 
@@ -178,6 +190,7 @@ public class MaestrosController {
             int desde = idx * FILAS_POR_PAGINA;
             int hasta = Math.min(desde + FILAS_POR_PAGINA, total);
             tablaMaestros.setItems(FXCollections.observableArrayList(maestrosFiltrados.subList(desde, hasta)));
+            tablaMaestros.refresh();
             return new Region();
         });
     }

@@ -21,6 +21,8 @@ public class Inscripcion {
     private String alumnoNombre;
     private String alumnoMatricula;
     private String grupoClave; 
+    private String materiaNombre;
+    private String semestre;
 
     // === CONSTRUCTORES ===
     public Inscripcion() {}
@@ -59,6 +61,12 @@ public class Inscripcion {
 
     public String getGrupoClave() { return grupoClave; }
     public void setGrupoClave(String grupoClave) { this.grupoClave = grupoClave; }
+    
+    public String getMateriaNombre() { return materiaNombre; }
+    public void setMateriaNombre(String materiaNombre) { this.materiaNombre = materiaNombre; }
+
+    public String getSemestre() { return semestre; }
+    public void setSemestre(String semestre) { this.semestre = semestre; }
 
     @Override
     public String toString() {

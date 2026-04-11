@@ -96,17 +96,33 @@ public class MateriasController {
             {
                 btnEditar.getStyleClass().addAll("accent", "flat");
                 btnUnidades.getStyleClass().addAll("success", "flat");
-                btnEliminar.getStyleClass().addAll("danger", "flat"); // NUEVO ESTILO ROJO
+                btnEliminar.getStyleClass().addAll("danger", "flat");
                 panel.setStyle("-fx-alignment: center;");
 
-                btnEditar.setOnAction(e -> abrirEdicion(getTableView().getItems().get(getIndex())));
-                btnUnidades.setOnAction(e -> abrirPanelUnidades(getTableView().getItems().get(getIndex())));
-                btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
+                btnEditar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        abrirEdicion((Materia) getTableRow().getItem());
+                    }
+                });
+                btnUnidades.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        abrirPanelUnidades((Materia) getTableRow().getItem());
+                    }
+                });
+                btnEliminar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarEliminacion((Materia) getTableRow().getItem());
+                    }
+                });
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty || getTableRow().getItem() == null ? null : panel);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(panel);
+                }
             }
         });
     }
@@ -139,6 +155,7 @@ public class MateriasController {
             int desde = idx * FILAS_POR_PAGINA;
             int hasta = Math.min(desde + FILAS_POR_PAGINA, total);
             tablaMaterias.setItems(FXCollections.observableArrayList(materiasFiltradas.subList(desde, hasta)));
+            tablaMaterias.refresh();
             return new Region();
         });
     }

@@ -199,7 +199,7 @@ public class CargaDatosService {
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
                 
-                if (i == 0 && esEncabezado(fila, "alumno", "id")) continue;
+                if (i == 0 && esEncabezado(fila, "matricula", "alumno", "grupo", "clave")) continue;
 
                 if (fila.length < 2) {
                     errores.add("Línea " + (i + 1) + ": Faltan columnas obligatorias.");
@@ -207,13 +207,18 @@ public class CargaDatosService {
                 }
 
                 try {
+                    String matricula = fila[0].trim();
+                    String claveGrupo = fila[1].trim();
+
+                    Alumno alumno = alumnoService.buscarPorMatricula(matricula);
+                    Grupo grupo = grupoService.buscarPorClave(claveGrupo);
+
                     Inscripcion ins = new Inscripcion();
-                    ins.setAlumnoId(Integer.parseInt(fila[0].trim()));
-                    ins.setGrupoId(Integer.parseInt(fila[1].trim()));
+                    ins.setAlumnoId(alumno.getId());
+                    ins.setGrupoId(grupo.getId());
 
                     inscripcionService.inscribir(ins);
-                } catch (NumberFormatException e) {
-                    errores.add("Línea " + (i + 1) + ": Los IDs de alumno y grupo deben ser números.");
+                    
                 } catch (Exception e) {
                     errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }

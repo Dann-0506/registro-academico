@@ -112,18 +112,30 @@ public class AlumnosController {
                 btnEliminar.getStyleClass().addAll("danger", "flat");
                 panel.setStyle("-fx-alignment: center;");
 
-                btnEditar.setOnAction(e -> abrirEdicion(getTableView().getItems().get(getIndex())));
-                btnEstado.setOnAction(e -> confirmarCambioEstado(getTableView().getItems().get(getIndex())));
-                btnEliminar.setOnAction(e -> confirmarEliminacion(getTableView().getItems().get(getIndex())));
+                btnEditar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        abrirEdicion((Alumno) getTableRow().getItem()); 
+                    }
+                });
+                btnEstado.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarCambioEstado((Alumno) getTableRow().getItem());
+                    }
+                });
+                btnEliminar.setOnAction(e -> {
+                    if (getTableRow() != null && getTableRow().getItem() != null) {
+                        confirmarEliminacion((Alumno) getTableRow().getItem());
+                    }
+                });
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getTableView().getItems().get(getIndex()) == null) {
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                 } else {
-                    Alumno a = getTableView().getItems().get(getIndex());
+                    Alumno a = (Alumno) getTableRow().getItem();
                     
                     btnEstado.getStyleClass().removeAll("success", "warning");
 
@@ -182,12 +194,8 @@ public class AlumnosController {
         paginacionAlumnos.setPageFactory(pageIndex -> {
             int desde = pageIndex * FILAS_POR_PAGINA;
             int hasta = Math.min(desde + FILAS_POR_PAGINA, totalFilas);
-            
-            if (desde < totalFilas) {
-                tablaAlumnos.setItems(FXCollections.observableArrayList(alumnosFiltrados.subList(desde, hasta)));
-            } else {
-                tablaAlumnos.setItems(FXCollections.observableArrayList());
-            }
+            tablaAlumnos.setItems(FXCollections.observableArrayList(alumnosFiltrados.subList(desde, hasta)));
+            tablaAlumnos.refresh();
             return new Region(); 
         });
     }
