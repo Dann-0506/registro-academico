@@ -134,8 +134,8 @@ public class GrupoDAO {
                 LEFT JOIN maestro ma ON ma.id = g.maestro_id
                 LEFT JOIN usuario u ON u.id = ma.usuario_id
                 JOIN inscripcion i ON i.grupo_id = g.id
-                WHERE i.alumno_id = ? AND g.activo = true
-                ORDER BY m.nombre ASC
+                WHERE i.alumno_id = ? 
+                ORDER BY g.semestre DESC, m.nombre ASC
                 """;
         List<Grupo> lista = new ArrayList<>();
         try (Connection conn = DatabaseManagerUtil.getConnection();
