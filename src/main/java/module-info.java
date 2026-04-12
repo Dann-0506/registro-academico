@@ -12,6 +12,7 @@ module com.academico {
     requires io.github.cdimascio.dotenv.java; // Variables de entorno
     requires bcrypt;                    // Seguridad
     requires com.opencsv;               // Carga masiva
+    requires itextpdf;                 // Generación de PDFs
 
     // === PERMISOS DE REFLEXIÓN (Necesarios para FXML y TableViews) ===
     opens com.academico.controller to javafx.fxml;

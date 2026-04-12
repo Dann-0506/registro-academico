@@ -53,6 +53,8 @@ public class DashboardAdminController {
 
         construirMenu(usuario.getRol());
 
+        NavegationUtil.cargarEnArea(areaPrincipal, NavegationUtil.ANALISIS);
+
         // Verificación de seguridad por contraseña genérica
         if (usuario.isRequiereCambioPassword()) {
             javafx.application.Platform.runLater(() -> {
@@ -68,6 +70,9 @@ public class DashboardAdminController {
 
     private void construirMenu(String rol) {
         menuNavegacion.getChildren().clear();
+
+        agregarSeccion("PRINCIPAL");
+        agregarBoton("Análisis de Datos y Rendimiento", NavegationUtil.ANALISIS);
 
         agregarSeccion("CATÁLOGOS");
         agregarBoton("Administradores", NavegationUtil.ADMINS);

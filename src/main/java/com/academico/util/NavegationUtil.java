@@ -25,6 +25,7 @@ public class NavegationUtil {
     public static final String DASHBOARD_MAESTRO = "/com/academico/ui/dashboard_maestro.fxml"; // NUEVA
     
     // Rutas Admin
+    public static final String ANALISIS       = "/com/academico/ui/analisis.fxml";
     public static final String ADMINS         = "/com/academico/ui/admins.fxml";
     public static final String ALUMNOS        = "/com/academico/ui/alumnos.fxml";
     public static final String MATERIAS       = "/com/academico/ui/materias.fxml";
@@ -49,6 +50,7 @@ public class NavegationUtil {
         TITULOS.put(DASHBOARD_ADMIN,      "Panel de Administración");
         TITULOS.put(DASHBOARD_MAESTRO, "Portal Docente");
 
+        TITULOS.put(ANALISIS,       "Análisis de Dato y Rendimiento");
         TITULOS.put(ADMINS,         "Administradores");
         TITULOS.put(ALUMNOS,        "Alumnos");
         TITULOS.put(MATERIAS,       "Materias");
