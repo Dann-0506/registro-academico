@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="20" style="-fx-background-color: -color-bg-default; -fx-padding: 30;" 
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.academico.controller.AlumnoCursoDetalleController">
+
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <VBox spacing="5" HBox.hgrow="ALWAYS">
+            <Label fx:id="lblTituloMateria" text="Cargando materia..." style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #24292f;"/>
+            <Label text="Desglose detallado de tu evaluación en este curso." style="-fx-text-fill: #57606a; -fx-font-size: 14px;"/>
+        </VBox>
+        <VBox alignment="CENTER_RIGHT" spacing="5">
+            <Label text="Estado de la Materia:" style="-fx-text-fill: #57606a;"/>
+            <Label fx:id="lblEstadoCurso" text="ABIERTO" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 5 15; -fx-background-radius: 15;"/>
+        </VBox>
+    </HBox>
+
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <Label text="Calificaciones por Unidad" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+        <TableView fx:id="tablaUnidades" VBox.vgrow="ALWAYS" style="-fx-border-color: #d0d7de; -fx-border-radius: 4;">
+            <placeholder>
+                <Label text="No hay calificaciones registradas aún." style="-fx-text-fill: #57606a;"/>
+            </placeholder>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+            <columns>
+                <TableColumn fx:id="colUnidad" text="Unidad" />
+                <TableColumn fx:id="colCalificacion" text="Calificación" maxWidth="400" />
+                <TableColumn fx:id="colEstado" text="Estado" maxWidth="300" />
+                <TableColumn fx:id="colAcciones" text="Desglose" maxWidth="250" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <Separator/>
+
+    <VBox spacing="15" style="-fx-background-color: #f6f8fa; -fx-padding: 20; -fx-background-radius: 8; -fx-border-color: #d0d7de; -fx-border-radius: 8;">
+        <Label text="Resumen General" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+        
+        <HBox spacing="30">
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="Promedio Matemático" style="-fx-text-fill: #57606a; -fx-font-weight: bold;"/>
+                <Label fx:id="lblPromedioBase" text="-" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            </VBox>
+            
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <Label text="Bonus a la Materia" style="-fx-text-fill: #57606a; -fx-font-weight: bold;"/>
+                <Label fx:id="lblBonus" text="0.00 pts" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            </VBox>
+
+            <VBox spacing="5" alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                <Label text="CALIFICACIÓN FINAL OFICIAL" style="-fx-text-fill: #24292f; -fx-font-weight: bold;"/>
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Label fx:id="lblCalificacionFinal" text="-" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+                    <Label fx:id="lblEstadoFinal" text="PENDIENTE" style="-fx-font-weight: bold; -fx-padding: 4 12; -fx-background-radius: 12; -fx-background-color: #e1e4e8;"/>
+                </HBox>
+            </VBox>
+        </HBox>
+
+        <VBox fx:id="panelOverride" visible="false" managed="false" spacing="5" style="-fx-background-color: #fff8c5; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #d4a72c; -fx-border-radius: 8; -fx-margin-top: 10;">
+            <Label text="Ajuste Manual Aplicado por el Docente" style="-fx-font-weight: bold; -fx-text-fill: #9a6700;"/>
+            <Label text="Esta calificación final fue asignada directamente." style="-fx-text-fill: #57606a;"/>
+            <Label fx:id="lblJustificacionOverride" wrapText="true" style="-fx-font-style: italic; -fx-text-fill: #24292f; -fx-padding: 5 0 0 0;"/>
+        </VBox>
+    </VBox>
+
+</VBox>

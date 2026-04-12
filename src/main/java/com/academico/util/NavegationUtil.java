@@ -22,7 +22,8 @@ public class NavegationUtil {
     // === RUTAS DEL SISTEMA ===
     public static final String LOGIN             = "/com/academico/ui/login.fxml";
     public static final String DASHBOARD_ADMIN   = "/com/academico/ui/dashboard_admin.fxml";
-    public static final String DASHBOARD_MAESTRO = "/com/academico/ui/dashboard_maestro.fxml"; // NUEVA
+    public static final String DASHBOARD_MAESTRO = "/com/academico/ui/dashboard_maestro.fxml";
+    public static final String DASHBOARD_ALUMNO  = "/com/academico/ui/dashboard_alumno.fxml";
     
     // Rutas Admin
     public static final String ANALISIS       = "/com/academico/ui/analisis.fxml";
@@ -42,6 +43,9 @@ public class NavegationUtil {
     public static final String GRUPO_BONUS          = "/com/academico/ui/grupo_bonus.fxml";
     public static final String GRUPO_CONCENTRADO    = "/com/academico/ui/grupo_concentrado.fxml";
     
+    // Rutas Alumno
+    public static final String MIS_CURSOS_ALUMNO     = "/com/academico/ui/mis_cursos_alumno.fxml";
+    public static final String ALUMNO_CURSO_DETALLE = "/com/academico/ui/alumno_curso_detalle.fxml";
 
     private static final Map<String, String> TITULOS = new HashMap<>();
 
@@ -65,6 +69,10 @@ public class NavegationUtil {
         TITULOS.put(GRUPO_CALIFICACIONES, "Calificaciones por Unidad");
         TITULOS.put(GRUPO_BONUS,          "Asignar Puntos Extra");
         TITULOS.put(GRUPO_CONCENTRADO,    "Concentrado Final");
+
+        TITULOS.put(DASHBOARD_ALUMNO, "Portal Estudiantil");
+        TITULOS.put(MIS_CURSOS_ALUMNO, "Mis Cursos");
+        TITULOS.put(ALUMNO_CURSO_DETALLE, "Mi Boleta y Desglose");
     }
 
     // ==========================================

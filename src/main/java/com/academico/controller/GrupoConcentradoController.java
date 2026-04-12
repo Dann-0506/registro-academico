@@ -388,12 +388,12 @@ public class GrupoConcentradoController {
         info.setHeaderText("Desglose para: " + cf.getAlumnoNombre());
         
         StringBuilder sb = new StringBuilder();
-        sb.append("Promedio Calculado (Unidades): ").append(cf.getCalificacionCalculada() != null ? cf.getCalificacionCalculada() : "N/A").append("\n");
+        sb.append("Promedio Calculado de las unidades: ").append(cf.getCalificacionCalculada() != null ? cf.getCalificacionCalculada() : "N/A").append("\n");
         sb.append("Bonus aplicado a la Materia: +").append(cf.getBonusMateria()).append("\n");
         sb.append("Calificación con Bonus: ").append(cf.getCalificacionConBonus() != null ? cf.getCalificacionConBonus() : "N/A").append("\n\n");
         
         if (cf.isEsOverride()) {
-            sb.append("ESTADO DE EXCEPCIÓN (OVERRIDE) ACTIVO\n");
+            sb.append("ESTADO DE EXCEPCIÓN ACTIVO\n");
             sb.append("Calificación Asignada: ").append(cf.getCalificacionFinal()).append("\n");
             sb.append("Justificación: ").append(cf.getOverrideJustificacion()).append("\n");
         } else {

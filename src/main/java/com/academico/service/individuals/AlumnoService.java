@@ -69,6 +69,15 @@ public class AlumnoService {
         }
     }
 
+    public Alumno buscarPorUsuarioId(int usuarioId) throws Exception {
+        try {
+            return alumnoDAO.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new Exception("No se encontró un perfil de alumno asociado a esta cuenta de usuario."));
+        } catch (SQLException e) {
+            throw new Exception("Error de conexión al intentar cargar el perfil del estudiante.");
+        }
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA Y ACTUALIZACIÓN
     // ==========================================

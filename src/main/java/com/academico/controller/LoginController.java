@@ -95,6 +95,7 @@ public class LoginController {
         switch (rol) {
             case "admin" -> NavegationUtil.irA(NavegationUtil.DASHBOARD_ADMIN);
             case "maestro" -> NavegationUtil.irA(NavegationUtil.DASHBOARD_MAESTRO);
+            case "alumno" -> NavegationUtil.irA(NavegationUtil.DASHBOARD_ALUMNO);
             default -> mostrarError(errorGeneral, "Rol no reconocido. Contacta al administrador.");
         }
     }

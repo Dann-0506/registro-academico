@@ -120,6 +120,22 @@ public class AlumnoDAO {
         return lista;
     }
 
+    public Optional<Alumno> findByUsuarioId(int usuarioId) throws SQLException {
+        String sql = """
+                SELECT a.*, u.nombre, u.email, u.activo
+                FROM alumno a
+                LEFT JOIN usuario u ON u.id = a.usuario_id
+                WHERE a.usuario_id = ?
+                """;
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, usuarioId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+            }
+        }
+    }
+
     // ==========================================
     // OPERACIONES DE ESCRITURA Y TRANSACCIONES
     // ==========================================
