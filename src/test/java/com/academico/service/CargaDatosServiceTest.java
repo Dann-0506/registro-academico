@@ -50,10 +50,11 @@ class CargaDatosServiceTest {
 
     @Test
     void testImportarMateriasCsv_ManejoErrores() throws Exception {
+        // CORRECCIÓN: Agregamos el tercer parámetro any() para la lista de nombres
         doThrow(new Exception("Error de prueba"))
-            .when(materiaService).guardar(any(Materia.class), eq(false));
+            .when(materiaService).guardar(any(Materia.class), eq(false), any());
 
-        String csvData = "CLAVE,NOMBRE,CREDITOS\nMAT01,Matematicas,8";
+        String csvData = "CLAVE,NOMBRE,UNIDADES\nMAT01,Matematicas,8";
         InputStream is = new java.io.ByteArrayInputStream(csvData.getBytes());
 
         List<String> errores = cargaDatosService.importarMateriasCsv(is);

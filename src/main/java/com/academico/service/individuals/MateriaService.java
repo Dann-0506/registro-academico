@@ -55,7 +55,6 @@ public class MateriaService {
     // ==========================================
 
     public void guardar(Materia materia, boolean esEdicion) throws Exception {
-        // 1. Validaciones tempranas
         if (materia.getClave() == null || materia.getClave().isBlank() || 
             materia.getNombre() == null || materia.getNombre().isBlank()) {
             throw new IllegalArgumentException("La clave y el nombre de la materia son obligatorios.");
@@ -63,8 +62,7 @@ public class MateriaService {
         if (materia.getTotalUnidades() <= 0) {
             throw new IllegalArgumentException("Una materia debe tener como mínimo 1 unidad.");
         }
-        
-        // 2. Persistencia y Autogeneración
+
         try {
             if (esEdicion) {
                 materiaDAO.actualizar(materia);
@@ -78,6 +76,46 @@ public class MateriaService {
                     u.setMateriaId(mGuardada.getId());
                     u.setNumero(i);
                     u.setNombre("Unidad " + i);
+                    unidadDAO.insertar(u);
+                }
+            }
+        } catch (SQLException e) {
+            if ("23505".equals(e.getSQLState())) {
+                throw new Exception("Error: La clave de materia ingresada ya existe.");
+            }
+            throw new Exception("Error de conexión al intentar guardar la materia.");
+        }
+    }
+
+    public void guardar(Materia materia, boolean esEdicion, List<String> nombresUnidades) throws Exception {
+        if (materia.getClave() == null || materia.getClave().isBlank()) {
+            throw new IllegalArgumentException("La clave de la materia es obligatoria.");
+        }
+        if (materia.getNombre() == null || materia.getNombre().isBlank()) {
+            throw new IllegalArgumentException("El nombre de la materia es obligatorio.");
+        }
+        if (materia.getTotalUnidades() <= 0 || materia.getTotalUnidades() > 15) {
+            throw new IllegalArgumentException("El total de unidades debe estar entre 1 y 15.");
+        }
+
+        try {
+            if (esEdicion) {
+                materiaDAO.actualizar(materia);
+            } else {
+                Materia mGuardada = materiaDAO.insertar(materia);
+                
+                // Generamos las N unidades individualmente
+                for (int i = 1; i <= mGuardada.getTotalUnidades(); i++) {
+                    Unidad u = new Unidad();
+                    u.setMateriaId(mGuardada.getId());
+                    u.setNumero(i);
+                    
+                    // LÓGICA NUEVA: Usamos el nombre de la lista, o uno genérico si no hay
+                    String nombreU = (nombresUnidades != null && nombresUnidades.size() >= i) 
+                                     ? nombresUnidades.get(i - 1).trim() 
+                                     : "Unidad " + i;
+                    u.setNombre(nombreU);
+                    
                     unidadDAO.insertar(u);
                 }
             }

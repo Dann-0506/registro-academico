@@ -13,7 +13,7 @@
             
             <Button text="Importar CSV" onAction="#handleImportarCsv" styleClass="button-outlined" style="-fx-pref-height: 35;">
                 <tooltip>
-                    <Tooltip text="Formato esperado:&#10;• CLAVE&#10;• NOMBRE DE LA MATERIA&#10;• TOTAL DE UNIDADES" />
+                    <Tooltip text="Formato esperado:&#10;• CLAVE&#10;• NOMBRE DE LA MATERIA&#10;• TOTAL DE UNIDADES&#10;• NOMBRES DE UNIDADES (Opcional, separados por |)" />
                 </tooltip>
             </Button>
 

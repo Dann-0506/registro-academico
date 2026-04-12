@@ -100,14 +100,25 @@ public class CargaDatosService {
                 }
 
                 try {
-                    Materia m = new Materia();
-                    m.setClave(fila[0].trim());
-                    m.setNombre(fila[1].trim());
-                    m.setTotalUnidades(Integer.parseInt(fila[2].trim()));
+                    String clave = fila[0].trim();
+                    String nombre = fila[1].trim();
+                    int totalUnidades = Integer.parseInt(fila[2].trim());
 
-                    materiaService.guardar(m, false); 
+                    List<String> nombresUnidades = null;
+                    if (fila.length > 3 && fila[3] != null && !fila[3].trim().isEmpty()) {
+                        nombresUnidades = java.util.Arrays.asList(fila[3].split("\\|"));
+                    }
+
+                    Materia materia = new Materia();
+                    materia.setClave(clave);
+                    materia.setNombre(nombre);
+                    materia.setTotalUnidades(totalUnidades);
+
+                    // Enviamos los nombres al nuevo servicio sobrecargado
+                    materiaService.guardar(materia, false, nombresUnidades);
+                    
                 } catch (NumberFormatException e) {
-                    errores.add("Línea " + (i + 1) + ": El total de unidades debe ser un número entero.");
+                    errores.add("Línea " + (i + 1) + ": El total de unidades debe ser un número válido.");
                 } catch (Exception e) {
                     errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
