@@ -8,7 +8,7 @@
 
     <VBox spacing="5">
         <Label text="Calificar Alumnos" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-        <Label text="Ingresa los resultados obtenidos (0-100) en cada actividad. Presiona 'Enter' para confirmar cada captura." style="-fx-text-fill: #57606a;"/>
+        <Label text="Ingresa los resultados obtenidos en cada actividad. Presiona 'Enter' para confirmar cada captura." style="-fx-text-fill: #57606a;"/>
     </VBox>
 
     <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #f6f8fa; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #d0d7de; -fx-border-radius: 8;">

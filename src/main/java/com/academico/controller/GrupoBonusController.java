@@ -107,7 +107,7 @@ public class GrupoBonusController {
                         Bonus bonusUnidad = bonusService.obtenerBonusUnidad(inscId, u.getId()).orElse(null);
                         BigDecimal puntosBonus = bonusUnidad != null ? bonusUnidad.getPuntos() : BigDecimal.ZERO;
 
-                        ResultadoUnidad ru = calificacionService.calcularResultadoUnidad(inscId, u, resultados, puntosBonus);
+                        ResultadoUnidad ru = calificacionService.calcularResultadoUnidad(inscId, u, resultados, puntosBonus, grupoActual.getCalificacionMaxima());
                         unidadesEvaluadas.add(ru);
 
                         String textoUnidad = ru.getResultadoFinal() != null ? ru.getResultadoFinal().toString() : "N/A";
@@ -122,7 +122,7 @@ public class GrupoBonusController {
                     BigDecimal puntosBonusMat = bonusMateria != null ? bonusMateria.getPuntos() : BigDecimal.ZERO;
 
                     BigDecimal promedioBase = calificacionService.calcularPromedioUnidades(unidadesEvaluadas);
-                    BigDecimal finalConBonus = calificacionService.aplicarBonusMateria(promedioBase, puntosBonusMat);
+                    BigDecimal finalConBonus = calificacionService.aplicarBonusMateria(promedioBase, puntosBonusMat, grupoActual.getCalificacionMaxima());
 
                     String textoFinal = finalConBonus != null ? finalConBonus.toString() : "N/A";
                     fila.setPromedioFinal(textoFinal);

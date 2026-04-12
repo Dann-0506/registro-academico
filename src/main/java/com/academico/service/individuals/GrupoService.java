@@ -13,14 +13,17 @@ public class GrupoService {
     
     // === DEPENDENCIAS ===
     private final GrupoDAO grupoDAO;
+    private final ConfiguracionService configuracionService;
 
     // === CONSTRUCTORES ===
     public GrupoService() {
         this.grupoDAO = new GrupoDAO();
+        this.configuracionService = new ConfiguracionService();
     }
 
-    public GrupoService(GrupoDAO grupoDAO) {
+    public GrupoService(GrupoDAO grupoDAO, ConfiguracionService configuracionService) {
         this.grupoDAO = grupoDAO;
+        this.configuracionService = configuracionService;
     }
 
     // ==========================================
@@ -82,6 +85,8 @@ public class GrupoService {
             if (esEdicion) {
                 grupoDAO.actualizar(grupo);
             } else {
+                grupo.setCalificacionMinimaAprobatoria(configuracionService.obtenerCalificacionMinima());
+                grupo.setCalificacionMaxima(configuracionService.obtenerCalificacionMaxima());
                 grupoDAO.insertar(grupo);
             }
         } catch (SQLException e) {
@@ -138,13 +143,22 @@ public class GrupoService {
     }
 
     public void eliminar(int id) throws Exception {
+        Grupo grupo = grupoDAO.findById(id).orElseThrow(() -> new Exception("Grupo no encontrado."));
+
+        if (grupo.isCerrado()) {
+            throw new Exception("Operación denegada: No se puede eliminar un grupo histórico que ya tiene un acta cerrada.");
+        }
+
+        // 2. SEGUNDA CAPA DE DEFENSA (Integridad de Datos)
+        // Si el grupo está ABIERTO, intentamos borrarlo físicamente
         try {
             grupoDAO.eliminar(id); 
         } catch (SQLException e) {
+            // El código 23503 de PostgreSQL indica una violación de llave foránea (Foreign Key)
             if ("23503".equals(e.getSQLState())) {
-                throw new Exception("No se puede eliminar: El grupo ya tiene alumnos inscritos.");
+                throw new Exception("No se puede eliminar: El grupo ya tiene alumnos inscritos o actividades registradas.");
             }
-            throw new Exception("Error al eliminar el grupo.");
+            throw new Exception("Error al eliminar el grupo de la base de datos.");
         }
     }
 }

@@ -18,6 +18,8 @@ module com.academico {
     opens com.academico.controller to javafx.fxml;
     opens com.academico            to javafx.fxml;
     opens com.academico.model      to javafx.base;
+    opens com.academico.service;
+    opens com.academico.service.individuals;
 
     // === EXPORTACIÓN DE PAQUETES ===
     exports com.academico;

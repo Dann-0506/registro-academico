@@ -1,5 +1,7 @@
 package com.academico.model;
 
+import java.math.BigDecimal;
+
 /**
  * Representa una instancia específica de una materia impartida por un docente.
  * Vincula el catálogo de materias con la asignación académica real.
@@ -14,6 +16,8 @@ public class Grupo {
     private String semestre;
     private boolean activo;
     private String estadoEvaluacion;
+    private BigDecimal calificacionMinimaAprobatoria;
+    private BigDecimal calificacionMaxima;
 
     // === ATRIBUTOS DE VISUALIZACIÓN (JOINS) ===
     private String materiaNombre;
@@ -64,6 +68,12 @@ public class Grupo {
 
     public int getTotalAlumnos() { return totalAlumnos; }
     public void setTotalAlumnos(int totalAlumnos) { this.totalAlumnos = totalAlumnos; }
+
+    public BigDecimal getCalificacionMinimaAprobatoria() { return calificacionMinimaAprobatoria; }
+    public void setCalificacionMinimaAprobatoria(BigDecimal calificacionMinimaAprobatoria) { this.calificacionMinimaAprobatoria = calificacionMinimaAprobatoria; }
+
+    public BigDecimal getCalificacionMaxima() { return calificacionMaxima; }
+    public void setCalificacionMaxima(BigDecimal calificacionMaxima) { this.calificacionMaxima = calificacionMaxima; }
 
     @Override
     public String toString() {

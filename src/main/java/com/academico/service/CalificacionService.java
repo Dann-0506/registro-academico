@@ -1,7 +1,6 @@
 package com.academico.service;
 
 import com.academico.model.*;
-import com.academico.service.individuals.ConfiguracionService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,18 +14,8 @@ import java.util.Objects;
  */
 public class CalificacionService {
 
-    // DEPENDENCIA DINÁMICA
-    private final ConfiguracionService configuracionService;
-
     // Constructor normal para la aplicación
-    public CalificacionService() {
-        this.configuracionService = new ConfiguracionService();
-    }
-
-    // Constructor para inyección en los Tests
-    public CalificacionService(ConfiguracionService configuracionService) {
-        this.configuracionService = configuracionService;
-    }
+    public CalificacionService() {}
 
     // === CONSTANTES MATEMÁTICAS ===
     private static final int ESCALA = 2;
@@ -78,24 +67,20 @@ public class CalificacionService {
     /**
      * Aplica bonus a una unidad respetando el máximo configurado.
      */
-    public BigDecimal aplicarBonusUnidad(BigDecimal resultadoBase, BigDecimal bonusPuntos) throws Exception {
+    public BigDecimal aplicarBonusUnidad(BigDecimal resultadoBase, BigDecimal bonusPuntos, BigDecimal limiteMaximo) {
         if (resultadoBase == null) return null;
         if (bonusPuntos == null || bonusPuntos.compareTo(BigDecimal.ZERO) <= 0) return resultadoBase;
 
-        BigDecimal maximo = configuracionService.obtenerCalificacionMaxima();
         BigDecimal resultadoConBonus = resultadoBase.add(bonusPuntos);
-        return resultadoConBonus.min(maximo).setScale(ESCALA, REDONDEO);
+        return resultadoConBonus.min(limiteMaximo).setScale(ESCALA, REDONDEO);
     }
 
     public ResultadoUnidad calcularResultadoUnidad(
-        int inscripcionId,
-        Unidad unidad,
-        List<Resultado> resultados,
-        BigDecimal bonusPuntos
-    ) throws Exception {
+        int inscripcionId, Unidad unidad, List<Resultado> resultados, BigDecimal bonusPuntos, BigDecimal limiteMaximo
+    ) {
         BigDecimal base = calcularResultadoBase(resultados);
         BigDecimal bonus = bonusPuntos != null ? bonusPuntos : BigDecimal.ZERO;
-        BigDecimal final_ = aplicarBonusUnidad(base, bonus); 
+        BigDecimal final_ = aplicarBonusUnidad(base, bonus, limiteMaximo); 
         
         long calificadas = resultados == null ? 0 : resultados.stream()
                 .filter(r -> r.getCalificacion() != null)
@@ -134,29 +119,24 @@ public class CalificacionService {
         return suma.divide(BigDecimal.valueOf(finales.size()), ESCALA, REDONDEO);
     }
 
-    public BigDecimal aplicarBonusMateria(BigDecimal promedio, BigDecimal bonusPuntos) throws Exception {
+    public BigDecimal aplicarBonusMateria(BigDecimal promedio, BigDecimal bonusPuntos, BigDecimal limiteMaximo) {
         if (promedio == null) return null;
         if (bonusPuntos == null || bonusPuntos.compareTo(BigDecimal.ZERO) <= 0) return promedio;
 
-        BigDecimal maximo = configuracionService.obtenerCalificacionMaxima();
         BigDecimal resultadoConBonus = promedio.add(bonusPuntos);
-        return resultadoConBonus.min(maximo).setScale(ESCALA, REDONDEO);
+        return resultadoConBonus.min(limiteMaximo).setScale(ESCALA, REDONDEO);
     }
 
     /**
      * RESTAURADO: Orquesta el cálculo final del alumno.
      */
     public CalificacionFinal calcularCalificacionFinal(
-        int inscripcionId,
-        Alumno alumno,
-        List<ResultadoUnidad> unidades,
-        BigDecimal bonusMateria,
-        BigDecimal override,
-        String overrideJustificacion
-    ) throws Exception {
+        int inscripcionId, Alumno alumno, List<ResultadoUnidad> unidades,
+        BigDecimal bonusMateria, BigDecimal override, String overrideJustificacion, BigDecimal limiteMaximo
+    ) {
         BigDecimal calculada = calcularPromedioUnidades(unidades);
         BigDecimal bonus = bonusMateria != null ? bonusMateria : BigDecimal.ZERO;
-        BigDecimal conBonus = aplicarBonusMateria(calculada, bonus); 
+        BigDecimal conBonus = aplicarBonusMateria(calculada, bonus, limiteMaximo); 
         
         // El Override tiene prioridad absoluta si existe
         BigDecimal definitiva = override != null ? override : conBonus;
@@ -181,9 +161,8 @@ public class CalificacionService {
     // ESTADO ACADÉMICO DINÁMICO
     // ==========================================
 
-    public String determinarEstado(BigDecimal calificacion) throws Exception {
+    public String determinarEstado(BigDecimal calificacion, BigDecimal limiteMinimo) {
         if (calificacion == null) return "PENDIENTE";
-        BigDecimal minimo = configuracionService.obtenerCalificacionMinima();
-        return calificacion.compareTo(minimo) >= 0 ? "APROBADO" : "REPROBADO";
+        return calificacion.compareTo(limiteMinimo) >= 0 ? "APROBADO" : "REPROBADO";
     }
 }

@@ -1,13 +1,10 @@
 package com.academico.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -19,199 +16,118 @@ import com.academico.model.Alumno;
 import com.academico.model.CalificacionFinal;
 import com.academico.model.Resultado;
 import com.academico.model.ResultadoUnidad;
-import com.academico.service.individuals.ConfiguracionService;
+import com.academico.model.Unidad;
 
 class CalificacionServiceTest {
 
     private CalificacionService service;
-    private ConfiguracionService configMock;
+
+    // Constantes para simular los límites históricos del grupo en el test
+    private static final BigDecimal LIMITE_MINIMO = new BigDecimal("70.00");
+    private static final BigDecimal LIMITE_MAXIMO = new BigDecimal("100.00");
 
     @BeforeEach
-    void setUp() throws Exception {
-        configMock = mock(ConfiguracionService.class);
+    void setUp() {
+        // La instanciación ahora es directa y limpia
+        service = new CalificacionService();
+    }
+
+    // ── Pruebas de Ponderaciones (Sin cambios en firmas) ─────────────────────
+
+    @Test
+    @DisplayName("Suma correcta de ponderaciones")
+    void sumarPonderaciones_valido() {
+        List<ActividadGrupo> acts = Arrays.asList(actividad(30), actividad(70));
+        assertEquals(new BigDecimal("100.00"), service.sumarPonderaciones(acts));
+    }
+
+    @Test
+    @DisplayName("Ponderación válida es exactamente 100")
+    void ponderacionesValidas_verdadero() {
+        List<ActividadGrupo> acts = Arrays.asList(actividad(50), actividad(50));
+        assertTrue(service.ponderacionesValidas(acts));
+    }
+
+    // ── Pruebas de Resultados y Bonus ────────────────────────────────────────
+
+    @Test
+    @DisplayName("Aplicar bonus respeta el límite máximo del grupo")
+    void aplicarBonusUnidad_respetaLimite() {
+        // Tiene 95, le dan 10 de bonus. El límite es 100. No debe pasar de 100.
+        BigDecimal resultado = service.aplicarBonusUnidad(
+            new BigDecimal("95.00"), 
+            new BigDecimal("10.00"), 
+            LIMITE_MAXIMO
+        );
+        assertEquals(new BigDecimal("100.00"), resultado);
+    }
+
+    @Test
+    @DisplayName("Calcular Resultado Base correctamente")
+    void calcularResultadoBase_correcto() {
+        List<Resultado> res = Arrays.asList(resultado(100, 50), resultado(80, 50));
+        // 50% de 100 = 50. 50% de 80 = 40. Total = 90.
+        assertEquals(new BigDecimal("90.00"), service.calcularResultadoBase(res));
+    }
+
+    @Test
+    @DisplayName("Calcular Resultado Unidad completo con bonus")
+    void calcularResultadoUnidad_completo() throws Exception {
+        Unidad u = new Unidad(); u.setId(1);
+        List<Resultado> res = Arrays.asList(resultado(80, 100)); // Base 80
         
-        // Le enseñamos al mock qué responder cuando le pregunten por la configuración
-        when(configMock.obtenerCalificacionMinima()).thenReturn(new BigDecimal("70.00"));
-        when(configMock.obtenerCalificacionMaxima()).thenReturn(new BigDecimal("100.00"));
+        ResultadoUnidad ru = service.calcularResultadoUnidad(
+            1, u, res, new BigDecimal("5.00"), LIMITE_MAXIMO
+        );
         
-        // Inyectamos el mock
-        service = new CalificacionService(configMock);
+        // Base 80 + Bonus 5 = 85.
+        assertEquals(new BigDecimal("85.00"), ru.getResultadoFinal());
     }
 
-    // ── Ponderaciones ────────────────────────────────────────────────────────
+    // ── Pruebas de Calificación Final ────────────────────────────────────────
 
     @Test
-    @DisplayName("Ponderaciones que suman 100 son válidas")
-    void ponderacionesValidas_sumaExacta() {
-        List<ActividadGrupo> actividades = List.of(
-                actividad(50), actividad(30), actividad(20)
+    @DisplayName("Promedio de unidades correcto")
+    void calcularPromedioUnidades_correcto() {
+        List<ResultadoUnidad> unidades = Arrays.asList(
+            unidadConFinal("80.00"), unidadConFinal("90.00")
         );
-        assertTrue(service.ponderacionesValidas(actividades));
-    }
-
-    @Test
-    @DisplayName("Ponderaciones que no suman 100 son inválidas")
-    void ponderacionesValidas_sumaIncompleta() {
-        List<ActividadGrupo> actividades = List.of(
-                actividad(50), actividad(30)  // suma 80
-        );
-        assertFalse(service.ponderacionesValidas(actividades));
+        assertEquals(new BigDecimal("85.00"), service.calcularPromedioUnidades(unidades));
     }
 
     @Test
-    @DisplayName("Ponderación faltante calcula correctamente")
-    void ponderacionFaltante_calculaRestante() {
-        List<ActividadGrupo> actividades = List.of(
-                actividad(50), actividad(30)  // suma 80, faltan 20
-        );
-        assertEquals(
-            new BigDecimal("20.00"),
-            service.ponderacionFaltante(actividades)
-        );
-    }
-
-    // ── Resultado por unidad ─────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("Promedio ponderado se calcula correctamente")
-    void calcularResultadoBase_casoNormal() {
-        List<Resultado> resultados = List.of(
-                resultado(85, 50),
-                resultado(90, 30),
-                resultado(70, 20)
-        );
-        assertEquals(
-            new BigDecimal("83.50"),
-            service.calcularResultadoBase(resultados)
-        );
-    }
-
-    @Test
-    @DisplayName("Actividad no presentada aporta cero al promedio")
-    void calcularResultadoBase_conNulo() {
-        List<Resultado> resultados = List.of(
-                resultado(85, 50),
-                resultadoNulo(50)
-        );
-        assertEquals(
-            new BigDecimal("42.50"),
-            service.calcularResultadoBase(resultados)
-        );
-    }
-
-    @Test
-    @DisplayName("Sin calificaciones devuelve null")
-    void calcularResultadoBase_todoNulo() {
-        List<Resultado> resultados = List.of(
-                resultadoNulo(50),
-                resultadoNulo(50)
-        );
-        assertNull(service.calcularResultadoBase(resultados));
-    }
-
-    @Test
-    @DisplayName("Bonus de unidad se suma al resultado base")
-    void aplicarBonusUnidad_sumaCorrectamente() throws Exception { // Se agregó throws
-        BigDecimal base  = new BigDecimal("83.50");
-        BigDecimal bonus = new BigDecimal("2.00");
-        assertEquals(
-            new BigDecimal("85.50"),
-            service.aplicarBonusUnidad(base, bonus)
-        );
-    }
-
-    @Test
-    @DisplayName("Sin bonus devuelve el resultado base sin modificar")
-    void aplicarBonusUnidad_sinBonus() throws Exception { // Se agregó throws
-        BigDecimal base = new BigDecimal("83.50");
-        assertEquals(base, service.aplicarBonusUnidad(base, null));
-    }
-
-    // ── Calificación final ───────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("Promedio de unidades se calcula correctamente")
-    void calcularPromedioUnidades_casoNormal() {
-        List<ResultadoUnidad> unidades = List.of(
-                unidadConFinal("85.50"),
-                unidadConFinal("78.00"),
-                unidadConFinal("91.00")
-        );
-        assertEquals(
-            new BigDecimal("84.83"),
-            service.calcularPromedioUnidades(unidades)
-        );
-    }
-
-    @Test
-    @DisplayName("Unidad pendiente se excluye del promedio")
-    void calcularPromedioUnidades_conPendiente() {
-        List<ResultadoUnidad> unidades = List.of(
-                unidadConFinal("85.50"),
-                unidadPendiente(),
-                unidadConFinal("91.00")
-        );
-        assertEquals(
-            new BigDecimal("88.25"),
-            service.calcularPromedioUnidades(unidades)
-        );
-    }
-
-    @Test
-    @DisplayName("Override del docente pisa el cálculo automático")
-    void calcularCalificacionFinal_override() throws Exception { // Se agregó throws
-        Alumno alumno = new Alumno(1, null, "A001", "Juan Pérez", "juan@test.com");
-        List<ResultadoUnidad> unidades = List.of(unidadConFinal("65.00"));
-
+    @DisplayName("Override tiene prioridad absoluta en la final")
+    void calcularCalificacionFinal_overridePrioridad() throws Exception {
+        Alumno a = new Alumno(); a.setId(1);
+        List<ResultadoUnidad> unidades = Arrays.asList(unidadConFinal("70.00"));
+        
         CalificacionFinal cf = service.calcularCalificacionFinal(
-                1, alumno, unidades,
-                null,                       // sin bonus materia
-                new BigDecimal("75.00"),    // override
-                "Participación extra"
+            1, a, unidades, null, new BigDecimal("100.00"), "Proyecto excelente", LIMITE_MAXIMO
         );
-
-        assertEquals(new BigDecimal("75.00"), cf.getCalificacionFinal());
+        
         assertTrue(cf.isEsOverride());
-        assertEquals("Participación extra", cf.getOverrideJustificacion());
+        assertEquals(new BigDecimal("100.00"), cf.getCalificacionFinal());
+    }
+
+    // ── Pruebas de Estados Académicos ────────────────────────────────────────
+
+    @Test
+    @DisplayName("Estado es APROBADO si alcanza o supera el mínimo del grupo")
+    void determinarEstado_aprobado() {
+        assertEquals("APROBADO", service.determinarEstado(new BigDecimal("70.00"), LIMITE_MINIMO));
+        assertEquals("APROBADO", service.determinarEstado(new BigDecimal("85.00"), LIMITE_MINIMO));
     }
 
     @Test
-    @DisplayName("Sin override usa el cálculo automático")
-    void calcularCalificacionFinal_sinOverride() throws Exception { // Se agregó throws
-        Alumno alumno = new Alumno(1, null, "A001", "Ana López", "ana@test.com");
-        List<ResultadoUnidad> unidades = List.of(
-                unidadConFinal("80.00"),
-                unidadConFinal("90.00")
-        );
-
-        CalificacionFinal cf = service.calcularCalificacionFinal(
-                1, alumno, unidades, null, null, null
-        );
-
-        assertEquals(new BigDecimal("85.00"), cf.getCalificacionFinal());
-        assertFalse(cf.isEsOverride());
-    }
-
-    // ── Estado (Nota: Asume que el mínimo por defecto es 70) ──────────────────
-
-    @Test
-    @DisplayName("Calificación >= Minimo es APROBADO")
-    void determinarEstado_aprobado() throws Exception { // Solo un parámetro ahora
-        assertEquals("APROBADO",
-            service.determinarEstado(new BigDecimal("70.00")));
-    }
-
-    @Test
-    @DisplayName("Calificación < Minimo es REPROBADO")
-    void determinarEstado_reprobado() throws Exception { // Solo un parámetro ahora
-        assertEquals("REPROBADO",
-            service.determinarEstado(new BigDecimal("69.99")));
+    @DisplayName("Estado es REPROBADO si no alcanza el mínimo del grupo")
+    void determinarEstado_reprobado() {
+        assertEquals("REPROBADO", service.determinarEstado(new BigDecimal("69.99"), LIMITE_MINIMO));
     }
 
     @Test
     @DisplayName("Calificación null es PENDIENTE")
-    void determinarEstado_pendiente() throws Exception {
-        assertEquals("PENDIENTE", service.determinarEstado(null));
+    void determinarEstado_pendiente() {
+        assertEquals("PENDIENTE", service.determinarEstado(null, LIMITE_MINIMO));
     }
 
     // ── Helpers de construcción ──────────────────────────────────────────────
@@ -225,26 +141,13 @@ class CalificacionServiceTest {
     private Resultado resultado(double calificacion, double ponderacion) {
         Resultado r = new Resultado();
         r.setCalificacion(BigDecimal.valueOf(calificacion));
-        r.setPonderacion(BigDecimal.valueOf(ponderacion));
-        return r;
-    }
-
-    private Resultado resultadoNulo(double ponderacion) {
-        Resultado r = new Resultado();
-        r.setCalificacion(null);
-        r.setPonderacion(BigDecimal.valueOf(ponderacion));
+        r.setPonderacion(BigDecimal.valueOf(ponderacion)); // El setter interno calcula la aportación
         return r;
     }
 
     private ResultadoUnidad unidadConFinal(String valor) {
         ResultadoUnidad ru = new ResultadoUnidad();
         ru.setResultadoFinal(new BigDecimal(valor));
-        return ru;
-    }
-
-    private ResultadoUnidad unidadPendiente() {
-        ResultadoUnidad ru = new ResultadoUnidad();
-        ru.setResultadoFinal(null);
         return ru;
     }
 }

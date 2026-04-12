@@ -48,11 +48,11 @@ public class AnalisisService {
 
             conteoPorSemestre.putIfAbsent(semestre, new int[]{0, 0});
 
-            List<CalificacionFinal> calificaciones = reporteService.generarReporteFinalGrupo(grupo.getId());
+            List<CalificacionFinal> calificaciones = reporteService.generarReporteFinalGrupo(grupo.getId(), grupo.getCalificacionMaxima());
 
             for (CalificacionFinal cf : calificaciones) {
                 try {
-                    String estado = calificacionService.determinarEstado(cf.getCalificacionFinal());
+                    String estado = calificacionService.determinarEstado(cf.getCalificacionFinal(), grupo.getCalificacionMinimaAprobatoria());
                     if ("APROBADO".equals(estado)) {
                         conteoPorSemestre.get(semestre)[0]++; // Suma Aprobado
                     } else if ("REPROBADO".equals(estado)) {

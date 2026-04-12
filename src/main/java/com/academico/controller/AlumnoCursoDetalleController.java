@@ -68,11 +68,14 @@ public class AlumnoCursoDetalleController {
 
     private void configurarCabecera() {
         lblTituloMateria.setText(cursoActual.getClave() + " - " + cursoActual.getMateriaNombre());
+
+        String reglaEspecial = "  |  (Mínimo para aprobar: " + cursoActual.getCalificacionMinimaAprobatoria() + ")";
+
         if (cursoActual.isCerrado()) {
-            lblEstadoCurso.setText("CERRADO (ACTA FIRMADA)");
+            lblEstadoCurso.setText("CERRADO (ACTA FIRMADA)" + reglaEspecial);
             lblEstadoCurso.setStyle("-fx-text-fill: #cf222e; -fx-background-color: #ffebe9;");
         } else {
-            lblEstadoCurso.setText("EN EVALUACIÓN");
+            lblEstadoCurso.setText("EN EVALUACIÓN" + reglaEspecial);
             lblEstadoCurso.setStyle("-fx-text-fill: #0969da; -fx-background-color: #ddf4ff;");
         }
     }
@@ -122,7 +125,7 @@ public class AlumnoCursoDetalleController {
     private void cargarDatosGlobales() {
         try {
             List<Unidad> unidades = unidadService.listarPorMateria(cursoActual.getMateriaId());
-            List<CalificacionFinal> reporteGlobal = reporteService.generarReporteFinalGrupo(cursoActual.getId());
+            List<CalificacionFinal> reporteGlobal = reporteService.generarReporteFinalGrupo(cursoActual.getId(), cursoActual.getCalificacionMaxima());
             
             CalificacionFinal misDatos = reporteGlobal.stream()
                 .filter(cf -> cf.getAlumnoMatricula().equals(alumnoActual.getMatricula()))
@@ -145,7 +148,7 @@ public class AlumnoCursoDetalleController {
 
                     if (resultado.isPresent() && resultado.get().getResultadoFinal() != null) {
                         calificacionStr = resultado.get().getResultadoFinal().toString();
-                        estadoStr = calificacionService.determinarEstado(resultado.get().getResultadoFinal());
+                        estadoStr = calificacionService.determinarEstado(resultado.get().getResultadoFinal(), cursoActual.getCalificacionMinimaAprobatoria());
                     }
                 }
 
@@ -172,7 +175,7 @@ public class AlumnoCursoDetalleController {
                 String estadoGlobal = "PENDIENTE";
                 try {
                     if (misDatos.getCalificacionFinal() != null) {
-                        estadoGlobal = calificacionService.determinarEstado(misDatos.getCalificacionFinal());
+                        estadoGlobal = calificacionService.determinarEstado(misDatos.getCalificacionFinal(), cursoActual.getCalificacionMinimaAprobatoria());
                     }
                 } catch (Exception ignored) {}
                 

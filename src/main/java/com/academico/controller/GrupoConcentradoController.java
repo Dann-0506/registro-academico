@@ -91,7 +91,7 @@ public class GrupoConcentradoController {
             unidadesGrupo = unidadService.listarPorMateria(grupoActual.getMateriaId());
             
             // El ReporteService hace todo el trabajo pesado de BD y cálculos
-            List<CalificacionFinal> reporte = reporteService.generarReporteFinalGrupo(grupoActual.getId());
+            List<CalificacionFinal> reporte = reporteService.generarReporteFinalGrupo(grupoActual.getId(), grupoActual.getCalificacionMaxima());
             listaDatos.addAll(reporte);
 
             datosFiltrados = new FilteredList<>(listaDatos, p -> true);
@@ -177,7 +177,7 @@ public class GrupoConcentradoController {
         colEstado.setGraphic(lblEstado);
         colEstado.setCellValueFactory(d -> {
             try {
-                return new SimpleStringProperty(calificacionService.determinarEstado(d.getValue().getCalificacionFinal()));
+                return new SimpleStringProperty(calificacionService.determinarEstado(d.getValue().getCalificacionFinal(), grupoActual.getCalificacionMinimaAprobatoria()));
             } catch (Exception e) { return new SimpleStringProperty("ERROR"); }
         });
 
@@ -415,7 +415,7 @@ public class GrupoConcentradoController {
         // 1. Conteo de los estados actuales basándonos en los datos de la tabla [cite: 193]
         for (CalificacionFinal cf : listaDatos) {
             try {
-                String estado = calificacionService.determinarEstado(cf.getCalificacionFinal());
+                String estado = calificacionService.determinarEstado(cf.getCalificacionFinal(), grupoActual.getCalificacionMinimaAprobatoria());
                 switch (estado) {
                     case "APROBADO": aprobados++; break;
                     case "REPROBADO": reprobados++; break;

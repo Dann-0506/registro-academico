@@ -30,8 +30,13 @@ public class ExportadorPdfService {
         // 2. Información General del Grupo
         PdfPTable tablaInfo = new PdfPTable(2);
         tablaInfo.setWidthPercentage(100);
+
         tablaInfo.addCell(PdfUtil.crearCeldaSinBorde("Materia/Grupo: " + grupo.getClave(), PdfUtil.FUENTE_SUBTITULO, Element.ALIGN_LEFT));
         tablaInfo.addCell(PdfUtil.crearCeldaSinBorde("Estado: " + grupo.getEstadoEvaluacion(), PdfUtil.FUENTE_SUBTITULO, Element.ALIGN_RIGHT));
+
+        tablaInfo.addCell(PdfUtil.crearCeldaSinBorde("Criterios de Evaluación aplicados:", PdfUtil.FUENTE_NORMAL, Element.ALIGN_LEFT));
+        tablaInfo.addCell(PdfUtil.crearCeldaSinBorde("Mínima Aprobatoria: " + grupo.getCalificacionMinimaAprobatoria() + "  |  Máxima: " + grupo.getCalificacionMaxima(), PdfUtil.FUENTE_NORMAL, Element.ALIGN_RIGHT));
+
         documento.add(tablaInfo);
         documento.add(Chunk.NEWLINE);
 
@@ -79,7 +84,7 @@ public class ExportadorPdfService {
 
             String estado = "ERROR";
             try {
-                estado = calificacionService.determinarEstado(cf.getCalificacionFinal());
+                estado = calificacionService.determinarEstado(cf.getCalificacionFinal(), grupo.getCalificacionMinimaAprobatoria());
             } catch (Exception ignored) {}
 
             tabla.addCell(PdfUtil.crearCeldaNormal(prom, Element.ALIGN_CENTER));

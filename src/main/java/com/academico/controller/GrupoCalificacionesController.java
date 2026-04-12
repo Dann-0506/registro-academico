@@ -41,6 +41,7 @@ public class GrupoCalificacionesController {
     private Grupo grupoActual;
     private List<ActividadGrupo> actividadesUnidad;
     private ObservableList<FilaCalificacion> datosTabla = FXCollections.observableArrayList();
+    private boolean bloqueoPorValidacion = false;
 
     @FXML
     public void initialize() {
@@ -263,11 +264,17 @@ public class GrupoCalificacionesController {
         try {
             if (nueva == null || nueva.trim().isEmpty()) return "";
             BigDecimal valor = new BigDecimal(nueva.trim());
-            if (valor.compareTo(BigDecimal.ZERO) >= 0 && valor.compareTo(new BigDecimal("100")) <= 0) {
+
+            BigDecimal limiteMaximo = grupoActual.getCalificacionMaxima() != null ? grupoActual.getCalificacionMaxima() : new BigDecimal("100");
+
+            if (valor.compareTo(BigDecimal.ZERO) >= 0 && valor.compareTo(limiteMaximo) <= 0) {
                 return valor.setScale(2, RoundingMode.HALF_UP).toString();
+            } else {
+                bloqueoPorValidacion = true;
+                mostrarAdvertencia("El valor excede el máximo permitido para este grupo (" + limiteMaximo + ").", true);
             }
         } catch (NumberFormatException ignored) {}
-        return vieja; // Si escribió letras o algo fuera de 0-100, regresa al valor anterior
+        return vieja;
     }
 
     private void recalcularResultadoBase(FilaCalificacion fila) {
@@ -301,6 +308,14 @@ public class GrupoCalificacionesController {
 
     @FXML
     private void handleGuardarCalificaciones() {
+        bloqueoPorValidacion = false;
+
+        tablaCalificaciones.requestFocus();
+
+        if (bloqueoPorValidacion) {
+            return; 
+        }
+        
         try {
             List<Resultado> loteResultados = new ArrayList<>();
             
