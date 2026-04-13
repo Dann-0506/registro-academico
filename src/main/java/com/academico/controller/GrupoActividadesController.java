@@ -65,6 +65,12 @@ public class GrupoActividadesController {
         configurarTabla();
         cargarUnidades();
 
+        if (grupoActual != null && grupoActual.isCerrado()) {
+            panelCaptura.setDisable(true);
+            colAcciones.setVisible(false);
+            mostrarErrorValidacion("Acta cerrada: La rúbrica no puede modificarse.");
+        }
+
         comboUnidades.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 panelCaptura.setDisable(false);
@@ -154,6 +160,11 @@ public class GrupoActividadesController {
         String nombre = campoNombreActividad.getText().trim();
         String pesoTexto = campoPonderacion.getText().trim();
 
+        if (grupoActual.isCerrado()) {
+            mostrarErrorValidacion("Operación denegada: El acta ya está firmada.");
+            return;
+        }
+
         if (unidadSel == null || nombre.isEmpty() || pesoTexto.isEmpty()) {
             mostrarErrorValidacion("Por favor, llena todos los campos.");
             return;
@@ -232,9 +243,14 @@ public class GrupoActividadesController {
 
     private void solicitarEliminacion(ActividadGrupo actividad) {
         try {
+
+            if (grupoActual.isCerrado()) {
+                mostrarErrorValidacion("Operación denegada: El acta ya está firmada.");
+                return;
+            }
             // Regla de Negocio: Candado de Integridad Académica
             if (resultadoService.tieneCalificacionesRegistradas(actividad.getId())) {
-                mostrarErrorValidacion("🔒 Acción denegada: Esta actividad ya tiene alumnos calificados. No se puede eliminar.");
+                mostrarErrorValidacion("Acción denegada: Esta actividad ya tiene alumnos calificados. No se puede eliminar.");
                 return;
             }
 
@@ -308,9 +324,16 @@ public class GrupoActividadesController {
             BigDecimal faltante = calificacionService.ponderacionFaltante(listaActividades);
             panelEstado.setStyle("-fx-background-color: #fff3cd; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #ffeeba; -fx-border-radius: 8;");
             labelTotal.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #856404;");
-            labelMensajeValidacion.setText("⚠ Atención: Faltan " + faltante + "% para completar la unidad.");
-            labelMensajeValidacion.setStyle("-fx-text-fill: #856404;");
-            panelCaptura.setDisable(false);
+            
+            if (grupoActual.isCerrado()) {
+                labelMensajeValidacion.setText("🔒 Acta cerrada con rúbrica incompleta (" + total + "%).");
+                labelMensajeValidacion.setStyle("-fx-text-fill: #721c24;");
+                panelCaptura.setDisable(true); // Mantener bloqueado
+            } else {
+                labelMensajeValidacion.setText("⚠ Atención: Faltan " + faltante + "% para completar la unidad.");
+                labelMensajeValidacion.setStyle("-fx-text-fill: #856404;");
+                panelCaptura.setDisable(false); // Habilitar solo si está abierto
+            }
         }
     }
 

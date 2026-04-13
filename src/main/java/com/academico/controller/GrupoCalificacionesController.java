@@ -64,7 +64,7 @@ public class GrupoCalificacionesController {
         if (grupoActual.isCerrado()) {
             btnGuardar.setDisable(true);
             tablaCalificaciones.setEditable(false);
-            mostrarAdvertencia("El acta de este grupo ha sido firmada. Calificaciones en modo solo lectura.", false);
+            mostrarAdvertencia("El acta de este grupo ha sido firmada. Calificaciones en modo solo lectura.", true);
         }
         if (grupoActual == null) return;
         try {
