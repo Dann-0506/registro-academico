@@ -4,66 +4,153 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.academico.controller.DashboardAlumnoController">
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.academico.controller.DashboardAlumnoController">
 
     <BorderPane>
         <left>
-            <VBox spacing="0" prefWidth="240" minWidth="240" style="-fx-background-color: -color-bg-subtle; -fx-border-color: -color-border-default; -fx-border-width: 0 1 0 0;">
-                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+            <VBox spacing="0" prefWidth="240" minWidth="240"
+                  style="-fx-background-color: #00a896;">
 
-                <VBox spacing="2">
-                    <padding><Insets bottom="12"/></padding>
-                    <Label fx:id="labelNombreUsuario" text="Cargando..." styleClass="text-bold" style="-fx-font-size: 14px;"/>
-                    <Label fx:id="labelMatricula" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                <!-- Brand -->
+                <VBox spacing="2" style="-fx-border-color: rgba(255,255,255,0.12); -fx-border-width: 0 0 1 0;">
+                    <padding><Insets top="24" right="20" bottom="16" left="20"/></padding>
+                    <Label text="SIRA"
+                           style="-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                    <Label text="Sistema de Registro Académico"
+                           style="-fx-text-fill: rgba(255,255,255,0.75); -fx-font-size: 11px; -fx-font-weight: bold;"/>
                 </VBox>
 
-                <Separator/>
-                <Region prefHeight="15"/>
+                <!-- Usuario -->
+                <VBox spacing="2" style="-fx-border-color: rgba(255,255,255,0.12); -fx-border-width: 0 0 1 0;">
+                    <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
+                    <Label fx:id="labelNombreUsuario" text="Cargando..."
+                           style="-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;"/>
+                    <Label fx:id="labelMatricula"
+                           style="-fx-text-fill: rgba(255,255,255,0.75); -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                </VBox>
 
-                <VBox fx:id="menuPrincipal" spacing="2"/>
+                <!-- Menú con scroll -->
+                <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true"
+                            style="-fx-background: transparent;
+                                   -fx-background-color: transparent;
+                                   -fx-border-width: 0;">
+                    <VBox spacing="2">
+                        <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
 
-                <Region prefHeight="20"/>
+                        <VBox fx:id="menuPrincipal" spacing="2"/>
 
-                <VBox fx:id="menuCursoContextual" spacing="2" visible="false" managed="false"/>
+                        <Region prefHeight="8"/>
 
-                <Region VBox.vgrow="ALWAYS"/>
-                <Separator/>
-                <Region prefHeight="8"/>
+                        <VBox fx:id="menuCursoContextual" spacing="2" visible="false" managed="false"/>
+                    </VBox>
+                </ScrollPane>
 
-                <Button text="Cerrar sesión" maxWidth="Infinity" styleClass="flat, danger" onAction="#handleCerrarSesion"/>
+                <!-- Cerrar sesión -->
+                <VBox style="-fx-border-color: rgba(255,255,255,0.12); -fx-border-width: 1 0 0 0;">
+                    <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+                    <Button text="Cerrar sesión" maxWidth="Infinity"
+                            onAction="#handleCerrarSesion"
+                            style="-fx-background-color: rgba(255,255,255,0.08);
+                                   -fx-text-fill: white;
+                                   -fx-font-size: 13px;
+                                   -fx-font-weight: bold;
+                                   -fx-background-radius: 8;
+                                   -fx-border-width: 0;
+                                   -fx-cursor: hand;
+                                   -fx-pref-height: 36;"/>
+                </VBox>
             </VBox>
         </left>
 
         <center>
-            <StackPane fx:id="areaPrincipal" style="-fx-background-color: -color-bg-default;"/>
+            <VBox style="-fx-background-color: #F3F4F6;">
+
+                <!-- Header fijo -->
+                <HBox alignment="CENTER_LEFT"
+                      style="-fx-background-color: white; -fx-border-color: #e5e7eb; -fx-border-width: 0 0 1 0;">
+                    <padding><Insets top="16" right="28" bottom="16" left="28"/></padding>
+                    <Label text="Portal del Estudiante"
+                           style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+                </HBox>
+
+                <StackPane fx:id="areaPrincipal" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: #F3F4F6;"/>
+            </VBox>
         </center>
     </BorderPane>
 
-    <StackPane fx:id="panelPerfilFlotante" visible="false" managed="false" style="-fx-background-color: rgba(0,0,0,0.4);">
-        <VBox maxWidth="400" maxHeight="-Infinity" spacing="20" style="-fx-background-color: white; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5); -fx-padding: 30;">
-            
-            <Label text="Mi Perfil Estudiantil" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-            
+    <!-- Panel perfil flotante -->
+    <StackPane fx:id="panelPerfilFlotante" visible="false" managed="false"
+               style="-fx-background-color: rgba(0,0,0,0.4);">
+        <VBox maxWidth="400" maxHeight="-Infinity" spacing="20"
+              style="-fx-background-color: white;
+                     -fx-background-radius: 12;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5);
+                     -fx-padding: 30;">
+
+            <Label text="Mi Perfil Estudiantil"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+
             <VBox spacing="5">
-                <Label text="Nombre Completo" style="-fx-font-weight: bold;"/>
-                <TextField fx:id="campoPerfilNombre" style="-fx-pref-height: 35;"/>
+                <Label text="Nombre Completo"
+                       style="-fx-font-size: 12px; -fx-text-fill: #6b7280;"/>
+                <TextField fx:id="campoPerfilNombre"
+                           style="-fx-pref-height: 36;
+                                  -fx-background-radius: 8;
+                                  -fx-border-radius: 8;
+                                  -fx-border-color: #d1d5db;
+                                  -fx-border-width: 1;
+                                  -fx-font-size: 13px;"/>
             </VBox>
 
             <VBox spacing="5">
-                <Label text="Correo Institucional" style="-fx-font-weight: bold;"/>
-                <TextField fx:id="campoPerfilEmail" style="-fx-pref-height: 35;"/>
+                <Label text="Correo Institucional"
+                       style="-fx-font-size: 12px; -fx-text-fill: #6b7280;"/>
+                <TextField fx:id="campoPerfilEmail"
+                           style="-fx-pref-height: 36;
+                                  -fx-background-radius: 8;
+                                  -fx-border-radius: 8;
+                                  -fx-border-color: #d1d5db;
+                                  -fx-border-width: 1;
+                                  -fx-font-size: 13px;"/>
             </VBox>
 
             <VBox spacing="5">
-                <Label text="Cambiar Contraseña" style="-fx-font-weight: bold;"/>
-                <PasswordField fx:id="campoPerfilPassword" promptText="Dejar en blanco para mantener la actual" style="-fx-pref-height: 35;"/>
+                <Label text="Cambiar Contraseña"
+                       style="-fx-font-size: 12px; -fx-text-fill: #6b7280;"/>
+                <PasswordField fx:id="campoPerfilPassword"
+                               promptText="Dejar en blanco para mantener la actual"
+                               style="-fx-pref-height: 36;
+                                      -fx-background-radius: 8;
+                                      -fx-border-radius: 8;
+                                      -fx-border-color: #d1d5db;
+                                      -fx-border-width: 1;
+                                      -fx-font-size: 13px;"/>
             </VBox>
 
             <Label fx:id="mensajePerfil" visible="false" managed="false" wrapText="true"/>
 
             <HBox spacing="10" alignment="CENTER_RIGHT">
-                <Button text="Cancelar" onAction="#handleCerrarPerfil" styleClass="flat"/>
-                <Button text="Guardar Cambios" onAction="#handleGuardarPerfil" styleClass="accent"/>
+                <Button text="Cancelar" onAction="#handleCerrarPerfil"
+                        style="-fx-pref-height: 36;
+                               -fx-background-color: white;
+                               -fx-border-color: #d1d5db;
+                               -fx-border-width: 1;
+                               -fx-border-radius: 8;
+                               -fx-background-radius: 8;
+                               -fx-font-size: 13px;
+                               -fx-cursor: hand;"/>
+                <Button text="Guardar Cambios" onAction="#handleGuardarPerfil"
+                        style="-fx-pref-height: 36;
+                               -fx-background-color: #00a896;
+                               -fx-text-fill: white;
+                               -fx-font-weight: bold;
+                               -fx-background-radius: 8;
+                               -fx-border-width: 0;
+                               -fx-font-size: 13px;
+                               -fx-cursor: hand;"/>
             </HBox>
         </VBox>
     </StackPane>

@@ -40,10 +40,14 @@ public class DashboardAlumnoController {
     // === ESTADO Y SERVICIOS ===
     private final AlumnoService alumnoService = new AlumnoService();
     private final UsuarioService usuarioService = new UsuarioService();
-    
+
     private Alumno perfilAlumno;
     private Grupo cursoSeleccionado;
     private Button botonActivo;
+
+    private static final String ESTILO_BOTON_NORMAL = "-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-width: 0; -fx-cursor: hand; -fx-padding: 8 12;";
+    private static final String ESTILO_BOTON_ACTIVO = "-fx-background-color: rgba(255,255,255,0.18); -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-width: 0; -fx-cursor: hand; -fx-padding: 8 12;";
+    private static final String ESTILO_SECCION = "-fx-text-fill: rgba(255,255,255,0.55); -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 8 8 4 8;";
 
     @FXML
     public void initialize() {
@@ -58,7 +62,7 @@ public class DashboardAlumnoController {
             perfilAlumno = alumnoService.buscarPorUsuarioId(usuario.getId());
             labelNombreUsuario.setText(usuario.getNombre());
             labelMatricula.setText("Matrícula: " + perfilAlumno.getMatricula());
-            
+
             construirMenuPrincipal();
             abrirVista(NavegationUtil.MIS_CURSOS_ALUMNO, null);
 
@@ -76,13 +80,12 @@ public class DashboardAlumnoController {
 
     private void construirMenuPrincipal() {
         menuPrincipal.getChildren().clear();
-        
+
         Label titulo = new Label("MI ESPACIO");
-        titulo.getStyleClass().add("sidebar-titulo");
+        titulo.setStyle(ESTILO_SECCION);
         menuPrincipal.getChildren().add(titulo);
 
         Button btnMisCursos = crearBotonMenu("Mis Cursos", null);
-        
         btnMisCursos.setOnAction(e -> {
             actualizarBotonActivo(btnMisCursos);
             menuCursoContextual.setVisible(false);
@@ -91,27 +94,26 @@ public class DashboardAlumnoController {
             NavegationUtil.cargarEnArea(areaPrincipal, NavegationUtil.MIS_CURSOS_ALUMNO);
         });
 
-        Button btnPerfil = crearBotonMenu("Mi Perfil", null); 
+        Button btnPerfil = crearBotonMenu("Mi Perfil", null);
         btnPerfil.setOnAction(e -> abrirPerfilFlotante());
-        
+
         menuPrincipal.getChildren().addAll(btnMisCursos, btnPerfil);
     }
 
-    // Método que llamaremos desde la vista "Mis Cursos" al hacer clic en una tarjeta
     public void activarMenuDeCurso(Grupo curso) {
         this.cursoSeleccionado = curso;
         menuCursoContextual.getChildren().clear();
 
         Label titulo = new Label("CURSO ACTUAL");
-        titulo.getStyleClass().add("sidebar-titulo");
-        
+        titulo.setStyle(ESTILO_SECCION);
+
         Label subtitulo = new Label(curso.getClave() + "\n" + curso.getMateriaNombre());
-        subtitulo.setStyle("-fx-font-size: 11px; -fx-text-fill: #2da44e; -fx-padding: 0 0 10 10; -fx-font-weight: bold;");
+        subtitulo.setStyle("-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.75); -fx-padding: 0 0 10 12; -fx-font-weight: bold;");
 
         Button btnDetalles = crearBotonMenu("Mi Boleta", NavegationUtil.ALUMNO_CURSO_DETALLE);
 
         menuCursoContextual.getChildren().addAll(titulo, subtitulo, btnDetalles);
-        
+
         menuCursoContextual.setVisible(true);
         menuCursoContextual.setManaged(true);
 
@@ -120,10 +122,10 @@ public class DashboardAlumnoController {
 
     private Button crearBotonMenu(String texto, String rutaFxml) {
         Button boton = new Button(texto);
-        boton.getStyleClass().add("flat");
         boton.setMaxWidth(Double.MAX_VALUE);
         boton.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        
+        boton.setStyle(ESTILO_BOTON_NORMAL);
+
         if (rutaFxml != null) {
             boton.setOnAction(e -> {
                 actualizarBotonActivo(boton);
@@ -135,12 +137,10 @@ public class DashboardAlumnoController {
 
     private void actualizarBotonActivo(Button boton) {
         if (botonActivo != null) {
-            botonActivo.getStyleClass().remove("accent");
-            botonActivo.getStyleClass().add("flat");
+            botonActivo.setStyle(ESTILO_BOTON_NORMAL);
         }
         botonActivo = boton;
-        botonActivo.getStyleClass().remove("flat");
-        botonActivo.getStyleClass().add("accent");
+        botonActivo.setStyle(ESTILO_BOTON_ACTIVO);
     }
 
     public void abrirVista(String rutaFxml, Button botonOrigen) {
@@ -148,8 +148,7 @@ public class DashboardAlumnoController {
         NavegationUtil.cargarEnArea(areaPrincipal, rutaFxml);
     }
 
-    // === GESTIÓN DE PERFIL Y CIERRE DE SESIÓN ===
-    // (Idéntica a la del maestro)
+    // === GESTIÓN DE PERFIL ===
 
     @FXML
     private void abrirPerfilFlotante() {
@@ -176,7 +175,7 @@ public class DashboardAlumnoController {
             mostrarNotificacionPerfil("El nombre y correo no pueden estar vacíos.", true, false);
             return;
         }
-        
+
         try {
             usuarioService.actualizarPerfil(actual.getId(), nuevoNombre, nuevoEmail, nuevaPass);
             actual.setNombre(nuevoNombre);
@@ -203,7 +202,9 @@ public class DashboardAlumnoController {
         mensajePerfil.setVisible(true);
         mensajePerfil.setManaged(true);
         mensajePerfil.setOpacity(1.0);
-        mensajePerfil.setStyle(esError ? "-fx-background-color: #f8d7da; -fx-text-fill: #721c24; -fx-padding: 8; -fx-background-radius: 5;" : "-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 8; -fx-background-radius: 5;");
+        mensajePerfil.setStyle(esError
+                ? "-fx-background-color: #f8d7da; -fx-text-fill: #721c24; -fx-padding: 8; -fx-background-radius: 5;"
+                : "-fx-background-color: #d4edda; -fx-text-fill: #155724; -fx-padding: 8; -fx-background-radius: 5;");
 
         if (!persistente) {
             FadeTransition fade = new FadeTransition(Duration.seconds(1), mensajePerfil);
@@ -218,9 +219,12 @@ public class DashboardAlumnoController {
         SessionManagerUtil.cerrarSesion();
         instancia = null;
         javafx.stage.Stage stage = (javafx.stage.Stage) menuPrincipal.getScene().getWindow();
-        stage.setMaximized(false); stage.setResizable(false);
-        stage.setMinWidth(500); stage.setMinHeight(650);
-        stage.setWidth(500); stage.setHeight(650);
+        stage.setMaximized(false);
+        stage.setResizable(false);
+        stage.setMinWidth(700);
+        stage.setMinHeight(440);
+        stage.setWidth(700);
+        stage.setHeight(440);
         NavegationUtil.irA(NavegationUtil.LOGIN);
         stage.centerOnScreen();
     }
@@ -228,7 +232,7 @@ public class DashboardAlumnoController {
     public Grupo getCursoSeleccionado() {
         return this.cursoSeleccionado;
     }
-    
+
     public Alumno getPerfilAlumno() {
         return this.perfilAlumno;
     }

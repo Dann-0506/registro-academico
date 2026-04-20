@@ -23,6 +23,8 @@ public class DashboardAdminController {
     @FXML private Label labelBienvenida;
     @FXML private VBox menuNavegacion;
     @FXML private StackPane areaPrincipal;
+    @FXML private Label labelInicialesUsuario;
+    @FXML private Label labelInicialesHeader;
 
     // === ELEMENTOS DE MI PERFIL (Panel Flotante) ===
     @FXML private StackPane panelPerfilFlotante;
@@ -88,24 +90,24 @@ public class DashboardAdminController {
 
         agregarSeccion("CUENTA");
         Button btnPerfil = new Button("Mi perfil");
-        btnPerfil.getStyleClass().add("flat");
         btnPerfil.setMaxWidth(Double.MAX_VALUE);
         btnPerfil.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        btnPerfil.setOnAction(e -> abrirPerfilFlotante()); 
+        btnPerfil.setStyle("-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-width: 0; -fx-cursor: hand; -fx-padding: 8 12;");
+        btnPerfil.setOnAction(e -> abrirPerfilFlotante());
         menuNavegacion.getChildren().add(btnPerfil);
     }
 
     private void agregarSeccion(String titulo) {
         Label label = new Label(titulo);
-        label.getStyleClass().add("sidebar-titulo");
+        label.setStyle("-fx-text-fill: rgba(255,255,255,0.55); -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 8 8 4 8;");
         menuNavegacion.getChildren().add(label);
     }
 
     private void agregarBoton(String texto, String rutaFxml) {
         Button boton = new Button(texto);
-        boton.getStyleClass().add("flat");
         boton.setMaxWidth(Double.MAX_VALUE);
         boton.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        boton.setStyle("-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-width: 0; -fx-cursor: hand; -fx-padding: 8 12;");
         boton.setOnAction(e -> {
             actualizarBotonActivo(boton);
             NavegationUtil.cargarEnArea(areaPrincipal, rutaFxml);
@@ -115,12 +117,10 @@ public class DashboardAdminController {
 
     private void actualizarBotonActivo(Button boton) {
         if (botonActivo != null) {
-            botonActivo.getStyleClass().remove("accent");
-            botonActivo.getStyleClass().add("flat");
+            botonActivo.setStyle("-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-width: 0; -fx-cursor: hand; -fx-padding: 8 12;");
         }
         botonActivo = boton;
-        botonActivo.getStyleClass().remove("flat");
-        botonActivo.getStyleClass().add("accent");
+        botonActivo.setStyle("-fx-background-color: rgba(255,255,255,0.18); -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-width: 0; -fx-cursor: hand; -fx-padding: 8 12;");
     }
 
     private String formatearRol(String rol) {
@@ -145,10 +145,10 @@ public class DashboardAdminController {
         // Restaurar dimensiones de la ventana de Login
         stage.setMaximized(false);
         stage.setResizable(false);
-        stage.setMinWidth(500);
-        stage.setMinHeight(650);
-        stage.setWidth(500);
-        stage.setHeight(650);
+        stage.setMinWidth(700);
+        stage.setMinHeight(440);
+        stage.setWidth(700);
+        stage.setHeight(440);
 
         NavegationUtil.irA(NavegationUtil.LOGIN);
         stage.centerOnScreen();
@@ -163,7 +163,7 @@ public class DashboardAdminController {
         campoPerfilNombre.setText(actual.getNombre());
         campoPerfilEmail.setText(actual.getEmail());
         campoPerfilPassword.clear();
-        
+
         panelPerfilFlotante.setVisible(true);
         panelPerfilFlotante.setManaged(true);
     }
@@ -176,21 +176,20 @@ public class DashboardAdminController {
         String nuevaPass = campoPerfilPassword.getText();
 
         if (nuevoNombre.isEmpty() || nuevoEmail.isEmpty()) {
-            mostrarNotificacionPerfil("El nombre y correo no pueden estar vacíos.", true, false); 
+            mostrarNotificacionPerfil("El nombre y correo no pueden estar vacíos.", true, false);
             return;
         }
 
         try {
             usuarioService.actualizarPerfil(actual.getId(), nuevoNombre, nuevoEmail, nuevaPass);
-            
-            // Actualizar variables y UI en caliente
+
             actual.setNombre(nuevoNombre);
             actual.setEmail(nuevoEmail);
             labelNombreUsuario.setText(nuevoNombre);
             labelBienvenida.setText("Bienvenido, " + nuevoNombre.split(" ")[0] + ".");
-            
+
             mostrarNotificacionPerfil("Perfil actualizado con éxito.", false, false);
-            
+
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
             pause.setOnFinished(e -> handleCerrarPerfil());
             pause.play();
@@ -208,7 +207,7 @@ public class DashboardAdminController {
 
     private void mostrarNotificacionPerfil(String mensaje, boolean esError, boolean persistente) {
         mensajePerfil.setText(mensaje);
-        mensajePerfil.setOpacity(1.0); 
+        mensajePerfil.setOpacity(1.0);
         mensajePerfil.setVisible(true);
         mensajePerfil.setManaged(true);
 

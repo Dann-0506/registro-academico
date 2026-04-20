@@ -43,10 +43,10 @@ public class MainApp extends Application {
         // 2. Configuración de la Ventana Inicial (Login)
         stage.setTitle("Registro Académico — Gestión Escolar");
         stage.setResizable(false);
-        stage.setMinWidth(500);
-        stage.setMinHeight(650);
-        stage.setWidth(500);
-        stage.setHeight(650);
+        stage.setMinWidth(700);
+        stage.setMinHeight(440);
+        stage.setWidth(700);
+        stage.setHeight(440);
 
         // 3. Lanzamiento de la primera vista
         NavegationUtil.irA(NavegationUtil.LOGIN);

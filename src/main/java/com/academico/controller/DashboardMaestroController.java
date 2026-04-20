@@ -19,14 +19,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
-/**
- * Controlador principal para el Dashboard del rol Maestro.
- * Gestiona el menú de navegación general, el menú contextual por grupo 
- * y la actualización del perfil del docente.
- */
 public class DashboardMaestroController {
 
-    // Singleton de UI para permitir comunicación desde otras vistas
     public static DashboardMaestroController instancia;
 
     // === ELEMENTOS PRINCIPALES (Menú y Cabecera) ===
@@ -46,10 +40,14 @@ public class DashboardMaestroController {
     // === VARIABLES DE ESTADO Y SERVICIOS ===
     private final MaestroService maestroService = new MaestroService();
     private final UsuarioService usuarioService = new UsuarioService();
-    
+
     private Maestro perfilMaestro;
     private Grupo grupoSeleccionado;
     private Button botonActivo;
+
+    private static final String ESTILO_BOTON_NORMAL = "-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-width: 0; -fx-cursor: hand; -fx-padding: 8 12;";
+    private static final String ESTILO_BOTON_ACTIVO = "-fx-background-color: rgba(255,255,255,0.18); -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-border-width: 0; -fx-cursor: hand; -fx-padding: 8 12;";
+    private static final String ESTILO_SECCION = "-fx-text-fill: rgba(255,255,255,0.55); -fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 8 8 4 8;";
 
     // ==========================================
     // INICIALIZACIÓN
@@ -68,9 +66,9 @@ public class DashboardMaestroController {
             perfilMaestro = maestroService.buscarPorUsuarioId(usuario.getId());
             labelNombreUsuario.setText(usuario.getNombre());
             labelNumEmpleado.setText("No. Empleado: " + perfilMaestro.getNumEmpleado());
-            
+
             construirMenuPrincipal();
-            
+
             abrirVista(NavegationUtil.MIS_GRUPOS, null);
 
             if (usuario.isRequiereCambioPassword()) {
@@ -86,47 +84,40 @@ public class DashboardMaestroController {
     }
 
     // ==========================================
-    // CONSTRUCCIÓN DE MENÚS (Navegación Dinámica)
+    // CONSTRUCCIÓN DE MENÚS
     // ==========================================
 
     private void construirMenuPrincipal() {
         menuPrincipal.getChildren().clear();
-        
+
         Label titulo = new Label("HOME");
-        titulo.getStyleClass().add("sidebar-titulo");
+        titulo.setStyle(ESTILO_SECCION);
         menuPrincipal.getChildren().add(titulo);
 
         Button btnMisGrupos = crearBotonMenu("Mis Grupos Asignados", null);
-        
         btnMisGrupos.setOnAction(e -> {
             actualizarBotonActivo(btnMisGrupos);
-            
             menuGrupoContextual.setVisible(false);
             menuGrupoContextual.setManaged(false);
             this.grupoSeleccionado = null;
-            
             NavegationUtil.cargarEnArea(areaPrincipal, NavegationUtil.MIS_GRUPOS);
         });
 
-        Button btnPerfil = crearBotonMenu("Mi Perfil", null); 
+        Button btnPerfil = crearBotonMenu("Mi Perfil", null);
         btnPerfil.setOnAction(e -> abrirPerfilFlotante());
-        
+
         menuPrincipal.getChildren().addAll(btnMisGrupos, btnPerfil);
     }
 
-    /**
-     * Activa el menú contextual cuando el maestro selecciona un grupo específico
-     * desde la pantalla de "Mis Grupos".
-     */
     public void activarMenuDeGrupo(Grupo grupo) {
         this.grupoSeleccionado = grupo;
         menuGrupoContextual.getChildren().clear();
 
         Label titulo = new Label("GESTIÓN DEL GRUPO");
-        titulo.getStyleClass().add("sidebar-titulo");
-        
+        titulo.setStyle(ESTILO_SECCION);
+
         Label subtitulo = new Label(grupo.getClave() + " - " + grupo.getMateriaNombre());
-        subtitulo.setStyle("-fx-font-size: 11px; -fx-text-fill: #0969da; -fx-padding: 0 0 10 10; -fx-font-weight: bold;");
+        subtitulo.setStyle("-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.75); -fx-padding: 0 0 10 12; -fx-font-weight: bold;");
 
         Button btnActividades = crearBotonMenu("Rúbrica y Actividades", NavegationUtil.GRUPO_ACTIVIDADES);
         Button btnCalificaciones = crearBotonMenu("Calificar Alumnos", NavegationUtil.GRUPO_CALIFICACIONES);
@@ -134,20 +125,19 @@ public class DashboardMaestroController {
         Button btnConcentrado = crearBotonMenu("Concentrado Final", NavegationUtil.GRUPO_CONCENTRADO);
 
         menuGrupoContextual.getChildren().addAll(titulo, subtitulo, btnActividades, btnCalificaciones, btnBonus, btnConcentrado);
-        
+
         menuGrupoContextual.setVisible(true);
         menuGrupoContextual.setManaged(true);
-        
-        // Al seleccionar un grupo, lo mandamos a la pantalla de actividades por defecto
+
         btnActividades.fire();
     }
 
     private Button crearBotonMenu(String texto, String rutaFxml) {
         Button boton = new Button(texto);
-        boton.getStyleClass().add("flat");
         boton.setMaxWidth(Double.MAX_VALUE);
         boton.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        
+        boton.setStyle(ESTILO_BOTON_NORMAL);
+
         if (rutaFxml != null) {
             boton.setOnAction(e -> {
                 actualizarBotonActivo(boton);
@@ -159,12 +149,10 @@ public class DashboardMaestroController {
 
     private void actualizarBotonActivo(Button boton) {
         if (botonActivo != null) {
-            botonActivo.getStyleClass().remove("accent");
-            botonActivo.getStyleClass().add("flat");
+            botonActivo.setStyle(ESTILO_BOTON_NORMAL);
         }
         botonActivo = boton;
-        botonActivo.getStyleClass().remove("flat");
-        botonActivo.getStyleClass().add("accent");
+        botonActivo.setStyle(ESTILO_BOTON_ACTIVO);
     }
 
     public void abrirVista(String rutaFxml, Button botonOrigen) {
@@ -183,12 +171,10 @@ public class DashboardMaestroController {
             campoPerfilNombre.setText(u.getNombre());
             campoPerfilEmail.setText(u.getEmail());
             campoPerfilPassword.clear();
-            
-            // Ocultar mensajes previos
+
             mensajePerfil.setVisible(false);
             mensajePerfil.setManaged(false);
-            
-            // Mostrar modal
+
             panelPerfilFlotante.setVisible(true);
             panelPerfilFlotante.setManaged(true);
         }
@@ -205,16 +191,16 @@ public class DashboardMaestroController {
             mostrarNotificacionPerfil("El nombre y correo no pueden estar vacíos.", true, false);
             return;
         }
-        
+
         try {
             usuarioService.actualizarPerfil(actual.getId(), nuevoNombre, nuevoEmail, nuevaPass);
-            
+
             actual.setNombre(nuevoNombre);
             actual.setEmail(nuevoEmail);
             labelNombreUsuario.setText(nuevoNombre);
 
             mostrarNotificacionPerfil("Perfil actualizado con éxito.", false, false);
-            
+
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
             pause.setOnFinished(e -> handleCerrarPerfil());
             pause.play();
@@ -258,15 +244,15 @@ public class DashboardMaestroController {
     private void handleCerrarSesion() {
         SessionManagerUtil.cerrarSesion();
         instancia = null;
-        
+
         javafx.stage.Stage stage = (javafx.stage.Stage) menuPrincipal.getScene().getWindow();
-        
+
         stage.setMaximized(false);
         stage.setResizable(false);
-        stage.setMinWidth(500);
-        stage.setMinHeight(650);
-        stage.setWidth(500);
-        stage.setHeight(650);
+        stage.setMinWidth(700);
+        stage.setMinHeight(440);
+        stage.setWidth(700);
+        stage.setHeight(440);
 
         NavegationUtil.irA(NavegationUtil.LOGIN);
         stage.centerOnScreen();
