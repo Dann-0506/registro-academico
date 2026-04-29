@@ -1,4 +1,4 @@
-# Sistema de Registro de Resultados Académicos
+# Sistema Institucional de Registro Académico
 
 > **Aviso de Proyecto Académico**
 > Este repositorio contiene un proyecto desarrollado con fines puramente académicos y de aprendizaje universitario. No está diseñado para su uso en entornos de producción reales.
