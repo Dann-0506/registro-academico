@@ -7,7 +7,6 @@
 
 Sistema de escritorio para gestionar el ciclo completo de evaluación académica: alumnos, maestros, materias, grupos, actividades, calificaciones y reportes.
 
----
 
 ## Arquitectura
 
@@ -35,8 +34,6 @@ src/main/java/com/academico/
 
 **Util** — Herramientas transversales: `SessionManager` (sesión activa), `NavegacionUtil` (navegación entre vistas), `CsvUtil` (lectura/escritura CSV), `BackupUtil` (respaldo y restauración de BD).
 
----
-
 ## Tecnologías
 
 | Componente | Tecnología |
@@ -51,15 +48,11 @@ src/main/java/com/academico/
 | Importación CSV | OpenCSV |
 | Pruebas | JUnit 5 + Mockito |
 
----
-
 ## Requisitos Previos
 
 - JDK 21 o superior
 - Maven 3.9+
 - PostgreSQL 14+
-
----
 
 ## Configuración del Entorno
 
@@ -108,8 +101,6 @@ mvn javafx:run
 mvn test
 ```
 
----
-
 ## Roles del Sistema
 
 El sistema define tres roles con niveles de acceso distintos:
@@ -122,8 +113,6 @@ El sistema define tres roles con niveles de acceso distintos:
 
 Para más detalle ver `docs/roles_permisos.docx`.
 
----
-
 ## Credenciales de Prueba
 
 Para desarrollo local, inserta usuarios de prueba generando los hashes con:
@@ -132,8 +121,6 @@ Para desarrollo local, inserta usuarios de prueba generando los hashes con:
 mvn compile exec:java -Dexec.mainClass="com.academico.MainApp"
 # Descomentar temporalmente la generación de hashes en main()
 ```
-
----
 
 ## Estructura de la Base de Datos
 
@@ -149,3 +136,7 @@ inscripcion → bonus
 ```
 
 El esquema completo con índices y vistas de cálculo está en `src/main/resources/com/academico/db/schema.sql`.
+
+## Colaboradores
+- Daniel Landero Arias
+- Ximena Zaleta Hernández
