@@ -125,8 +125,23 @@ public class GrupoService {
     }
 
     @Transactional
+    public void cerrarDefinitivamente(Integer id) {
+        Grupo grupo = buscarPorId(id);
+        if (!grupo.isActivo() && grupo.isCerrado()) {
+            throw new IllegalStateException("El curso ya fue cerrado definitivamente.");
+        }
+        congelarCalificacionesFinales(grupo);
+        grupo.setEstadoEvaluacion("CERRADO");
+        grupo.setActivo(false);
+        grupoRepository.save(grupo);
+    }
+
+    @Transactional
     public void reabrirCurso(Integer id) {
         Grupo grupo = buscarPorId(id);
+        if (!grupo.isActivo() && grupo.isCerrado()) {
+            throw new IllegalStateException("El curso fue cerrado definitivamente y no puede reabrirse.");
+        }
         grupo.setEstadoEvaluacion("ABIERTO");
         grupo.setActivo(true);
         grupoRepository.save(grupo);

@@ -65,6 +65,12 @@ public class GruposController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/cerrar-definitivo")
+    public ResponseEntity<Void> cerrarDefinitivamente(@PathVariable Integer id) {
+        grupoService.cerrarDefinitivamente(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         grupoService.eliminar(id);
