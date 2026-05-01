@@ -28,6 +28,12 @@ public class MateriaService {
                 .orElseThrow(() -> new NoSuchElementException("Materia no encontrada con id: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public Materia buscarPorClave(String clave) {
+        return materiaRepository.findByClave(clave)
+                .orElseThrow(() -> new NoSuchElementException("Materia no encontrada con clave: " + clave));
+    }
+
     @Transactional
     public Materia crear(String clave, String nombre, int totalUnidades, List<String> nombresUnidades) {
         validarCampos(clave, nombre, totalUnidades);

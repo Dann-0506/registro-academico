@@ -275,7 +275,13 @@ Sprint 9 (sem 15):   Testing E2E + Docker + QA final
 - [x] Análisis de la app original (JavaFX)
 - [x] Definición de arquitectura objetivo
 - [x] Plan de migración documentado
-- [ ] **Fase 1:** Backend REST API
+- [x] **Fase 1:** Backend REST API ✅ completada
+  - [x] S1: pom.xml + 12 entidades JPA
+  - [x] S2: 12 repositorios JPA con @Query personalizadas
+  - [x] S3: Spring Security + JWT + AuthController
+  - [x] S4: Servicios y controladores CRUD del administrador (6 entidades)
+  - [x] S5: CalificacionService, ReporteService, servicios y controladores del maestro
+  - [x] S6: Vistas del alumno, PDF, CSV, respaldos, análisis, fix cierre de acta
 - [ ] **Fase 2:** Frontend React
-- [ ] **Fase 3:** Paridad de funcionalidades
+- [ ] **Fase 3:** Paridad de funcionalidades (cubierta en Fase 1)
 - [ ] **Fase 4:** Testing y despliegue

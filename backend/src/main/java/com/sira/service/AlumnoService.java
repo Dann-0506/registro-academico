@@ -33,6 +33,18 @@ public class AlumnoService {
     }
 
     @Transactional(readOnly = true)
+    public Alumno buscarPorUsuarioId(Integer usuarioId) {
+        return alumnoRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new NoSuchElementException("Perfil de alumno no encontrado para el usuario: " + usuarioId));
+    }
+
+    @Transactional(readOnly = true)
+    public Alumno buscarPorMatricula(String matricula) {
+        return alumnoRepository.findByMatricula(matricula)
+                .orElseThrow(() -> new NoSuchElementException("Alumno no encontrado con matrícula: " + matricula));
+    }
+
+    @Transactional(readOnly = true)
     public List<Alumno> buscarPorGrupo(Integer grupoId) {
         return alumnoRepository.findByGrupoId(grupoId);
     }

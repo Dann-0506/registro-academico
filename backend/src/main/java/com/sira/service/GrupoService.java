@@ -1,5 +1,6 @@
 package com.sira.service;
 
+import com.sira.dto.CalificacionFinalDto;
 import com.sira.model.Grupo;
 import com.sira.model.Inscripcion;
 import com.sira.model.Maestro;
@@ -9,6 +10,7 @@ import com.sira.repository.InscripcionRepository;
 import com.sira.repository.MaestroRepository;
 import com.sira.repository.MateriaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ public class GrupoService {
     @Autowired private MaestroRepository maestroRepository;
     @Autowired private InscripcionRepository inscripcionRepository;
     @Autowired private ConfiguracionService configuracionService;
+    @Lazy @Autowired private ReporteService reporteService;
 
     @Transactional(readOnly = true)
     public List<Grupo> listarTodos() {
@@ -44,6 +47,13 @@ public class GrupoService {
     @Transactional(readOnly = true)
     public List<Grupo> buscarPorAlumno(Integer alumnoId) {
         return grupoRepository.findByAlumnoId(alumnoId);
+    }
+
+    @Transactional(readOnly = true)
+    public Grupo buscarPorClaveYSemestre(String clave, String semestre) {
+        return grupoRepository.findByClaveAndSemestre(clave, semestre)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Grupo '" + clave + "' no encontrado para el semestre '" + semestre + "'"));
     }
 
     @Transactional
@@ -96,8 +106,22 @@ public class GrupoService {
         if (grupo.isCerrado()) {
             throw new IllegalStateException("El curso ya se encuentra cerrado.");
         }
+        // Congelar snapshot de calificaciones antes de cerrar
+        congelarCalificacionesFinales(grupo);
         grupo.setEstadoEvaluacion("CERRADO");
         grupoRepository.save(grupo);
+    }
+
+    private void congelarCalificacionesFinales(Grupo grupo) {
+        List<CalificacionFinalDto> reporte = reporteService.generarReporteFinalGrupo(
+                grupo.getId(), grupo.getCalificacionMaxima());
+        for (CalificacionFinalDto cf : reporte) {
+            if (cf.getCalificacionFinal() != null) {
+                String estado = cf.getCalificacionFinal()
+                        .compareTo(grupo.getCalificacionMinimaAprobatoria()) >= 0 ? "APROBADO" : "REPROBADO";
+                inscripcionRepository.guardarResultadoHistorico(cf.getInscripcionId(), cf.getCalificacionFinal(), estado);
+            }
+        }
     }
 
     @Transactional
