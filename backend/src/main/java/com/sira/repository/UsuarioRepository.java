@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,6 +15,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     Optional<Usuario> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    List<Usuario> findByRolOrderByNombreAsc(String rol);
+
+    long countByRolAndActivo(String rol, boolean activo);
 
     @Modifying
     @Query("UPDATE Usuario u SET u.passwordHash = :hash WHERE u.id = :id")
