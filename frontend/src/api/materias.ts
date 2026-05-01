@@ -1,5 +1,5 @@
 import client from './client'
-import type { MateriaResponse } from '@/types'
+import type { MateriaResponse, UnidadDto } from '@/types'
 
 const BASE = '/admin/materias'
 
@@ -10,3 +10,6 @@ export const createMateria = (data: { clave: string; nombre: string; totalUnidad
 export const updateMateria = (id: number, data: { nombre: string }) =>
   client.put<MateriaResponse>(`${BASE}/${id}`, data).then(r => r.data)
 export const deleteMateria = (id: number) => client.delete(`${BASE}/${id}`)
+
+export const getUnidadesByMateria = (materiaId: number) =>
+  client.get<MateriaResponse>(`${BASE}/${materiaId}`).then(r => r.data.unidades as UnidadDto[])

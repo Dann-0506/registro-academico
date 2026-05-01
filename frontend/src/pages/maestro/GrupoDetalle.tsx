@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Pencil, Trash2, Save, Lock, LockOpen, LockKeyhole, FileDown, Gift } from 'lucide-react'
 import axios from 'axios'
 import { getMiGrupo, cerrarGrupoMaestro, reabrirGrupoMaestro, cerrarDefinitivamenteMaestro } from '@/api/grupos'
+import { getUnidadesByMateria } from '@/api/materias'
 import { getActividades, createActividad, updateActividad, deleteActividad } from '@/api/actividades'
 import { getReporte, guardarLote, aplicarOverride, descargarActaPdf } from '@/api/calificaciones'
 import { getBonus, createBonus } from '@/api/bonus'
@@ -36,6 +37,11 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
   const { data: actividades = [], isLoading } = useQuery({
     queryKey: ['actividades', grupoId],
     queryFn: () => getActividades(grupoId),
+  })
+
+  const { data: unidades = [] } = useQuery({
+    queryKey: ['unidades', grupo.materiaId],
+    queryFn: () => getUnidadesByMateria(grupo.materiaId),
   })
 
   const inv = () => qc.invalidateQueries({ queryKey: ['actividades', grupoId] })
@@ -171,9 +177,8 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Unidad <span className="text-red-500">*</span></label>
               <select value={form.unidadId} onChange={(e) => setForm((p) => ({ ...p, unidadId: e.target.value }))} className={inputClass}>
                 <option value="">Seleccionar unidad...</option>
-                {/* We get unidad options from existing activities or materia — use report or actividades */}
-                {Object.entries(unitLabels).map(([id, u]) => (
-                  <option key={id} value={id}>Unidad {u.numero}: {u.nombre}</option>
+                {unidades.map((u) => (
+                  <option key={u.id} value={u.id}>Unidad {u.numero}: {u.nombre}</option>
                 ))}
               </select>
             </div>

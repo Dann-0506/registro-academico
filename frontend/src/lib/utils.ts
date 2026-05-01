@@ -17,6 +17,8 @@ export function estadoColor(estado: string): string {
     case 'PENDIENTE': return 'text-slate-600 bg-slate-100 border-slate-200'
     case 'ABIERTO': case 'ABIERTA': return 'text-blue-700 bg-blue-50 border-blue-200'
     case 'CERRADO': case 'CERRADA': return 'text-amber-700 bg-amber-50 border-amber-200'
+    case 'ACTIVO': return 'text-emerald-700 bg-emerald-50 border-emerald-200'
+    case 'INACTIVO': return 'text-slate-500 bg-slate-100 border-slate-200'
     default: return 'text-slate-600 bg-slate-100 border-slate-200'
   }
 }
