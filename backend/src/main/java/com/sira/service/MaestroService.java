@@ -28,19 +28,19 @@ public class MaestroService {
 
     @Transactional(readOnly = true)
     public Maestro buscarPorId(Integer id) {
-        return maestroRepository.findById(id)
+        return maestroRepository.findByIdWithUsuario(id)
                 .orElseThrow(() -> new NoSuchElementException("Maestro no encontrado con id: " + id));
     }
 
     @Transactional(readOnly = true)
     public Maestro buscarPorUsuarioId(Integer usuarioId) {
-        return maestroRepository.findByUsuarioId(usuarioId)
+        return maestroRepository.findByUsuarioIdWithUsuario(usuarioId)
                 .orElseThrow(() -> new NoSuchElementException("Perfil de maestro no encontrado para el usuario: " + usuarioId));
     }
 
     @Transactional(readOnly = true)
     public Maestro buscarPorNumEmpleado(String numEmpleado) {
-        return maestroRepository.findByNumEmpleado(numEmpleado)
+        return maestroRepository.findByNumEmpleadoWithUsuario(numEmpleado)
                 .orElseThrow(() -> new NoSuchElementException("Maestro no encontrado con número de empleado: " + numEmpleado));
     }
 
@@ -56,7 +56,8 @@ public class MaestroService {
         Usuario usuario = usuarioRepository.save(
                 new Usuario(nombre.trim(), email != null ? email.trim() : null, passwordEncoder.encode("123456"), "maestro")
         );
-        return maestroRepository.save(new Maestro(usuario, numEmpleado.trim().toUpperCase()));
+        Maestro saved = maestroRepository.save(new Maestro(usuario, numEmpleado.trim().toUpperCase()));
+        return maestroRepository.findByIdWithUsuario(saved.getId()).orElseThrow();
     }
 
     @Transactional
@@ -77,7 +78,8 @@ public class MaestroService {
         usuario.setEmail(email != null ? email.trim() : null);
         usuarioRepository.save(usuario);
         maestro.setNumEmpleado(numEmpleado.trim().toUpperCase());
-        return maestroRepository.save(maestro);
+        maestroRepository.save(maestro);
+        return maestroRepository.findByIdWithUsuario(id).orElseThrow();
     }
 
     @Transactional

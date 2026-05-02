@@ -28,19 +28,19 @@ public class AlumnoService {
 
     @Transactional(readOnly = true)
     public Alumno buscarPorId(Integer id) {
-        return alumnoRepository.findById(id)
+        return alumnoRepository.findByIdWithUsuario(id)
                 .orElseThrow(() -> new NoSuchElementException("Alumno no encontrado con id: " + id));
     }
 
     @Transactional(readOnly = true)
     public Alumno buscarPorUsuarioId(Integer usuarioId) {
-        return alumnoRepository.findByUsuarioId(usuarioId)
+        return alumnoRepository.findByUsuarioIdWithUsuario(usuarioId)
                 .orElseThrow(() -> new NoSuchElementException("Perfil de alumno no encontrado para el usuario: " + usuarioId));
     }
 
     @Transactional(readOnly = true)
     public Alumno buscarPorMatricula(String matricula) {
-        return alumnoRepository.findByMatricula(matricula)
+        return alumnoRepository.findByMatriculaWithUsuario(matricula)
                 .orElseThrow(() -> new NoSuchElementException("Alumno no encontrado con matrícula: " + matricula));
     }
 
@@ -61,7 +61,8 @@ public class AlumnoService {
         Usuario usuario = usuarioRepository.save(
                 new Usuario(nombre.trim(), email != null ? email.trim() : null, passwordEncoder.encode("123456"), "alumno")
         );
-        return alumnoRepository.save(new Alumno(usuario, matricula.trim().toUpperCase()));
+        Alumno saved = alumnoRepository.save(new Alumno(usuario, matricula.trim().toUpperCase()));
+        return alumnoRepository.findByIdWithUsuario(saved.getId()).orElseThrow();
     }
 
     @Transactional
@@ -82,7 +83,8 @@ public class AlumnoService {
         usuario.setEmail(email != null ? email.trim() : null);
         usuarioRepository.save(usuario);
         alumno.setMatricula(matricula.trim().toUpperCase());
-        return alumnoRepository.save(alumno);
+        alumnoRepository.save(alumno);
+        return alumnoRepository.findByIdWithUsuario(alumno.getId()).orElseThrow();
     }
 
     @Transactional

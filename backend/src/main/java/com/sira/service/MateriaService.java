@@ -19,18 +19,18 @@ public class MateriaService {
 
     @Transactional(readOnly = true)
     public List<Materia> listarTodas() {
-        return materiaRepository.findAllByOrderByNombreAsc();
+        return materiaRepository.findAllWithUnidades();
     }
 
     @Transactional(readOnly = true)
     public Materia buscarPorId(Integer id) {
-        return materiaRepository.findById(id)
+        return materiaRepository.findByIdWithUnidades(id)
                 .orElseThrow(() -> new NoSuchElementException("Materia no encontrada con id: " + id));
     }
 
     @Transactional(readOnly = true)
     public Materia buscarPorClave(String clave) {
-        return materiaRepository.findByClave(clave)
+        return materiaRepository.findByClaveWithUnidades(clave)
                 .orElseThrow(() -> new NoSuchElementException("Materia no encontrada con clave: " + clave));
     }
 
@@ -48,7 +48,7 @@ public class MateriaService {
                     : "Unidad " + i;
             unidadRepository.save(new Unidad(materia, i, nombreU));
         }
-        return materiaRepository.findById(materia.getId()).orElseThrow();
+        return materiaRepository.findByIdWithUnidades(materia.getId()).orElseThrow();
     }
 
     @Transactional

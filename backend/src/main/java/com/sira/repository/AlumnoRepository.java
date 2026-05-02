@@ -11,6 +11,15 @@ import java.util.Optional;
 @Repository
 public interface AlumnoRepository extends JpaRepository<Alumno, Integer> {
 
+    @Query("SELECT a FROM Alumno a JOIN FETCH a.usuario WHERE a.id = :id")
+    Optional<Alumno> findByIdWithUsuario(Integer id);
+
+    @Query("SELECT a FROM Alumno a JOIN FETCH a.usuario WHERE a.matricula = :matricula")
+    Optional<Alumno> findByMatriculaWithUsuario(String matricula);
+
+    @Query("SELECT a FROM Alumno a JOIN FETCH a.usuario WHERE a.usuario.id = :usuarioId")
+    Optional<Alumno> findByUsuarioIdWithUsuario(Integer usuarioId);
+
     Optional<Alumno> findByMatricula(String matricula);
 
     Optional<Alumno> findByUsuarioId(Integer usuarioId);

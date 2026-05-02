@@ -26,7 +26,7 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public Administrador buscarPorId(Integer id) {
-        return administradorRepository.findById(id)
+        return administradorRepository.findByIdWithUsuario(id)
                 .orElseThrow(() -> new NoSuchElementException("Administrador no encontrado con id: " + id));
     }
 
@@ -42,7 +42,8 @@ public class AdminService {
         Usuario usuario = usuarioRepository.save(
                 new Usuario(nombre.trim(), email.trim().toLowerCase(), passwordEncoder.encode("123456"), "admin")
         );
-        return administradorRepository.save(new Administrador(usuario, numEmpleado.trim().toUpperCase()));
+        Administrador saved = administradorRepository.save(new Administrador(usuario, numEmpleado.trim().toUpperCase()));
+        return administradorRepository.findByIdWithUsuario(saved.getId()).orElseThrow();
     }
 
     @Transactional
@@ -62,7 +63,8 @@ public class AdminService {
         admin.getUsuario().setEmail(email.trim().toLowerCase());
         usuarioRepository.save(admin.getUsuario());
         admin.setNumEmpleado(numEmpleado.trim().toUpperCase());
-        return administradorRepository.save(admin);
+        administradorRepository.save(admin);
+        return administradorRepository.findByIdWithUsuario(id).orElseThrow();
     }
 
     @Transactional

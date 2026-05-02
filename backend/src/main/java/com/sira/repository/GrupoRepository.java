@@ -50,6 +50,15 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         """)
     List<Grupo> findByAlumnoId(Integer alumnoId);
 
+    @Query("""
+        SELECT g FROM Grupo g
+        JOIN FETCH g.materia
+        JOIN FETCH g.maestro m
+        JOIN FETCH m.usuario
+        WHERE g.id = :id
+        """)
+    Optional<Grupo> findByIdWithDetails(Integer id);
+
     boolean existsByClaveAndMateriaIdAndSemestre(String clave, Integer materiaId, String semestre);
 
     boolean existsByMaestroId(Integer maestroId);

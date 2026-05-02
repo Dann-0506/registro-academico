@@ -35,7 +35,7 @@ public class GrupoService {
 
     @Transactional(readOnly = true)
     public Grupo buscarPorId(Integer id) {
-        return grupoRepository.findById(id)
+        return grupoRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new NoSuchElementException("Grupo no encontrado con id: " + id));
     }
 
@@ -73,7 +73,8 @@ public class GrupoService {
         Grupo grupo = new Grupo(materia, maestro, clave.trim().toUpperCase(), semestre.trim());
         grupo.setCalificacionMinimaAprobatoria(calMinima != null ? calMinima : configuracionService.obtenerCalificacionMinima());
         grupo.setCalificacionMaxima(calMaxima != null ? calMaxima : configuracionService.obtenerCalificacionMaxima());
-        return grupoRepository.save(grupo);
+        Grupo saved = grupoRepository.save(grupo);
+        return grupoRepository.findByIdWithDetails(saved.getId()).orElseThrow();
     }
 
     @Transactional
@@ -90,7 +91,8 @@ public class GrupoService {
         grupo.setMaestro(maestro);
         grupo.setClave(clave.trim().toUpperCase());
         grupo.setSemestre(semestre.trim());
-        return grupoRepository.save(grupo);
+        grupoRepository.save(grupo);
+        return grupoRepository.findByIdWithDetails(id).orElseThrow();
     }
 
     @Transactional

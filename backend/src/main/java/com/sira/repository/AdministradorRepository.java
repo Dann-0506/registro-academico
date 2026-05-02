@@ -11,6 +11,12 @@ import java.util.Optional;
 @Repository
 public interface AdministradorRepository extends JpaRepository<Administrador, Integer> {
 
+    @Query("SELECT a FROM Administrador a JOIN FETCH a.usuario WHERE a.id = :id")
+    Optional<Administrador> findByIdWithUsuario(Integer id);
+
+    @Query("SELECT a FROM Administrador a JOIN FETCH a.usuario WHERE a.usuario.id = :usuarioId")
+    Optional<Administrador> findByUsuarioIdWithUsuario(Integer usuarioId);
+
     Optional<Administrador> findByUsuarioId(Integer usuarioId);
 
     boolean existsByNumEmpleado(String numEmpleado);
