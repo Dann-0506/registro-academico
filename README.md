@@ -1,78 +1,62 @@
-# Sistema Institucional de Registro Académico
+# SIRA — Sistema Institucional de Registro Académico
 
-> **Aviso de Proyecto Académico**
-> Este repositorio contiene un proyecto desarrollado con fines puramente académicos y de aprendizaje universitario. No está diseñado para su uso en entornos de producción reales.
->
-> **Estado del proyecto:** En desarrollo activo (WIP). El backend (modelos, DAOs, servicios y base de datos) está completo y validado mediante suite de pruebas. La interfaz gráfica (JavaFX) se encuentra en construcción.
-
-Sistema de escritorio para gestionar el ciclo completo de evaluación académica: alumnos, maestros, materias, grupos, actividades, calificaciones y reportes.
-
+Sistema web para gestionar el ciclo completo de evaluación académica: alumnos, maestros, materias, grupos, actividades, calificaciones y reportes.
 
 ## Arquitectura
 
-El proyecto sigue una **arquitectura en capas clásica (MVC + DAO)**, organizando el código por tipo de responsabilidad:
-
 ```
-src/main/java/com/academico/
-├── controller/     ← Controladores JavaFX (lógica de UI)
-├── dao/            ← Acceso a datos (SQL con JDBC)
-├── db/             ← Configuración del pool de conexiones
-├── model/          ← POJOs — representación de entidades
-├── service/        ← Lógica de negocio y cálculos
-└── util/           ← Utilidades transversales
+SIRA/
+├── backend/    Spring Boot 4 · REST API · Java 21
+└── frontend/   React 19 · TypeScript · Vite
 ```
 
-### Capas
+El backend expone una API REST protegida con JWT. El frontend consume esa API y renderiza las vistas según el rol del usuario autenticado.
 
-**Model** — POJOs puros sin dependencias externas. Representan las entidades del dominio: `Alumno`, `Grupo`, `Resultado`, `CalificacionFinal`, etc.
+## Stack
 
-**DAO** — Toda la SQL vive aquí. Cada DAO gestiona las operaciones CRUD de una tabla o conjunto relacionado. Usan HikariCP para obtener conexiones del pool.
-
-**Service** — Lógica de negocio que no pertenece a ninguna tabla específica: cálculo de promedios ponderados, validación de ponderaciones, aplicación de bonus, generación de reportes.
-
-**Controller** — Controladores JavaFX que conectan la UI con los servicios. No contienen SQL ni lógica de negocio.
-
-**Util** — Herramientas transversales: `SessionManager` (sesión activa), `NavegacionUtil` (navegación entre vistas), `CsvUtil` (lectura/escritura CSV), `BackupUtil` (respaldo y restauración de BD).
-
-## Tecnologías
-
-| Componente | Tecnología |
+| Capa | Tecnología |
 |---|---|
-| Lenguaje | Java 21 |
-| UI | JavaFX 21 + AtlantaFX |
-| Base de datos | PostgreSQL |
-| Gestor de dependencias | Maven |
-| Pool de conexiones | HikariCP |
-| Variables de entorno | dotenv-java |
-| Hasheo de contraseñas | BCrypt |
-| Importación CSV | OpenCSV |
-| Pruebas | JUnit 5 + Mockito |
+| API | Spring Boot 4 · Spring Security · Spring Data JPA |
+| Base de datos | PostgreSQL 14+ |
+| Autenticación | JWT (JJWT 0.12) · BCrypt |
+| Frontend | React 19 · TypeScript · Vite · Tailwind CSS |
+| Estado cliente | TanStack Query · Zustand |
 
-## Requisitos Previos
+## Roles
 
-- JDK 21 o superior
+| Rol | Acceso |
+|---|---|
+| **Administrador** | Gestión completa: alumnos, maestros, materias, grupos, inscripciones, configuración, carga CSV, respaldos y análisis. |
+| **Maestro** | Operación de sus grupos: actividades, calificaciones, bonus, reporte y cierre de acta. |
+| **Alumno** | Consulta de sus cursos y calificaciones. Solo lectura. |
+
+## Requisitos
+
+- Java 21+
 - Maven 3.9+
+- Node.js 20+
 - PostgreSQL 14+
 
-## Configuración del Entorno
+## Configuración
 
 ### 1. Clonar el repositorio
 
 ```bash
 git clone <url-del-repositorio>
-cd registro-academico
+cd SIRA
 ```
 
-### 2. Crear el archivo de variables de entorno
+### 2. Variables de entorno
 
-Crea un archivo `.env` en la raíz del proyecto (ya está en `.gitignore`):
+Crea `backend/.env` (ya está en `.gitignore`):
 
 ```env
+DB_URL=jdbc:postgresql://localhost:5432/registro_academico
+DB_USER=tu_usuario
+DB_PASSWORD=tu_contraseña
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=registro_academico
-DB_USER=tu_usuario
-DB_PASSWORD=tu_contraseña
 ```
 
 ### 3. Crear la base de datos
@@ -81,62 +65,38 @@ DB_PASSWORD=tu_contraseña
 psql -U postgres -c "CREATE DATABASE registro_academico;"
 ```
 
-El esquema de tablas se aplica automáticamente al arrancar la aplicación por primera vez desde `src/main/resources/com/academico/db/schema.sql`.
+El esquema se crea automáticamente al arrancar el backend por primera vez (`ddl-auto=update`).
 
-### 4. Compilar el proyecto
+## Ejecución
 
-```bash
-mvn compile
-```
-
-### 5. Ejecutar la aplicación
+### Backend
 
 ```bash
-mvn javafx:run
+cd backend
+mvn spring-boot:run
+# API disponible en http://localhost:8080
 ```
 
-### 6. Ejecutar las pruebas
+### Frontend
 
 ```bash
-mvn test
+cd frontend
+npm install
+npm run dev
+# App disponible en http://localhost:5173
 ```
 
-## Roles del Sistema
+## Credenciales por defecto
 
-El sistema define tres roles con niveles de acceso distintos:
-
-| Rol | Responsabilidad |
+| Campo | Valor |
 |---|---|
-| **Administrador** | Gestiona la estructura académica: alumnos, maestros, materias, grupos, inscripciones, configuración y utilerías. |
-| **Maestro** | Opera dentro de sus grupos asignados: define actividades, registra calificaciones, aplica bonus y genera reportes. |
-| **Alumno** | Consulta sus propios resultados. Solo lectura. *(Implementación futura)* |
+| Email | `admin@escuela.edu` |
+| Contraseña | `123456` |
+| Rol | Administrador |
 
-Para más detalle ver `docs/roles_permisos.docx`.
-
-## Credenciales de Prueba
-
-Para desarrollo local, inserta usuarios de prueba generando los hashes con:
-
-```bash
-mvn compile exec:java -Dexec.mainClass="com.academico.MainApp"
-# Descomentar temporalmente la generación de hashes en main()
-```
-
-## Estructura de la Base de Datos
-
-Las tablas principales son:
-
-```
-usuario → maestro / alumno
-materia → unidad
-grupo (materia + maestro) → inscripcion (alumno + grupo)
-inscripcion → resultado (calificacion por actividad)
-actividad_grupo (grupo + unidad + ponderacion) → resultado
-inscripcion → bonus
-```
-
-El esquema completo con índices y vistas de cálculo está en `src/main/resources/com/academico/db/schema.sql`.
+> Los usuarios nuevos reciben como contraseña temporal su número de empleado o matrícula, y se les solicita cambiarla en el primer inicio de sesión.
 
 ## Colaboradores
+
 - Daniel Landero Arias
 - Ximena Zaleta Hernández

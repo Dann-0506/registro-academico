@@ -32,8 +32,8 @@ main ─────────────────────────
 ```
 feature/vista-alumnos
 feature/importacion-csv
-fix/left-join-inscripcion
-refactor/navegacion-util
+fix/lazy-loading-inscripcion
+refactor/calificacion-service
 ```
 
 ---
@@ -99,14 +99,14 @@ Un commit es una fotografía del estado de tu código en un momento determinado.
 git status
 
 # Agregar los archivos que quieres incluir en el commit
-git add src/main/java/com/academico/controller/AlumnosController.java
-git add src/main/resources/com/academico/fxml/alumnos.fxml
+git add backend/src/main/java/com/sira/controller/AlumnosController.java
+git add frontend/src/pages/admin/Alumnos.tsx
 
 # O agregar todos los cambios de una vez
 git add .
 
 # Crear el commit con un mensaje descriptivo
-git commit -m "feat: agrega vista de gestión de alumnos"
+git commit -m "feat: agrega gestión de alumnos"
 ```
 
 **Desde VSCode:**
@@ -224,9 +224,9 @@ tipo: descripción corta en español, imperativo, minúsculas
 **Ejemplos:**
 ```bash
 git commit -m "feat: agrega importación de alumnos por CSV"
-git commit -m "fix: corrige LEFT JOIN faltante en InscripcionDAO"
-git commit -m "refactor: extrae navegación a NavegacionUtil"
-git commit -m "test: agrega casos límite a CalificacionServiceTest"
+git commit -m "fix: corrige lazy loading en InscripcionRepository"
+git commit -m "refactor: extrae lógica de ponderación a CalificacionService"
+git commit -m "style: ajusta tabla de alumnos al diseño del sistema"
 ```
 
 **Reglas:**
@@ -235,7 +235,7 @@ git commit -m "test: agrega casos límite a CalificacionServiceTest"
 - Si necesitas más contexto, agrega un cuerpo separado por una línea en blanco:
 
 ```bash
-git commit -m "fix: corrige cálculo de promedio con actividades nulas
+git commit -m "fix: corrige cálculo de promedio con actividades sin calificar
 
 Antes las actividades sin calificación se ignoraban del conteo total,
 lo que inflaba el promedio. Ahora se cuentan pero aportan cero."
@@ -245,9 +245,10 @@ lo que inflaba el promedio. Ahora se cuentan pero aportan cero."
 
 ## Checklist antes de hacer merge a main
 
-- [ ] El código compila sin errores (`mvn compile`)
-- [ ] Todos los tests pasan (`mvn test`)
+- [ ] El backend compila sin errores (`cd backend && mvn compile`)
+- [ ] El frontend compila sin errores (`cd frontend && npm run build`)
 - [ ] No hay credenciales ni contraseñas en el código
+- [ ] El archivo `.env` no está incluido en el commit
 - [ ] El mensaje de commit describe claramente el cambio
 - [ ] `main` está actualizado antes del merge (`git pull`)
 
@@ -266,8 +267,8 @@ git log --oneline
 git branch -a
 
 # Descartar cambios en un archivo (¡cuidado, es irreversible!)
-git checkout -- nombre-del-archivo.java
+git checkout -- ruta/al/archivo.ts
 
 # Ver qué cambió en un archivo antes de hacer commit
-git diff nombre-del-archivo.java
+git diff ruta/al/archivo.ts
 ```
