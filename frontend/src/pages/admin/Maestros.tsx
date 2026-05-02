@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Trash2, KeyRound, ToggleLeft, ToggleRight, UserPlus } from 'lucide-react'
+import { Pencil, Trash2, KeyRound, ToggleLeft, ToggleRight, UserPlus, Loader2 } from 'lucide-react'
 import axios from 'axios'
 import {
   getMaestros, createMaestro, updateMaestro,
@@ -25,6 +25,8 @@ export default function Maestros() {
 
   const [deleteTarget, setDeleteTarget] = useState<MaestroResponse | null>(null)
   const [resetTarget, setResetTarget] = useState<MaestroResponse | null>(null)
+  const [toggleError, setToggleError] = useState('')
+  const [togglingId, setTogglingId] = useState<number | null>(null)
 
   const { data: maestros = [], isLoading } = useQuery({
     queryKey: ['maestros'],
@@ -47,7 +49,22 @@ export default function Maestros() {
 
   const toggleMut = useMutation({
     mutationFn: ({ id, activo }: { id: number; activo: boolean }) => toggleMaestroEstado(id, activo),
-    onSuccess: invalidate,
+    onMutate: async ({ id, activo }) => {
+      setTogglingId(id)
+      setToggleError('')
+      await qc.cancelQueries({ queryKey: ['maestros'] })
+      const previous = qc.getQueryData<MaestroResponse[]>(['maestros'])
+      qc.setQueryData<MaestroResponse[]>(['maestros'], old => old?.map(m => m.id === id ? { ...m, activo } : m) ?? [])
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      qc.setQueryData(['maestros'], context?.previous)
+      setToggleError('No se pudo cambiar el estado. Intenta de nuevo.')
+    },
+    onSettled: () => {
+      setTogglingId(null)
+      qc.invalidateQueries({ queryKey: ['maestros'] })
+    },
   })
 
   const resetMut = useMutation({
@@ -92,6 +109,12 @@ export default function Maestros() {
         }
       />
 
+      {toggleError && (
+        <div className="mb-4">
+          <ErrorAlert message={toggleError} onClose={() => setToggleError('')} />
+        </div>
+      )}
+
       <DataTable<MaestroResponse>
         data={maestros}
         isLoading={isLoading}
@@ -120,10 +143,13 @@ export default function Maestros() {
             </button>
             <button
               onClick={() => toggleMut.mutate({ id: m.id, activo: !m.activo })}
+              disabled={togglingId === m.id}
               title={m.activo ? 'Desactivar' : 'Activar'}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {m.activo ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+              {togglingId === m.id
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : m.activo ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
             </button>
             <button
               onClick={() => setResetTarget(m)}

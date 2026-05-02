@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Trash2, KeyRound, ToggleLeft, ToggleRight, UserPlus } from 'lucide-react'
+import { Pencil, Trash2, KeyRound, ToggleLeft, ToggleRight, UserPlus, Loader2 } from 'lucide-react'
 import axios from 'axios'
 import {
   getAlumnos, createAlumno, updateAlumno,
@@ -25,6 +25,8 @@ export default function Alumnos() {
 
   const [deleteTarget, setDeleteTarget] = useState<AlumnoResponse | null>(null)
   const [resetTarget, setResetTarget] = useState<AlumnoResponse | null>(null)
+  const [toggleError, setToggleError] = useState('')
+  const [togglingId, setTogglingId] = useState<number | null>(null)
 
   const { data: alumnos = [], isLoading } = useQuery({
     queryKey: ['alumnos'],
@@ -47,7 +49,22 @@ export default function Alumnos() {
 
   const toggleMut = useMutation({
     mutationFn: ({ id, activo }: { id: number; activo: boolean }) => toggleAlumnoEstado(id, activo),
-    onSuccess: invalidate,
+    onMutate: async ({ id, activo }) => {
+      setTogglingId(id)
+      setToggleError('')
+      await qc.cancelQueries({ queryKey: ['alumnos'] })
+      const previous = qc.getQueryData<AlumnoResponse[]>(['alumnos'])
+      qc.setQueryData<AlumnoResponse[]>(['alumnos'], old => old?.map(a => a.id === id ? { ...a, activo } : a) ?? [])
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      qc.setQueryData(['alumnos'], context?.previous)
+      setToggleError('No se pudo cambiar el estado. Intenta de nuevo.')
+    },
+    onSettled: () => {
+      setTogglingId(null)
+      qc.invalidateQueries({ queryKey: ['alumnos'] })
+    },
   })
 
   const resetMut = useMutation({
@@ -92,6 +109,12 @@ export default function Alumnos() {
         }
       />
 
+      {toggleError && (
+        <div className="mb-4">
+          <ErrorAlert message={toggleError} onClose={() => setToggleError('')} />
+        </div>
+      )}
+
       <DataTable<AlumnoResponse>
         data={alumnos}
         isLoading={isLoading}
@@ -120,10 +143,13 @@ export default function Alumnos() {
             </button>
             <button
               onClick={() => toggleMut.mutate({ id: a.id, activo: !a.activo })}
+              disabled={togglingId === a.id}
               title={a.activo ? 'Desactivar' : 'Activar'}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {a.activo ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+              {togglingId === a.id
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : a.activo ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
             </button>
             <button
               onClick={() => setResetTarget(a)}

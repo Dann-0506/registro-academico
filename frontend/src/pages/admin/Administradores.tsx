@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Trash2, KeyRound, ToggleLeft, ToggleRight, ShieldPlus } from 'lucide-react'
+import { Pencil, Trash2, KeyRound, ToggleLeft, ToggleRight, ShieldPlus, Loader2 } from 'lucide-react'
 import axios from 'axios'
 import {
   getAdmins, createAdmin, updateAdmin,
@@ -28,6 +28,8 @@ export default function Administradores() {
 
   const [deleteTarget, setDeleteTarget] = useState<AdminResponse | null>(null)
   const [resetTarget, setResetTarget] = useState<AdminResponse | null>(null)
+  const [toggleError, setToggleError] = useState('')
+  const [togglingId, setTogglingId] = useState<number | null>(null)
 
   const { data: admins = [], isLoading } = useQuery({
     queryKey: ['administradores'],
@@ -50,7 +52,22 @@ export default function Administradores() {
 
   const toggleMut = useMutation({
     mutationFn: ({ id, activo }: { id: number; activo: boolean }) => toggleAdminEstado(id, activo),
-    onSuccess: invalidate,
+    onMutate: async ({ id, activo }) => {
+      setTogglingId(id)
+      setToggleError('')
+      await qc.cancelQueries({ queryKey: ['administradores'] })
+      const previous = qc.getQueryData<AdminResponse[]>(['administradores'])
+      qc.setQueryData<AdminResponse[]>(['administradores'], old => old?.map(a => a.id === id ? { ...a, activo } : a) ?? [])
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      qc.setQueryData(['administradores'], context?.previous)
+      setToggleError('No se pudo cambiar el estado. Intenta de nuevo.')
+    },
+    onSettled: () => {
+      setTogglingId(null)
+      qc.invalidateQueries({ queryKey: ['administradores'] })
+    },
   })
 
   const resetMut = useMutation({
@@ -98,6 +115,12 @@ export default function Administradores() {
         }
       />
 
+      {toggleError && (
+        <div className="mb-4">
+          <ErrorAlert message={toggleError} onClose={() => setToggleError('')} />
+        </div>
+      )}
+
       <DataTable<AdminResponse>
         data={admins}
         isLoading={isLoading}
@@ -142,11 +165,13 @@ export default function Administradores() {
               </button>
               <button
                 onClick={() => !self && toggleMut.mutate({ id: a.id, activo: !a.activo })}
-                disabled={self}
+                disabled={self || togglingId === a.id}
                 title={self ? 'No puedes actuar sobre tu propia cuenta' : (a.activo ? 'Desactivar' : 'Activar')}
-                className={`p-1.5 rounded-lg transition-colors ${self ? disabledClass : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'}`}
+                className={`p-1.5 rounded-lg transition-colors ${self || togglingId === a.id ? disabledClass : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'}`}
               >
-                {a.activo ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                {togglingId === a.id
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : a.activo ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
               </button>
               <button
                 onClick={() => !self && setResetTarget(a)}
