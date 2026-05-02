@@ -1,33 +1,51 @@
-# Compiled class file
-*.class
+# Variables de entorno
+.env
+*.local
 
-# Package Files #
+# Backend (Java / Maven / Spring Boot)
+*.class
 *.jar
 *.war
-*.nar
 *.ear
-*.zip
-*.tar.gz
-*.rar
+*.nar
 
-# Gradle
-.gradle/
-build/
-gradle-wrapper.jar
-.gradletasknamecache
-
-# Maven
 target/
+build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
 pom.xml.tag
 pom.xml.asc
 pom.xml.releaseBackup
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
 
-# IDE
+# Spring Boot
+HELP.md
+.springBeans
+.sts4-cache
+.apt_generated
+.factorypath
+
+# Frontend (Node / Vite / React)
+node_modules/
+dist/
+dist-ssr/
+
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# IDEs
 .idea/
 *.iml
 *.iws
@@ -36,19 +54,26 @@ buildNumber.properties
 .classpath
 .project
 .settings/
+.nb-gradle/
+/nbproject/private/
+/nbbuild/
+/nbdist/
+
+.vscode/*
+!.vscode/extensions.json
+
 *.swp
 *.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 *~
-.vscode/
 
-# OS
+# Sistema operativo
 .DS_Store
 Thumbs.db
 
-# Local
-*.log
-.env
-local.properties
-
-# Respaldos DB
+# Respaldos
 respaldos_db/
