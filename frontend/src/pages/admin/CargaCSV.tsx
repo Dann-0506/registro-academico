@@ -55,7 +55,7 @@ export default function CargaCSV() {
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition bg-white'
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <PageHeader
         title="Carga masiva por CSV"
         description="Importa registros en bloque subiendo un archivo CSV con el formato requerido."

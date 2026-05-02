@@ -42,7 +42,7 @@ export default function Configuracion() {
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition'
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-xl mx-auto">
       <PageHeader
         title="Configuración del sistema"
         description="Parámetros globales que aplican a todos los grupos y evaluaciones."

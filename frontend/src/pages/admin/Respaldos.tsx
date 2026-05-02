@@ -37,7 +37,7 @@ export default function Respaldos() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader
         title="Respaldos de base de datos"
         description="Genera o restaura copias de seguridad de los datos del sistema."
