@@ -181,6 +181,13 @@ export interface CargaResultadoResponse {
   errores: { linea: number; mensaje: string }[]
 }
 
+export interface ActividadCatalogoResponse {
+  id: number
+  nombre: string
+  descripcion: string | null
+  activo: boolean
+}
+
 // ─── Maestro ──────────────────────────────────────────────────────────────────
 export interface ActividadGrupoResponse {
   id: number
@@ -188,8 +195,10 @@ export interface ActividadGrupoResponse {
   unidadId: number
   unidadNumero: number
   unidadNombre: string
-  nombre: string
+  nombre: string        // nombreCompleto calculado por el backend
   ponderacion: number
+  actividadCatalogoId: number | null
+  etiqueta: string | null
 }
 
 export interface BonusResponse {

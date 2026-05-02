@@ -1,8 +1,10 @@
 package com.sira.service;
 
+import com.sira.model.ActividadCatalogo;
 import com.sira.model.ActividadGrupo;
 import com.sira.model.Grupo;
 import com.sira.model.Unidad;
+import com.sira.repository.ActividadCatalogoRepository;
 import com.sira.repository.ActividadGrupoRepository;
 import com.sira.repository.GrupoRepository;
 import com.sira.repository.ResultadoRepository;
@@ -19,10 +21,10 @@ import java.util.NoSuchElementException;
 public class ActividadGrupoService {
 
     @Autowired private ActividadGrupoRepository actividadRepository;
+    @Autowired private ActividadCatalogoRepository catalogoRepository;
     @Autowired private GrupoRepository grupoRepository;
     @Autowired private UnidadRepository unidadRepository;
     @Autowired private ResultadoRepository resultadoRepository;
-    @Autowired private CalificacionService calificacionService;
 
     @Transactional(readOnly = true)
     public List<ActividadGrupo> listarPorGrupo(Integer grupoId) {
@@ -35,8 +37,16 @@ public class ActividadGrupoService {
     }
 
     @Transactional
-    public ActividadGrupo crear(Integer grupoId, Integer unidadId, String nombre, BigDecimal ponderacion) {
-        validarCampos(nombre, ponderacion);
+    public ActividadGrupo crear(Integer grupoId, Integer unidadId,
+                                Integer actividadCatalogoId, String etiqueta,
+                                BigDecimal ponderacion) {
+        validarPonderacion(ponderacion);
+
+        ActividadCatalogo catalogo = catalogoRepository.findById(actividadCatalogoId)
+                .orElseThrow(() -> new NoSuchElementException("Actividad del catálogo no encontrada: " + actividadCatalogoId));
+        if (!catalogo.isActivo()) {
+            throw new IllegalStateException("La actividad '" + catalogo.getNombre() + "' está desactivada y no puede usarse.");
+        }
 
         Grupo grupo = grupoRepository.findById(grupoId)
                 .orElseThrow(() -> new NoSuchElementException("Grupo no encontrado: " + grupoId));
@@ -52,12 +62,12 @@ public class ActividadGrupoService {
                     "La ponderación excede el 100%. Disponible: " + new BigDecimal("100").subtract(sumActual) + "%");
         }
 
-        return actividadRepository.save(new ActividadGrupo(grupo, unidad, nombre.trim(), ponderacion));
+        return actividadRepository.save(new ActividadGrupo(grupo, unidad, catalogo, etiqueta, ponderacion));
     }
 
     @Transactional
-    public ActividadGrupo actualizar(Integer id, String nombre, BigDecimal ponderacion) {
-        validarCampos(nombre, ponderacion);
+    public ActividadGrupo actualizar(Integer id, String etiqueta, BigDecimal ponderacion) {
+        validarPonderacion(ponderacion);
         ActividadGrupo actividad = actividadRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Actividad no encontrada: " + id));
 
@@ -70,8 +80,12 @@ public class ActividadGrupoService {
                     "La ponderación excede el 100%. Disponible: " + new BigDecimal("100").subtract(sumSinEsta) + "%");
         }
 
-        actividad.setNombre(nombre.trim());
+        actividad.setEtiqueta(etiqueta != null && !etiqueta.isBlank() ? etiqueta.trim() : null);
         actividad.setPonderacion(ponderacion);
+        // Actualiza nombre legado para consistencia
+        if (actividad.getActividadCatalogo() != null) {
+            actividad.setNombre(actividad.getNombreCompleto());
+        }
         return actividadRepository.save(actividad);
     }
 
@@ -85,10 +99,7 @@ public class ActividadGrupoService {
         actividadRepository.delete(actividad);
     }
 
-    private void validarCampos(String nombre, BigDecimal ponderacion) {
-        if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre de la actividad es obligatorio.");
-        }
+    private void validarPonderacion(BigDecimal ponderacion) {
         if (ponderacion == null || ponderacion.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("La ponderación debe ser mayor a 0.");
         }

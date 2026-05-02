@@ -31,4 +31,6 @@ public interface ActividadGrupoRepository extends JpaRepository<ActividadGrupo, 
     BigDecimal sumPonderacionByGrupoIdAndUnidadId(Integer grupoId, Integer unidadId);
 
     long countByGrupoIdAndUnidadId(Integer grupoId, Integer unidadId);
+
+    boolean existsByActividadCatalogoId(Integer actividadCatalogoId);
 }

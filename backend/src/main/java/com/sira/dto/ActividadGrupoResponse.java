@@ -11,7 +11,9 @@ public record ActividadGrupoResponse(
         int unidadNumero,
         String unidadNombre,
         String nombre,
-        BigDecimal ponderacion
+        BigDecimal ponderacion,
+        Integer actividadCatalogoId,
+        String etiqueta
 ) {
     public static ActividadGrupoResponse from(ActividadGrupo a) {
         return new ActividadGrupoResponse(
@@ -20,8 +22,10 @@ public record ActividadGrupoResponse(
                 a.getUnidad().getId(),
                 a.getUnidad().getNumero(),
                 a.getUnidad().getNombre(),
-                a.getNombre(),
-                a.getPonderacion()
+                a.getNombreCompleto(),
+                a.getPonderacion(),
+                a.getActividadCatalogo() != null ? a.getActividadCatalogo().getId() : null,
+                a.getEtiqueta()
         );
     }
 }

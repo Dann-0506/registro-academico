@@ -7,11 +7,12 @@ import axios from 'axios'
 import { getMiGrupo, cerrarGrupoMaestro, reabrirGrupoMaestro, cerrarDefinitivamenteMaestro } from '@/api/grupos'
 import { getUnidadesByGrupo } from '@/api/materias'
 import { getActividades, createActividad, updateActividad, deleteActividad } from '@/api/actividades'
+import { getCatalogoActivo } from '@/api/actividadesCatalogo'
 import { getReporte, guardarLote, aplicarOverride, descargarActaPdf } from '@/api/calificaciones'
 import { getBonus, createBonus } from '@/api/bonus'
 import type {
-  GrupoResponse, ActividadGrupoResponse, CalificacionFinalDto,
-  ResultadoUnidadDto, BonusResponse,
+  GrupoResponse, ActividadGrupoResponse, ActividadCatalogoResponse,
+  CalificacionFinalDto, ResultadoUnidadDto, BonusResponse,
 } from '@/types'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { FormModal } from '@/components/shared/FormModal'
@@ -32,7 +33,7 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
   const grupoId = grupo.id
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<ActividadGrupoResponse | null>(null)
-  const [form, setForm] = useState({ unidadId: '', nombre: '', ponderacion: '' })
+  const [form, setForm] = useState({ unidadId: '', actividadCatalogoId: '', etiqueta: '', ponderacion: '' })
   const [formError, setFormError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<ActividadGrupoResponse | null>(null)
 
@@ -46,19 +47,24 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
     queryFn: () => getUnidadesByGrupo(grupo.id),
   })
 
+  const { data: catalogo = [] } = useQuery({
+    queryKey: ['catalogo-actividades-activo'],
+    queryFn: getCatalogoActivo,
+  })
+
   const inv = () => {
     qc.invalidateQueries({ queryKey: ['actividades', grupoId] })
     invalidateDashboard()
   }
 
   const createMut = useMutation({
-    mutationFn: (d: { unidadId: number; nombre: string; ponderacion: number }) => createActividad(grupoId, d),
+    mutationFn: (d: { unidadId: number; actividadCatalogoId: number; etiqueta?: string; ponderacion: number }) => createActividad(grupoId, d),
     onSuccess: () => { inv(); closeModal() },
     onError: (err) => setFormError(axios.isAxiosError(err) ? err.response?.data?.error ?? 'Error al crear actividad.' : 'Error inesperado.'),
   })
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { nombre: string; ponderacion: number } }) => updateActividad(grupoId, id, data),
+    mutationFn: ({ id, data }: { id: number; data: { etiqueta?: string; ponderacion: number } }) => updateActividad(grupoId, id, data),
     onSuccess: () => { inv(); closeModal() },
     onError: (err) => setFormError(axios.isAxiosError(err) ? err.response?.data?.error ?? 'Error al actualizar.' : 'Error inesperado.'),
   })
@@ -70,26 +76,36 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
 
   const openCreate = () => {
     setEditTarget(null)
-    setForm({ unidadId: String(grupo.materiaId ? '' : ''), nombre: '', ponderacion: '' })
+    setForm({ unidadId: '', actividadCatalogoId: '', etiqueta: '', ponderacion: '' })
     setFormError('')
     setModalOpen(true)
   }
   const openEdit = (a: ActividadGrupoResponse) => {
     setEditTarget(a)
-    setForm({ unidadId: String(a.unidadId), nombre: a.nombre, ponderacion: String(a.ponderacion) })
+    setForm({
+      unidadId: String(a.unidadId),
+      actividadCatalogoId: String(a.actividadCatalogoId ?? ''),
+      etiqueta: a.etiqueta ?? '',
+      ponderacion: String(a.ponderacion),
+    })
     setFormError('')
     setModalOpen(true)
   }
   const closeModal = () => { setModalOpen(false); setEditTarget(null); setFormError('') }
 
   const handleSubmit = () => {
-    if (!form.nombre.trim()) { setFormError('El nombre es requerido.'); return }
     if (!form.ponderacion || isNaN(Number(form.ponderacion))) { setFormError('La ponderación es requerida.'); return }
     if (editTarget) {
-      updateMut.mutate({ id: editTarget.id, data: { nombre: form.nombre.trim(), ponderacion: Number(form.ponderacion) } })
+      updateMut.mutate({ id: editTarget.id, data: { etiqueta: form.etiqueta || undefined, ponderacion: Number(form.ponderacion) } })
     } else {
       if (!form.unidadId) { setFormError('Selecciona una unidad.'); return }
-      createMut.mutate({ unidadId: Number(form.unidadId), nombre: form.nombre.trim(), ponderacion: Number(form.ponderacion) })
+      if (!form.actividadCatalogoId) { setFormError('Selecciona una actividad del catálogo.'); return }
+      createMut.mutate({
+        unidadId: Number(form.unidadId),
+        actividadCatalogoId: Number(form.actividadCatalogoId),
+        etiqueta: form.etiqueta || undefined,
+        ponderacion: Number(form.ponderacion),
+      })
     }
   }
 
@@ -177,6 +193,8 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
       >
         <div className="space-y-4">
           {formError && <ErrorAlert message={formError} onClose={() => setFormError('')} />}
+
+          {/* Unidad: solo al crear */}
           {!editTarget && (
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Unidad <span className="text-red-500">*</span></label>
@@ -188,10 +206,43 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
               </select>
             </div>
           )}
+
+          {/* Actividad del catálogo: solo al crear */}
+          {!editTarget && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Actividad <span className="text-red-500">*</span></label>
+              <select value={form.actividadCatalogoId} onChange={(e) => setForm((p) => ({ ...p, actividadCatalogoId: e.target.value }))} className={inputClass}>
+                <option value="">Seleccionar del catálogo...</option>
+                {catalogo.map((c: ActividadCatalogoResponse) => (
+                  <option key={c.id} value={c.id}>{c.nombre}{c.descripcion ? ` — ${c.descripcion}` : ''}</option>
+                ))}
+              </select>
+              {catalogo.length === 0 && (
+                <p className="text-xs text-amber-600 mt-1">No hay actividades activas en el catálogo. Pide al administrador que las configure.</p>
+              )}
+            </div>
+          )}
+
+          {/* Al editar: muestra actividad como solo lectura */}
+          {editTarget && (
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Actividad</label>
+              <input type="text" value={editTarget.nombre} readOnly
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-500 cursor-not-allowed" />
+            </div>
+          )}
+
+          {/* Etiqueta diferenciadora (opcional, siempre visible) */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Nombre <span className="text-red-500">*</span></label>
-            <input type="text" value={form.nombre} onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))} placeholder="Ej. Examen parcial 1" className={inputClass} />
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Etiqueta <span className="text-xs text-slate-400 font-normal">(opcional)</span>
+            </label>
+            <input type="text" value={form.etiqueta} onChange={(e) => setForm((p) => ({ ...p, etiqueta: e.target.value }))}
+              placeholder='Ej. "1er parcial", "Final", "Unidad 2"'
+              className={inputClass} />
+            <p className="text-xs text-slate-400 mt-1">Sirve para distinguir varias instancias de la misma actividad. Se muestra como "Examen — 1er parcial".</p>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Ponderación (%) <span className="text-red-500">*</span></label>
             <input type="number" min={1} max={100} value={form.ponderacion} onChange={(e) => setForm((p) => ({ ...p, ponderacion: e.target.value }))} placeholder="Ej. 30" className={inputClass} />

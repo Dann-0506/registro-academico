@@ -4,7 +4,7 @@ import { rolLabel } from '@/lib/utils'
 import {
   LayoutDashboard, Users, GraduationCap, BookOpen, School, ClipboardList,
   Settings, Upload, Database, BookCheck, User, LogOut, ChevronRight,
-  UserCog, BarChart2,
+  UserCog, BarChart2, ListChecks,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -18,7 +18,8 @@ const adminNav: NavItem[] = [
   { label: 'Materias',        to: '/admin/materias',          icon: <BookOpen className="h-4 w-4" /> },
   { label: 'Grupos',          to: '/admin/grupos',            icon: <School className="h-4 w-4" /> },
   { label: 'Inscripciones',   to: '/admin/inscripciones',     icon: <ClipboardList className="h-4 w-4" /> },
-  { label: 'Reportes',        to: '/admin/reportes',          icon: <BarChart2 className="h-4 w-4" /> },
+  { label: 'Cat. Actividades', to: '/admin/actividades-catalogo', icon: <ListChecks className="h-4 w-4" /> },
+  { label: 'Reportes',        to: '/admin/reportes',             icon: <BarChart2 className="h-4 w-4" /> },
   { label: 'Configuración',   to: '/admin/configuracion',     icon: <Settings className="h-4 w-4" /> },
   { label: 'Carga CSV',       to: '/admin/carga',             icon: <Upload className="h-4 w-4" /> },
   { label: 'Respaldos',       to: '/admin/respaldos',         icon: <Database className="h-4 w-4" /> },

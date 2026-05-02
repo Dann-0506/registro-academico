@@ -13,6 +13,7 @@ import Grupos from '@/pages/admin/Grupos'
 import Inscripciones from '@/pages/admin/Inscripciones'
 import Configuracion from '@/pages/admin/Configuracion'
 import CargaCSV from '@/pages/admin/CargaCSV'
+import ActividadesCatalogo from '@/pages/admin/ActividadesCatalogo'
 import Respaldos from '@/pages/admin/Respaldos'
 import Reportes from '@/pages/admin/Reportes'
 import MisGrupos from '@/pages/maestro/MisGrupos'
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
           { path: '/admin/inscripciones', element: <Inscripciones /> },
           { path: '/admin/configuracion', element: <Configuracion /> },
           { path: '/admin/reportes', element: <Reportes /> },
+          { path: '/admin/actividades-catalogo', element: <ActividadesCatalogo /> },
           { path: '/admin/carga', element: <CargaCSV /> },
           { path: '/admin/respaldos', element: <Respaldos /> },
         ]},

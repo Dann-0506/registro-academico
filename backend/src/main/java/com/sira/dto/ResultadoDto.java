@@ -18,7 +18,7 @@ public record ResultadoDto(
                 r.getId(),
                 r.getInscripcion().getId(),
                 r.getActividadGrupo().getId(),
-                r.getActividadGrupo().getNombre(),
+                r.getActividadGrupo().getNombreCompleto(),
                 r.getActividadGrupo().getPonderacion(),
                 r.getCalificacion(),
                 r.getAportacion()
