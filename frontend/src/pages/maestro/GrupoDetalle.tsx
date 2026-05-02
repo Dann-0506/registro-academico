@@ -1,3 +1,4 @@
+import { useInvalidateDashboard } from '@/hooks/useInvalidateDashboard'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -27,6 +28,7 @@ type Tab = 'actividades' | 'calificaciones' | 'bonus' | 'reporte'
 
 function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
   const qc = useQueryClient()
+  const invalidateDashboard = useInvalidateDashboard()
   const grupoId = grupo.id
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<ActividadGrupoResponse | null>(null)
@@ -44,7 +46,10 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
     queryFn: () => getUnidadesByGrupo(grupo.id),
   })
 
-  const inv = () => qc.invalidateQueries({ queryKey: ['actividades', grupoId] })
+  const inv = () => {
+    qc.invalidateQueries({ queryKey: ['actividades', grupoId] })
+    invalidateDashboard()
+  }
 
   const createMut = useMutation({
     mutationFn: (d: { unidadId: number; nombre: string; ponderacion: number }) => createActividad(grupoId, d),

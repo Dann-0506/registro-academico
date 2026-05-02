@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useInvalidateDashboard } from '@/hooks/useInvalidateDashboard'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Trash2, UserPlus, ChevronDown } from 'lucide-react'
 import axios from 'axios'
@@ -17,6 +18,7 @@ import { formatCalificacion } from '@/lib/utils'
 
 export default function Inscripciones() {
   const qc = useQueryClient()
+  const invalidateDashboard = useInvalidateDashboard()
   const [selectedGrupoId, setSelectedGrupoId] = useState<number | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedAlumnoId, setSelectedAlumnoId] = useState('')
@@ -40,7 +42,10 @@ export default function Inscripciones() {
     enabled: !!selectedGrupoId,
   })
 
-  const invalidateInsc = () => qc.invalidateQueries({ queryKey: ['inscripciones', selectedGrupoId] })
+  const invalidateInsc = () => {
+    qc.invalidateQueries({ queryKey: ['inscripciones', selectedGrupoId] })
+    invalidateDashboard()
+  }
 
   const createMut = useMutation({
     mutationFn: createInscripcion,

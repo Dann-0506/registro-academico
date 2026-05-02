@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useInvalidateDashboard } from '@/hooks/useInvalidateDashboard'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Trash2, Plus, LockOpen, Lock, LockKeyhole, ChevronDown } from 'lucide-react'
 import axios from 'axios'
@@ -82,6 +83,7 @@ function ActionsDropdown({ grupo, onCerrar, onReabrir, onCerrarDef, onEliminar }
 
 export default function Grupos() {
   const qc = useQueryClient()
+  const invalidateDashboard = useInvalidateDashboard()
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<GrupoResponse | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
@@ -94,7 +96,10 @@ export default function Grupos() {
   const { data: grupos = [], isLoading } = useQuery({ queryKey: ['grupos'], queryFn: getGrupos })
   const { data: materias = [] } = useQuery({ queryKey: ['materias'], queryFn: getMaterias })
   const { data: maestros = [] } = useQuery({ queryKey: ['maestros'], queryFn: getMaestros })
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['grupos'] })
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['grupos'] })
+    invalidateDashboard()
+  }
 
   const createMut = useMutation({
     mutationFn: createGrupo, onSuccess: () => { invalidate(); closeModal() },

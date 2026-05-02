@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useInvalidateDashboard } from '@/hooks/useInvalidateDashboard'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Trash2, KeyRound, ToggleLeft, ToggleRight, UserPlus, Loader2 } from 'lucide-react'
 import axios from 'axios'
@@ -18,6 +19,7 @@ const emptyForm = { nombre: '', email: '', numEmpleado: '' }
 
 export default function Maestros() {
   const qc = useQueryClient()
+  const invalidateDashboard = useInvalidateDashboard()
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<MaestroResponse | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -33,7 +35,10 @@ export default function Maestros() {
     queryFn: getMaestros,
   })
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['maestros'] })
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['maestros'] })
+    invalidateDashboard()
+  }
 
   const createMut = useMutation({
     mutationFn: createMaestro,
@@ -64,6 +69,7 @@ export default function Maestros() {
     onSettled: () => {
       setTogglingId(null)
       qc.invalidateQueries({ queryKey: ['maestros'] })
+      invalidateDashboard()
     },
   })
 

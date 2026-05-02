@@ -125,7 +125,7 @@ export default function Dashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard'],
     queryFn: getDashboard,
-    refetchInterval: 5 * 60 * 1000, // refresca cada 5 min
+    staleTime: 0, // siempre obsoleto: refetch garantizado al montar el componente
   })
 
   if (isLoading) return <LoadingSpinner className="py-20" size="lg" />
