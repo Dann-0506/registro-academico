@@ -8,7 +8,7 @@ export interface Column<T> {
   className?: string
 }
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 20
 
 interface Props<T> {
   columns: Column<T>[]
@@ -100,7 +100,7 @@ export function DataTable<T>({
 
           <tbody className="divide-y divide-slate-100">
             {isLoading ? (
-              // Loading: 12 filas de skeleton
+              // Loading: PAGE_SIZE filas de skeleton
               Array.from({ length: PAGE_SIZE }).map((_, i) => (
                 <tr key={i} className={ROW_HEIGHT}>
                   {Array.from({ length: colSpan }).map((_, j) => (

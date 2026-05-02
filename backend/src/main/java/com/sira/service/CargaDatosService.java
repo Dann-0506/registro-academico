@@ -22,6 +22,7 @@ public class CargaDatosService {
     @Autowired private AdminService adminService;
     @Autowired private GrupoService grupoService;
     @Autowired private InscripcionService inscripcionService;
+    @Autowired private ActividadCatalogoService actividadCatalogoService;
 
     public CargaResultadoResponse importarAlumnos(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
@@ -107,9 +108,17 @@ public class CargaDatosService {
         return new CargaResultadoResponse(procesados, exitosos, errores);
     }
 
+    public CargaResultadoResponse importarActividades(MultipartFile archivo) {
+        return procesar(archivo, (fila, num) -> {
+            if (fila.length < 1 || fila[0].isBlank()) throw new IllegalArgumentException("Falta el nombre de la actividad.");
+            String descripcion = fila.length >= 2 && !fila[1].isBlank() ? fila[1].trim() : null;
+            actividadCatalogoService.crear(fila[0].trim(), descripcion);
+        });
+    }
+
     private boolean esEncabezado(String[] fila) {
         if (fila == null || fila.length == 0 || fila[0] == null) return false;
         String primera = fila[0].trim().toLowerCase();
-        return primera.matches(".*\\b(matricula|mat|alumno|num|empleado|clave|materia|docente|grupo|admin)\\b.*");
+        return primera.matches(".*\\b(matricula|mat|alumno|num|empleado|clave|materia|docente|grupo|admin|actividad|nombre)\\b.*");
     }
 }

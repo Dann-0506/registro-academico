@@ -81,6 +81,15 @@ const FORMATOS: Record<string, FormatoTipo> = {
     ejemplo: 'A12345678,G-01,2026-1',
     notas: 'El alumno y el grupo (clave + semestre) deben existir previamente. No se permiten inscripciones duplicadas.',
   },
+  actividades: {
+    label: 'Actividades (catálogo)',
+    columnas: [
+      { nombre: 'nombre',      requerida: true,  descripcion: 'Nombre de la actividad, debe ser único en el catálogo (ej. Examen parcial)' },
+      { nombre: 'descripcion', requerida: false, descripcion: 'Descripción opcional de la actividad' },
+    ],
+    ejemplo: 'Examen parcial,Evaluación escrita individual sin consulta',
+    notas: 'Si ya existe una actividad con el mismo nombre se reportará como error en esa línea. Las actividades se crean como activas por defecto.',
+  },
 }
 
 const TIPOS = Object.entries(FORMATOS).map(([value, f]) => ({ value, label: f.label }))

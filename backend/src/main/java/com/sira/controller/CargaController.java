@@ -27,8 +27,9 @@ public class CargaController {
             case "materias"         -> cargaDatosService.importarMaterias(archivo);
             case "grupos"           -> cargaDatosService.importarGrupos(archivo);
             case "inscripciones"    -> cargaDatosService.importarInscripciones(archivo);
+            case "actividades"      -> cargaDatosService.importarActividades(archivo);
             default -> throw new IllegalArgumentException(
-                    "Tipo desconocido: '" + tipo + "'. Válidos: alumnos, maestros, administradores, materias, grupos, inscripciones.");
+                    "Tipo desconocido: '" + tipo + "'. Válidos: alumnos, maestros, administradores, materias, grupos, inscripciones, actividades.");
         };
 
         return ResponseEntity.ok(resultado);
