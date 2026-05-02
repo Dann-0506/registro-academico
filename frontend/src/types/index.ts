@@ -101,18 +101,33 @@ export interface InscripcionResponse {
 export interface ConfiguracionResponse {
   minimaAprobatoria: number
   maxima: number
+  semestreActivo: string
 }
 
-export interface KpiResponse {
-  totalAlumnos: number
-  totalMaterias: number
-  gruposActivos: number
-}
-
-export interface RendimientoResponse {
+export interface GrupoAlertaDto {
+  id: number
+  clave: string
   semestre: string
-  aprobados: number
-  reprobados: number
+  materiaNombre: string
+  maestroNombre: string
+}
+
+export interface AlumnoAlertaDto {
+  id: number
+  numControl: string
+  nombre: string
+  email: string
+}
+
+export interface DashboardResponse {
+  semestreActivo: string
+  alumnosActivos: number
+  maestrosActivos: number
+  gruposEnCurso: number
+  inscripcionesActivas: number
+  gruposSinActividades: GrupoAlertaDto[]
+  gruposPendientesCierre: GrupoAlertaDto[]
+  alumnosSinInscripciones: AlumnoAlertaDto[]
 }
 
 export interface CargaResultadoResponse {

@@ -59,6 +59,9 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
 
     long countByGrupoId(Integer grupoId);
 
+    @Query("SELECT COUNT(i) FROM Inscripcion i WHERE i.grupo.estadoEvaluacion = 'ABIERTO' AND i.grupo.activo = true AND i.grupo.semestre = :semestre")
+    long countInscripcionesActivasPorSemestre(String semestre);
+
     boolean existsByAlumnoIdAndGrupoId(Integer alumnoId, Integer grupoId);
 
     boolean existsByAlumnoId(Integer alumnoId);

@@ -1,133 +1,190 @@
 import { useQuery } from '@tanstack/react-query'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { Users, BookOpen, School } from 'lucide-react'
-import { getKpis, getRendimiento } from '@/api/analisis'
-import { PageHeader } from '@/components/shared/PageHeader'
+import { useNavigate } from 'react-router-dom'
+import {
+  Users, GraduationCap, School, ClipboardList,
+  AlertTriangle, Clock, UserX, CheckCircle2, Settings,
+} from 'lucide-react'
+import { getDashboard } from '@/api/configuracion'
+import type { GrupoAlertaDto, AlumnoAlertaDto } from '@/types'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { ErrorAlert } from '@/components/shared/ErrorAlert'
 
-interface KpiCardProps {
-  label: string
-  value: number | undefined
-  icon: React.ReactNode
-  colorClass: string
-  borderClass: string
-  bgClass: string
-}
+// ─── KPI Card ────────────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, icon, colorClass, borderClass, bgClass }: KpiCardProps) {
+function KpiCard({ label, value, icon, color }: {
+  label: string; value: number | undefined; icon: React.ReactNode; color: string
+}) {
   return (
-    <div className={`bg-white rounded-xl border-l-4 ${borderClass} shadow-sm p-6 flex items-center gap-5`}>
-      <div className={`flex h-14 w-14 items-center justify-center rounded-xl ${bgClass} flex-shrink-0`}>
-        <span className={colorClass}>{icon}</span>
-      </div>
+    <div className={`bg-white rounded-xl border-l-4 ${color} shadow-sm p-5 flex items-center gap-4`}>
+      <div className="flex-shrink-0">{icon}</div>
       <div>
-        <p className="text-3xl font-bold text-slate-900">{value ?? '—'}</p>
+        <p className="text-2xl font-bold text-slate-900">{value ?? '—'}</p>
         <p className="text-sm text-slate-500 mt-0.5">{label}</p>
       </div>
     </div>
   )
 }
 
-export default function Dashboard() {
-  const { data: kpis, isLoading: kpisLoading, error: kpisError } = useQuery({
-    queryKey: ['kpis'],
-    queryFn: getKpis,
-  })
+// ─── Alerta de grupos ────────────────────────────────────────────────────────
 
-  const { data: rendimiento, isLoading: rendLoading, error: rendError } = useQuery({
-    queryKey: ['rendimiento'],
-    queryFn: getRendimiento,
-  })
-
+function AlertaGrupos({ titulo, icono, colorHeader, colorBadge, grupos, emptyMsg }: {
+  titulo: string
+  icono: React.ReactNode
+  colorHeader: string
+  colorBadge: string
+  grupos: GrupoAlertaDto[]
+  emptyMsg: string
+}) {
+  const MAX = 5
   return (
-    <div>
-      <PageHeader
-        title="Dashboard"
-        description="Resumen general del sistema institucional de registro académico."
-      />
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      {/* Header */}
+      <div className={`flex items-center justify-between px-5 py-3.5 border-b border-slate-100 ${colorHeader}`}>
+        <div className="flex items-center gap-2.5 text-sm font-semibold">
+          {icono}
+          {titulo}
+        </div>
+        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${colorBadge}`}>
+          {grupos.length}
+        </span>
+      </div>
 
-      {kpisError && (
-        <div className="mb-6">
-          <ErrorAlert message="No se pudieron cargar los indicadores." />
+      {/* Body */}
+      <div className="flex-1 divide-y divide-slate-100">
+        {grupos.length === 0 ? (
+          <div className="flex items-center gap-2.5 px-5 py-4 text-sm text-emerald-600">
+            <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+            {emptyMsg}
+          </div>
+        ) : (
+          grupos.slice(0, MAX).map(g => (
+            <div key={g.id} className="px-5 py-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-medium text-slate-800 truncate">{g.materiaNombre}</p>
+                <span className="text-xs text-slate-400 flex-shrink-0 font-mono">{g.clave}</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">{g.maestroNombre}</p>
+            </div>
+          ))
+        )}
+        {grupos.length > MAX && (
+          <div className="px-5 py-2.5 text-xs text-slate-400">
+            y {grupos.length - MAX} grupo{grupos.length - MAX > 1 ? 's' : ''} más...
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Alerta de alumnos ────────────────────────────────────────────────────────
+
+function AlertaAlumnos({ alumnos }: { alumnos: AlumnoAlertaDto[] }) {
+  const MAX = 6
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50">
+        <div className="flex items-center gap-2.5 text-sm font-semibold text-slate-700">
+          <UserX className="h-4 w-4 text-slate-500" />
+          Alumnos activos sin inscripciones en el semestre
+        </div>
+        <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${alumnos.length > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+          {alumnos.length}
+        </span>
+      </div>
+
+      {/* Body */}
+      {alumnos.length === 0 ? (
+        <div className="flex items-center gap-2.5 px-5 py-4 text-sm text-emerald-600">
+          <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+          Todos los alumnos activos tienen al menos una inscripción este semestre.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+          {alumnos.slice(0, MAX).map(a => (
+            <div key={a.id} className="px-5 py-3">
+              <p className="text-sm font-medium text-slate-800">{a.nombre}</p>
+              <p className="text-xs text-slate-400 font-mono mt-0.5">{a.numControl}</p>
+            </div>
+          ))}
         </div>
       )}
+      {alumnos.length > MAX && (
+        <div className="px-5 py-2.5 border-t border-slate-100 text-xs text-slate-400">
+          y {alumnos.length - MAX} alumno{alumnos.length - MAX > 1 ? 's' : ''} más sin inscribir...
+        </div>
+      )}
+    </div>
+  )
+}
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-        {kpisLoading ? (
-          <div className="sm:col-span-3"><LoadingSpinner className="py-12" size="lg" /></div>
-        ) : (
-          <>
-            <KpiCard
-              label="Total Alumnos"
-              value={kpis?.totalAlumnos}
-              icon={<Users className="h-6 w-6" />}
-              colorClass="text-blue-600"
-              borderClass="border-blue-500"
-              bgClass="bg-blue-50"
-            />
-            <KpiCard
-              label="Total Materias"
-              value={kpis?.totalMaterias}
-              icon={<BookOpen className="h-6 w-6" />}
-              colorClass="text-violet-600"
-              borderClass="border-violet-500"
-              bgClass="bg-violet-50"
-            />
-            <KpiCard
-              label="Grupos Activos"
-              value={kpis?.gruposActivos}
-              icon={<School className="h-6 w-6" />}
-              colorClass="text-emerald-600"
-              borderClass="border-emerald-500"
-              bgClass="bg-emerald-50"
-            />
-          </>
-        )}
+// ─── Página principal ─────────────────────────────────────────────────────────
+
+export default function Dashboard() {
+  const navigate = useNavigate()
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: getDashboard,
+    refetchInterval: 5 * 60 * 1000, // refresca cada 5 min
+  })
+
+  if (isLoading) return <LoadingSpinner className="py-20" size="lg" />
+
+  return (
+    <div className="space-y-6">
+      {/* Header con semestre activo */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+          <p className="mt-1 text-sm text-slate-500">Estado operativo del sistema.</p>
+        </div>
+        <button
+          onClick={() => navigate('/admin/configuracion')}
+          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          <Settings className="h-3.5 w-3.5" />
+          Semestre activo: <strong>{data?.semestreActivo || '—'}</strong>
+        </button>
       </div>
 
-      {/* Rendimiento Chart */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-1">Rendimiento por semestre</h2>
-        <p className="text-sm text-slate-500 mb-6">Alumnos aprobados y reprobados por período académico.</p>
-
-        {rendError && <ErrorAlert message="No se pudo cargar el gráfico de rendimiento." />}
-
-        {rendLoading ? (
-          <LoadingSpinner className="py-20" size="lg" />
-        ) : rendimiento && rendimiento.length > 0 ? (
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={rendimiento} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis
-                dataKey="semestre"
-                tick={{ fontSize: 12, fill: '#64748b' }}
-                axisLine={{ stroke: '#e2e8f0' }}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 12, fill: '#64748b' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                labelStyle={{ fontWeight: 600, color: '#0f172a' }}
-              />
-              <Legend
-                iconType="circle"
-                iconSize={8}
-                wrapperStyle={{ fontSize: '13px', paddingTop: '16px' }}
-              />
-              <Bar dataKey="aprobados" name="Aprobados" fill="#10b981" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="reprobados" name="Reprobados" fill="#ef4444" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="py-16 text-center text-slate-400 text-sm">Sin datos de rendimiento disponibles.</div>
-        )}
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard label="Alumnos activos" value={data?.alumnosActivos}
+          color="border-blue-500"
+          icon={<div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center"><Users className="h-5 w-5 text-blue-600" /></div>} />
+        <KpiCard label="Maestros activos" value={data?.maestrosActivos}
+          color="border-violet-500"
+          icon={<div className="h-10 w-10 rounded-xl bg-violet-50 flex items-center justify-center"><GraduationCap className="h-5 w-5 text-violet-600" /></div>} />
+        <KpiCard label="Grupos en curso" value={data?.gruposEnCurso}
+          color="border-emerald-500"
+          icon={<div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center"><School className="h-5 w-5 text-emerald-600" /></div>} />
+        <KpiCard label="Inscripciones activas" value={data?.inscripcionesActivas}
+          color="border-amber-500"
+          icon={<div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center"><ClipboardList className="h-5 w-5 text-amber-600" /></div>} />
       </div>
+
+      {/* Alertas en dos columnas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <AlertaGrupos
+          titulo="Grupos sin actividades definidas"
+          icono={<AlertTriangle className="h-4 w-4 text-amber-500" />}
+          colorHeader="bg-amber-50"
+          colorBadge={data && data.gruposSinActividades.length > 0 ? 'bg-amber-200 text-amber-800' : 'bg-emerald-100 text-emerald-700'}
+          grupos={data?.gruposSinActividades ?? []}
+          emptyMsg="Todos los grupos tienen actividades definidas."
+        />
+        <AlertaGrupos
+          titulo="Grupos pendientes de cerrar acta"
+          icono={<Clock className="h-4 w-4 text-blue-500" />}
+          colorHeader="bg-blue-50"
+          colorBadge={data && data.gruposPendientesCierre.length > 0 ? 'bg-blue-200 text-blue-800' : 'bg-emerald-100 text-emerald-700'}
+          grupos={data?.gruposPendientesCierre ?? []}
+          emptyMsg="No hay actas pendientes de cierre."
+        />
+      </div>
+
+      {/* Alumnos sin inscripciones */}
+      <AlertaAlumnos alumnos={data?.alumnosSinInscripciones ?? []} />
     </div>
   )
 }

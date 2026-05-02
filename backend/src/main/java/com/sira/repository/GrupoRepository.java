@@ -59,6 +59,32 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         """)
     Optional<Grupo> findByIdWithDetails(Integer id);
 
+    long countByActivoAndEstadoEvaluacionAndSemestre(boolean activo, String estadoEvaluacion, String semestre);
+
+    @Query("""
+        SELECT g FROM Grupo g
+        JOIN FETCH g.materia
+        JOIN FETCH g.maestro m
+        JOIN FETCH m.usuario
+        WHERE g.estadoEvaluacion = 'ABIERTO' AND g.activo = true AND g.semestre = :semestre
+        AND NOT EXISTS (SELECT a FROM ActividadGrupo a WHERE a.grupo = g)
+        ORDER BY g.materia.nombre ASC
+        """)
+    List<Grupo> findGruposSinActividades(String semestre);
+
+    @Query("""
+        SELECT g FROM Grupo g
+        JOIN FETCH g.materia
+        JOIN FETCH g.maestro m
+        JOIN FETCH m.usuario
+        WHERE g.estadoEvaluacion = 'ABIERTO' AND g.activo = true AND g.semestre = :semestre
+        AND g.materia.totalUnidades > 0
+        AND (SELECT COUNT(eu) FROM EstadoUnidad eu WHERE eu.grupo = g AND eu.estado = 'CERRADA')
+            = g.materia.totalUnidades
+        ORDER BY g.materia.nombre ASC
+        """)
+    List<Grupo> findGruposPendientesCierre(String semestre);
+
     boolean existsByClaveAndMateriaIdAndSemestre(String clave, Integer materiaId, String semestre);
 
     boolean existsByMaestroId(Integer maestroId);

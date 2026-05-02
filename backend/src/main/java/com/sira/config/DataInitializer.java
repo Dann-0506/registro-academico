@@ -51,5 +51,13 @@ public class DataInitializer implements ApplicationRunner {
                     "calificacion_maxima", "100",
                     "Calificación máxima permitida en el sistema"));
         }
+        if (!configuracionRepository.existsById("semestre_activo")) {
+            int anio = java.time.LocalDate.now().getYear();
+            int mes = java.time.LocalDate.now().getMonthValue();
+            String periodo = mes <= 6 ? "1" : "2";
+            configuracionRepository.save(new Configuracion(
+                    "semestre_activo", anio + "-" + periodo,
+                    "Semestre académico activo para el dashboard operativo"));
+        }
     }
 }

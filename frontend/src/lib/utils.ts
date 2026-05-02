@@ -27,3 +27,30 @@ export function rolLabel(rol: string): string {
   const map: Record<string, string> = { admin: 'Administrador', maestro: 'Maestro', alumno: 'Alumno' }
   return map[rol] ?? rol
 }
+
+// Convierte los dos campos independientes (activo + estadoEvaluacion) en un
+// único estado semántico para la UI de grupos.
+export type EstadoGrupo = 'EN_CURSO' | 'ACTA_CERRADA' | 'FINALIZADO'
+
+export function estadoGrupo(activo: boolean, estadoEvaluacion: string): EstadoGrupo {
+  if (activo && estadoEvaluacion === 'ABIERTO') return 'EN_CURSO'
+  if (activo && estadoEvaluacion === 'CERRADO') return 'ACTA_CERRADA'
+  return 'FINALIZADO'
+}
+
+export function estadoGrupoLabel(estado: EstadoGrupo): string {
+  const map: Record<EstadoGrupo, string> = {
+    EN_CURSO:     'En curso',
+    ACTA_CERRADA: 'Acta cerrada',
+    FINALIZADO:   'Finalizado',
+  }
+  return map[estado]
+}
+
+export function estadoGrupoColor(estado: EstadoGrupo): string {
+  switch (estado) {
+    case 'EN_CURSO':     return 'text-emerald-700 bg-emerald-50 border-emerald-200'
+    case 'ACTA_CERRADA': return 'text-amber-700 bg-amber-50 border-amber-200'
+    case 'FINALIZADO':   return 'text-slate-500 bg-slate-100 border-slate-300'
+  }
+}

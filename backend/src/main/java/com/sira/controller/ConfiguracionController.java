@@ -18,16 +18,17 @@ public class ConfiguracionController {
     @Autowired private ConfiguracionService configuracionService;
 
     @GetMapping
-    public ResponseEntity<Map<String, BigDecimal>> obtener() {
+    public ResponseEntity<Map<String, Object>> obtener() {
         return ResponseEntity.ok(Map.of(
                 "minimaAprobatoria", configuracionService.obtenerCalificacionMinima(),
-                "maxima", configuracionService.obtenerCalificacionMaxima()
+                "maxima", configuracionService.obtenerCalificacionMaxima(),
+                "semestreActivo", configuracionService.obtenerSemestreActivo()
         ));
     }
 
     @PutMapping
     public ResponseEntity<Void> actualizar(@RequestBody ConfiguracionLimitesRequest request) {
-        configuracionService.actualizarLimites(request.minimaAprobatoria(), request.maxima());
+        configuracionService.actualizar(request.minimaAprobatoria(), request.maxima(), request.semestreActivo());
         return ResponseEntity.noContent().build();
     }
 }

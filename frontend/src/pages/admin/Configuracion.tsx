@@ -8,7 +8,7 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 
 export default function Configuracion() {
-  const [form, setForm] = useState({ minimaAprobatoria: 60, maxima: 100 })
+  const [form, setForm] = useState({ minimaAprobatoria: 60, maxima: 100, semestreActivo: '' })
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
 
@@ -18,7 +18,7 @@ export default function Configuracion() {
   })
 
   useEffect(() => {
-    if (data) setForm({ minimaAprobatoria: data.minimaAprobatoria, maxima: data.maxima })
+    if (data) setForm({ minimaAprobatoria: data.minimaAprobatoria, maxima: data.maxima, semestreActivo: data.semestreActivo ?? '' })
   }, [data])
 
   const mutation = useMutation({
@@ -32,11 +32,15 @@ export default function Configuracion() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!form.semestreActivo.trim()) {
+      setError('El semestre activo es obligatorio.')
+      return
+    }
     if (form.minimaAprobatoria < 0 || form.minimaAprobatoria > form.maxima) {
       setError('La calificación mínima debe ser mayor a 0 y menor o igual a la máxima.')
       return
     }
-    mutation.mutate({ minimaAprobatoria: form.minimaAprobatoria, maxima: form.maxima })
+    mutation.mutate({ minimaAprobatoria: form.minimaAprobatoria, maxima: form.maxima, semestreActivo: form.semestreActivo.trim() })
   }
 
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition'
@@ -64,6 +68,22 @@ export default function Configuracion() {
               </div>
             )}
             {error && <ErrorAlert message={error} onClose={() => setError('')} />}
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Semestre activo <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.semestreActivo}
+                onChange={(e) => { setForm((p) => ({ ...p, semestreActivo: e.target.value })); setSuccess(false) }}
+                placeholder="Ej. 2026-1"
+                className={inputClass}
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                Define qué semestre se considera activo en el dashboard operativo. Actualízalo al iniciar cada período académico.
+              </p>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">

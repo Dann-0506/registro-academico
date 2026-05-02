@@ -27,8 +27,15 @@ public class ConfiguracionService {
                 .orElse(new BigDecimal("100"));
     }
 
+    @Transactional(readOnly = true)
+    public String obtenerSemestreActivo() {
+        return configuracionRepository.findById("semestre_activo")
+                .map(c -> c.getValor())
+                .orElse("");
+    }
+
     @Transactional
-    public void actualizarLimites(BigDecimal minima, BigDecimal maxima) {
+    public void actualizar(BigDecimal minima, BigDecimal maxima, String semestreActivo) {
         if (minima == null || maxima == null) {
             throw new IllegalArgumentException("Ambas calificaciones son obligatorias.");
         }
@@ -38,7 +45,17 @@ public class ConfiguracionService {
         if (minima.compareTo(maxima) >= 0) {
             throw new IllegalArgumentException("La calificación mínima no puede ser mayor o igual a la máxima.");
         }
+        if (semestreActivo == null || semestreActivo.isBlank()) {
+            throw new IllegalArgumentException("El semestre activo es obligatorio.");
+        }
         configuracionRepository.save(new Configuracion("calificacion_minima_aprobatoria", minima.toPlainString(), "Calificación mínima para aprobar"));
         configuracionRepository.save(new Configuracion("calificacion_maxima", maxima.toPlainString(), "Calificación máxima permitida"));
+        configuracionRepository.save(new Configuracion("semestre_activo", semestreActivo.trim(), "Semestre académico activo para el dashboard operativo"));
+    }
+
+    // Mantener compatibilidad con servicios que solo necesitan actualizar límites
+    @Transactional
+    public void actualizarLimites(BigDecimal minima, BigDecimal maxima) {
+        actualizar(minima, maxima, obtenerSemestreActivo());
     }
 }

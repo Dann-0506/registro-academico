@@ -36,4 +36,18 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Integer> {
         ORDER BY a.usuario.nombre ASC
         """)
     List<Alumno> findByGrupoId(Integer grupoId);
+
+    @Query("""
+        SELECT a FROM Alumno a JOIN FETCH a.usuario
+        WHERE a.usuario.activo = true
+        AND NOT EXISTS (
+            SELECT i FROM Inscripcion i
+            WHERE i.alumno = a
+            AND i.grupo.semestre = :semestre
+            AND i.grupo.estadoEvaluacion = 'ABIERTO'
+            AND i.grupo.activo = true
+        )
+        ORDER BY a.usuario.nombre ASC
+        """)
+    List<Alumno> findAlumnosSinInscripcionesEnSemestre(String semestre);
 }
