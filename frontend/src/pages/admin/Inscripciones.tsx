@@ -58,7 +58,7 @@ export default function Inscripciones() {
   const alumnosFiltrados = alumnos.filter((a: AlumnoResponse) =>
     alumnoSearch
       ? a.nombre.toLowerCase().includes(alumnoSearch.toLowerCase()) ||
-        a.matricula.toLowerCase().includes(alumnoSearch.toLowerCase())
+        a.numControl.toLowerCase().includes(alumnoSearch.toLowerCase())
       : true
   )
 
@@ -107,8 +107,8 @@ export default function Inscripciones() {
             isLoading={inscLoading}
             keyExtractor={(i) => i.id}
             searchable
-            searchKeys={['alumnoNombre', 'alumnoMatricula']}
-            searchPlaceholder="Buscar por nombre o matrícula..."
+            searchKeys={['alumnoNombre', 'alumnoNumControl']}
+            searchPlaceholder="Buscar por nombre o núm. de control..."
             emptyMessage="No hay alumnos inscritos en este grupo."
             actions={
               <button
@@ -120,7 +120,7 @@ export default function Inscripciones() {
               </button>
             }
             columns={[
-              { header: 'Matrícula', accessor: 'alumnoMatricula' },
+              { header: 'Núm. de control', accessor: 'alumnoNumControl' },
               { header: 'Nombre alumno', accessor: 'alumnoNombre' },
               {
                 header: 'Fecha',
@@ -179,7 +179,7 @@ export default function Inscripciones() {
               type="text"
               value={alumnoSearch}
               onChange={(e) => { setAlumnoSearch(e.target.value); setSelectedAlumnoId('') }}
-              placeholder="Nombre o matrícula..."
+              placeholder="Nombre o núm. de control..."
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition mb-2"
             />
             <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
@@ -189,10 +189,10 @@ export default function Inscripciones() {
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => { setSelectedAlumnoId(String(a.id)); setAlumnoSearch(`${a.matricula} — ${a.nombre}`) }}
+                  onClick={() => { setSelectedAlumnoId(String(a.id)); setAlumnoSearch(`${a.numControl} — ${a.nombre}`) }}
                   className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${selectedAlumnoId === String(a.id) ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-700 hover:bg-slate-50'}`}
                 >
-                  <span className="font-medium">{a.matricula}</span>
+                  <span className="font-medium">{a.numControl}</span>
                   <span className="text-slate-500 ml-2">{a.nombre}</span>
                 </button>
               ))}

@@ -30,10 +30,10 @@ export default function Perfil() {
 
   if (isLoading) return <LoadingSpinner className="py-20" size="lg" />
 
-  const labelFor: Record<string, string> = { admin: 'Núm. empleado', maestro: 'Núm. empleado', alumno: 'Matrícula' }
+  const labelFor: Record<string, string> = { admin: 'Núm. empleado', maestro: 'Núm. empleado', alumno: 'Núm. de control' }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <PageHeader title="Mi perfil" description="Información de tu cuenta y ajustes de seguridad." />
 
       {/* Info card */}

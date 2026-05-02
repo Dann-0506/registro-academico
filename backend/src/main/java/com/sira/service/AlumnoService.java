@@ -53,13 +53,13 @@ public class AlumnoService {
     public Alumno crear(String nombre, String email, String matricula) {
         validarCampos(nombre, email, matricula);
         if (alumnoRepository.existsByMatricula(matricula)) {
-            throw new IllegalStateException("La matrícula '" + matricula + "' ya está registrada.");
+            throw new IllegalStateException("El número de control '" + matricula + "' ya está registrado.");
         }
-        if (email != null && !email.isBlank() && usuarioRepository.existsByEmail(email)) {
+        if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
         String matriculaNormalizada = matricula.trim().toUpperCase();
-        Usuario usuario = new Usuario(nombre.trim(), email != null ? email.trim() : null, passwordEncoder.encode(matriculaNormalizada), "alumno");
+        Usuario usuario = new Usuario(nombre.trim(), email.trim(), passwordEncoder.encode(matriculaNormalizada), "alumno");
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Alumno saved = alumnoRepository.save(new Alumno(usuario, matriculaNormalizada));
@@ -72,16 +72,16 @@ public class AlumnoService {
         validarCampos(nombre, email, matricula);
 
         if (!alumno.getMatricula().equals(matricula) && alumnoRepository.existsByMatricula(matricula)) {
-            throw new IllegalStateException("La matrícula '" + matricula + "' ya está registrada.");
+            throw new IllegalStateException("El número de control '" + matricula + "' ya está registrado.");
         }
 
         Usuario usuario = alumno.getUsuario();
-        if (email != null && !email.equalsIgnoreCase(usuario.getEmail()) && usuarioRepository.existsByEmail(email)) {
+        if (!email.equalsIgnoreCase(usuario.getEmail()) && usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
 
         usuario.setNombre(nombre.trim());
-        usuario.setEmail(email != null ? email.trim() : null);
+        usuario.setEmail(email.trim());
         usuarioRepository.save(usuario);
         alumno.setMatricula(matricula.trim().toUpperCase());
         alumnoRepository.save(alumno);
@@ -121,7 +121,10 @@ public class AlumnoService {
         if (matricula == null || matricula.isBlank()) {
             throw new IllegalArgumentException("La matrícula es obligatoria.");
         }
-        if (email != null && !email.isBlank() && !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$")) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("El correo electrónico es obligatorio.");
+        }
+        if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$")) {
             throw new IllegalArgumentException("El formato del correo electrónico es inválido.");
         }
     }

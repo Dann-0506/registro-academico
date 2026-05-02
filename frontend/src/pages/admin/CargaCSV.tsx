@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { Upload, FileUp, AlertCircle, CheckCircle2, X } from 'lucide-react'
+import { Upload, FileUp, AlertCircle, CheckCircle2, X, ChevronDown, ChevronUp, Info } from 'lucide-react'
 import axios from 'axios'
 import { importarCSV } from '@/api/carga'
 import type { CargaResultadoResponse } from '@/types'
@@ -8,13 +8,153 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 
-const TIPOS = [
-  { value: 'alumnos', label: 'Alumnos' },
-  { value: 'maestros', label: 'Maestros' },
-  { value: 'materias', label: 'Materias' },
-  { value: 'grupos', label: 'Grupos' },
-  { value: 'inscripciones', label: 'Inscripciones' },
-]
+// ─── Definición de formatos ───────────────────────────────────────────────────
+
+interface Columna { nombre: string; requerida: boolean; descripcion: string }
+interface FormatoTipo {
+  label: string
+  columnas: Columna[]
+  ejemplo: string
+  notas?: string
+}
+
+const FORMATOS: Record<string, FormatoTipo> = {
+  alumnos: {
+    label: 'Alumnos',
+    columnas: [
+      { nombre: 'num_control', requerida: true,  descripcion: 'Número de control único del alumno (ej. 21310001)' },
+      { nombre: 'nombre',     requerida: true,  descripcion: 'Nombre completo' },
+      { nombre: 'correo',     requerida: true, descripcion: 'Correo electrónico (se usa para iniciar sesión)' },
+    ],
+    ejemplo: '21310001,Juan Pérez García,juan@escuela.edu',
+    notas: 'La contraseña temporal será el número de control del alumno.',
+  },
+  maestros: {
+    label: 'Maestros',
+    columnas: [
+      { nombre: 'num_empleado', requerida: true,  descripcion: 'Número de empleado único (ej. EMP-001)' },
+      { nombre: 'nombre',       requerida: true,  descripcion: 'Nombre completo' },
+      { nombre: 'correo',       requerida: true,  descripcion: 'Correo electrónico (se usa para iniciar sesión)' },
+    ],
+    ejemplo: 'EMP-001,María López Ruiz,maria@escuela.edu',
+    notas: 'La contraseña temporal será el número de empleado.',
+  },
+  administradores: {
+    label: 'Administradores',
+    columnas: [
+      { nombre: 'num_empleado', requerida: true, descripcion: 'Número de empleado único (ej. ADMIN-002)' },
+      { nombre: 'nombre',       requerida: true, descripcion: 'Nombre completo' },
+      { nombre: 'correo',       requerida: true, descripcion: 'Correo electrónico (requerido para login)' },
+    ],
+    ejemplo: 'ADMIN-002,Carlos Ramírez,carlos@escuela.edu',
+    notas: 'La contraseña temporal será el número de empleado. El correo es obligatorio para administradores.',
+  },
+  materias: {
+    label: 'Materias',
+    columnas: [
+      { nombre: 'clave',           requerida: true,  descripcion: 'Clave única de la materia (ej. MAT101)' },
+      { nombre: 'nombre',          requerida: true,  descripcion: 'Nombre de la materia' },
+      { nombre: 'total_unidades',  requerida: true,  descripcion: 'Número de unidades (1–15)' },
+      { nombre: 'nombres_unidades', requerida: false, descripcion: 'Nombres de unidades separados por | (ej. Álgebra|Cálculo|Geometría)' },
+    ],
+    ejemplo: 'MAT101,Matemáticas I,3,Álgebra Básica|Cálculo Diferencial|Geometría Analítica',
+    notas: 'Si no se especifican nombres de unidades, se generan automáticamente como "Unidad 1", "Unidad 2", etc.',
+  },
+  grupos: {
+    label: 'Grupos',
+    columnas: [
+      { nombre: 'clave_materia', requerida: true, descripcion: 'Clave de materia existente (ej. MAT101)' },
+      { nombre: 'num_empleado',  requerida: true, descripcion: 'Número de empleado del maestro asignado' },
+      { nombre: 'clave_grupo',   requerida: true, descripcion: 'Clave del grupo (ej. G-01)' },
+      { nombre: 'semestre',      requerida: true, descripcion: 'Período académico (ej. 2026-1)' },
+    ],
+    ejemplo: 'MAT101,EMP-001,G-01,2026-1',
+    notas: 'La materia y el maestro deben existir previamente en el sistema.',
+  },
+  inscripciones: {
+    label: 'Inscripciones',
+    columnas: [
+      { nombre: 'num_control', requerida: true, descripcion: 'Número de control del alumno existente' },
+      { nombre: 'clave_grupo', requerida: true, descripcion: 'Clave del grupo existente' },
+      { nombre: 'semestre',    requerida: true, descripcion: 'Semestre del grupo (ej. 2026-1)' },
+    ],
+    ejemplo: 'A12345678,G-01,2026-1',
+    notas: 'El alumno y el grupo (clave + semestre) deben existir previamente. No se permiten inscripciones duplicadas.',
+  },
+}
+
+const TIPOS = Object.entries(FORMATOS).map(([value, f]) => ({ value, label: f.label }))
+
+// ─── Componente de formato ────────────────────────────────────────────────────
+
+function FormatoEsperado({ tipo }: { tipo: string }) {
+  const [open, setOpen] = useState(false)
+  const fmt = FORMATOS[tipo]
+  if (!fmt) return null
+
+  return (
+    <div className="rounded-lg border border-slate-200 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-sm font-medium text-slate-700"
+      >
+        <div className="flex items-center gap-2">
+          <Info className="h-4 w-4 text-blue-500" />
+          Ver formato esperado para <strong>{fmt.label}</strong>
+        </div>
+        {open ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+      </button>
+
+      {open && (
+        <div className="px-4 py-4 space-y-4 bg-white">
+          {/* Columnas */}
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Columnas</p>
+            <div className="space-y-1.5">
+              {fmt.columnas.map((col, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded mt-0.5 flex-shrink-0 min-w-[120px]">
+                    {col.nombre}
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-1 flex-wrap">
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${col.requerida ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-500'}`}>
+                      {col.requerida ? 'Requerida' : 'Opcional'}
+                    </span>
+                    <span className="text-xs text-slate-500">{col.descripcion}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Ejemplo */}
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Ejemplo de fila</p>
+            <code className="block text-xs bg-slate-900 text-emerald-400 px-4 py-3 rounded-lg font-mono break-all">
+              {fmt.ejemplo}
+            </code>
+          </div>
+
+          {/* Notas */}
+          {fmt.notas && (
+            <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+              <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+              {fmt.notas}
+            </div>
+          )}
+
+          {/* Hint encabezado */}
+          <p className="text-xs text-slate-400">
+            La primera fila puede ser un encabezado — el sistema la detecta y la omite automáticamente.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function CargaCSV() {
   const [tipo, setTipo] = useState('alumnos')
@@ -52,6 +192,12 @@ export default function CargaCSV() {
     mutation.mutate()
   }
 
+  const handleTipoChange = (nuevoTipo: string) => {
+    setTipo(nuevoTipo)
+    setResultado(null)
+    setGlobalError('')
+  }
+
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition bg-white'
 
   return (
@@ -67,12 +213,15 @@ export default function CargaCSV() {
         {/* Tipo selector */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Tipo de datos a importar</label>
-          <select value={tipo} onChange={(e) => { setTipo(e.target.value); setResultado(null) }} className={inputClass}>
+          <select value={tipo} onChange={(e) => handleTipoChange(e.target.value)} className={inputClass}>
             {TIPOS.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
         </div>
+
+        {/* Formato esperado */}
+        <FormatoEsperado tipo={tipo} />
 
         {/* Drop zone */}
         <div>
@@ -139,7 +288,6 @@ export default function CargaCSV() {
           </div>
 
           <div className="px-6 py-5 space-y-4">
-            {/* Summary */}
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-3 rounded-lg bg-slate-50 border border-slate-200">
                 <p className="text-2xl font-bold text-slate-800">{resultado.procesados}</p>
@@ -155,7 +303,6 @@ export default function CargaCSV() {
               </div>
             </div>
 
-            {/* Error table */}
             {resultado.errores.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2 text-sm text-red-600 font-medium">

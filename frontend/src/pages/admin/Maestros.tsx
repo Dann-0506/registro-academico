@@ -88,8 +88,9 @@ export default function Maestros() {
 
   const handleSubmit = () => {
     if (!form.nombre.trim()) { setFormError('El nombre es requerido.'); return }
+    if (!form.email.trim()) { setFormError('El correo electrónico es requerido.'); return }
     if (!form.numEmpleado.trim()) { setFormError('El número de empleado es requerido.'); return }
-    const data = { nombre: form.nombre.trim(), email: form.email.trim() || undefined, numEmpleado: form.numEmpleado.trim() }
+    const data = { nombre: form.nombre.trim(), email: form.email.trim(), numEmpleado: form.numEmpleado.trim() }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data: data as typeof emptyForm })
     else createMut.mutate(data as typeof emptyForm)
   }
@@ -196,12 +197,15 @@ export default function Maestros() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Correo electrónico</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Correo electrónico <span className="text-red-500">*</span>
+            </label>
             <input
               type="email"
+              required
               value={form.email}
               onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              placeholder="maestro@escuela.edu (opcional)"
+              placeholder="maestro@escuela.edu"
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
             />
           </div>

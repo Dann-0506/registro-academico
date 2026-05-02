@@ -39,7 +39,7 @@ export interface AdminResponse {
 export interface AlumnoResponse {
   id: number
   usuarioId: number
-  matricula: string
+  numControl: string
   nombre: string
   email: string
   activo: boolean
@@ -87,7 +87,7 @@ export interface InscripcionResponse {
   id: number
   alumnoId: number
   alumnoNombre: string
-  alumnoMatricula: string
+  alumnoNumControl: string
   grupoId: number
   grupoClave: string
   materiaNombre: string
@@ -170,7 +170,7 @@ export interface CalificacionFinalDto {
   inscripcionId: number
   alumnoId: number
   alumnoNombre: string
-  alumnoMatricula: string
+  alumnoNumControl: string
   unidades: ResultadoUnidadDto[]
   calificacionCalculada: number | null
   bonusMateria: number

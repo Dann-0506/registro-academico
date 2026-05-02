@@ -21,13 +21,14 @@ public class CargaController {
             @RequestParam("tipo") String tipo) {
 
         CargaResultadoResponse resultado = switch (tipo.toLowerCase()) {
-            case "alumnos"       -> cargaDatosService.importarAlumnos(archivo);
-            case "maestros"      -> cargaDatosService.importarMaestros(archivo);
-            case "materias"      -> cargaDatosService.importarMaterias(archivo);
-            case "grupos"        -> cargaDatosService.importarGrupos(archivo);
-            case "inscripciones" -> cargaDatosService.importarInscripciones(archivo);
+            case "alumnos"          -> cargaDatosService.importarAlumnos(archivo);
+            case "maestros"         -> cargaDatosService.importarMaestros(archivo);
+            case "administradores"  -> cargaDatosService.importarAdministradores(archivo);
+            case "materias"         -> cargaDatosService.importarMaterias(archivo);
+            case "grupos"           -> cargaDatosService.importarGrupos(archivo);
+            case "inscripciones"    -> cargaDatosService.importarInscripciones(archivo);
             default -> throw new IllegalArgumentException(
-                    "Tipo desconocido: '" + tipo + "'. Válidos: alumnos, maestros, materias, grupos, inscripciones.");
+                    "Tipo desconocido: '" + tipo + "'. Válidos: alumnos, maestros, administradores, materias, grupos, inscripciones.");
         };
 
         return ResponseEntity.ok(resultado);

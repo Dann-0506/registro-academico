@@ -9,7 +9,7 @@ public record InscripcionResponse(
         Integer id,
         Integer alumnoId,
         String alumnoNombre,
-        String alumnoMatricula,
+        String alumnoNumControl,
         Integer grupoId,
         String grupoClave,
         String materiaNombre,

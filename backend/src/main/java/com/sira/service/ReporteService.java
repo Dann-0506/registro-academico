@@ -50,7 +50,7 @@ public class ReporteService {
 
         // Grupo abierto: calcular on-demand
         String nombre = inscripcion.getAlumno().getUsuario().getNombre();
-        String matricula = inscripcion.getAlumno().getMatricula();
+        String numControl = inscripcion.getAlumno().getMatricula();
 
         List<ResultadoUnidadDto> resultadosUnidades = new ArrayList<>();
         for (Unidad unidad : unidades) {
@@ -65,7 +65,7 @@ public class ReporteService {
                 inscripcion.getId(),
                 inscripcion.getAlumno().getId(),
                 nombre,
-                matricula,
+                numControl,
                 resultadosUnidades,
                 bonusMateria,
                 inscripcion.getCalificacionFinalOverride(),
@@ -90,7 +90,7 @@ public class ReporteService {
         cf.setInscripcionId(inscripcion.getId());
         cf.setAlumnoId(inscripcion.getAlumno().getId());
         cf.setAlumnoNombre(inscripcion.getAlumno().getUsuario().getNombre());
-        cf.setAlumnoMatricula(inscripcion.getAlumno().getMatricula());
+        cf.setAlumnoNumControl(inscripcion.getAlumno().getMatricula());
         cf.setUnidades(resultadosUnidades);
         cf.setCalificacionCalculada(inscripcion.getCalificacionFinalCalculada());
         cf.setCalificacionFinal(finalDefinitiva);

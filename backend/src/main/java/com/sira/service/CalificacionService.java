@@ -107,7 +107,7 @@ public class CalificacionService {
     }
 
     public CalificacionFinalDto calcularCalificacionFinal(
-            Integer inscripcionId, Integer alumnoId, String alumnoNombre, String alumnoMatricula,
+            Integer inscripcionId, Integer alumnoId, String alumnoNombre, String alumnoNumControl,
             List<ResultadoUnidadDto> unidades, BigDecimal bonusMateria,
             BigDecimal override, String overrideJustificacion, BigDecimal limiteMaximo) {
 
@@ -120,7 +120,7 @@ public class CalificacionService {
         cf.setInscripcionId(inscripcionId);
         cf.setAlumnoId(alumnoId);
         cf.setAlumnoNombre(alumnoNombre);
-        cf.setAlumnoMatricula(alumnoMatricula);
+        cf.setAlumnoNumControl(alumnoNumControl);
         cf.setUnidades(unidades);
         cf.setCalificacionCalculada(calculada);
         cf.setBonusMateria(bonus);

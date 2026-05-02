@@ -402,7 +402,7 @@ function BonusTab({ grupo }: { grupo: GrupoResponse }) {
               className={`w-full text-left px-5 py-3 transition-colors ${selectedInscripcionId === r.inscripcionId ? 'bg-blue-50 border-l-2 border-blue-500' : 'hover:bg-slate-50'}`}
             >
               <p className="text-sm font-medium text-slate-800">{r.alumnoNombre}</p>
-              <p className="text-xs text-slate-400">{r.alumnoMatricula}</p>
+              <p className="text-xs text-slate-400">{r.alumnoNumControl}</p>
             </button>
           ))}
         </div>
@@ -579,7 +579,7 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Alumno</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Matrícula</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500">Núm. de control</th>
                   {reporte[0]?.unidades.map((u: ResultadoUnidadDto) => (
                     <th key={u.unidadId} className="px-4 py-3 text-center text-xs font-semibold text-slate-500">U{u.unidadNumero}</th>
                   ))}
@@ -592,7 +592,7 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
                 {reporte.map((r) => (
                   <tr key={r.inscripcionId} className="hover:bg-slate-50/60">
                     <td className="px-4 py-3 font-medium text-slate-800">{r.alumnoNombre}</td>
-                    <td className="px-4 py-3 text-slate-500">{r.alumnoMatricula}</td>
+                    <td className="px-4 py-3 text-slate-500">{r.alumnoNumControl}</td>
                     {r.unidades.map((u: ResultadoUnidadDto) => (
                       <td key={u.unidadId} className="px-4 py-3 text-center text-slate-700">{formatCalificacion(u.resultadoFinal)}</td>
                     ))}

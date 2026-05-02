@@ -50,11 +50,11 @@ public class MaestroService {
         if (maestroRepository.existsByNumEmpleado(numEmpleado)) {
             throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
         }
-        if (email != null && !email.isBlank() && usuarioRepository.existsByEmail(email)) {
+        if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
         String numEmpleadoNormalizado = numEmpleado.trim().toUpperCase();
-        Usuario usuario = new Usuario(nombre.trim(), email != null ? email.trim() : null, passwordEncoder.encode(numEmpleadoNormalizado), "maestro");
+        Usuario usuario = new Usuario(nombre.trim(), email.trim(), passwordEncoder.encode(numEmpleadoNormalizado), "maestro");
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Maestro saved = maestroRepository.save(new Maestro(usuario, numEmpleadoNormalizado));
@@ -71,12 +71,12 @@ public class MaestroService {
         }
 
         Usuario usuario = maestro.getUsuario();
-        if (email != null && !email.equalsIgnoreCase(usuario.getEmail()) && usuarioRepository.existsByEmail(email)) {
+        if (!email.equalsIgnoreCase(usuario.getEmail()) && usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
 
         usuario.setNombre(nombre.trim());
-        usuario.setEmail(email != null ? email.trim() : null);
+        usuario.setEmail(email.trim());
         usuarioRepository.save(usuario);
         maestro.setNumEmpleado(numEmpleado.trim().toUpperCase());
         maestroRepository.save(maestro);
@@ -116,7 +116,10 @@ public class MaestroService {
         if (numEmpleado == null || numEmpleado.isBlank()) {
             throw new IllegalArgumentException("El número de empleado es obligatorio.");
         }
-        if (email != null && !email.isBlank() && !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$")) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("El correo electrónico es obligatorio.");
+        }
+        if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$")) {
             throw new IllegalArgumentException("El formato del correo electrónico es inválido.");
         }
     }

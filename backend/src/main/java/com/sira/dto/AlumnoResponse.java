@@ -2,7 +2,7 @@ package com.sira.dto;
 
 import com.sira.model.Alumno;
 
-public record AlumnoResponse(Integer id, Integer usuarioId, String matricula, String nombre, String email, boolean activo) {
+public record AlumnoResponse(Integer id, Integer usuarioId, String numControl, String nombre, String email, boolean activo) {
 
     public static AlumnoResponse from(Alumno a) {
         return new AlumnoResponse(

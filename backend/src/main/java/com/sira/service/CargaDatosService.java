@@ -19,22 +19,28 @@ public class CargaDatosService {
     @Autowired private AlumnoService alumnoService;
     @Autowired private MateriaService materiaService;
     @Autowired private MaestroService maestroService;
+    @Autowired private AdminService adminService;
     @Autowired private GrupoService grupoService;
     @Autowired private InscripcionService inscripcionService;
 
     public CargaResultadoResponse importarAlumnos(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 2) throw new IllegalArgumentException("Faltan columnas (Matrícula, Nombre).");
-            String email = fila.length >= 3 && !fila[2].isBlank() ? fila[2].trim() : null;
-            alumnoService.crear(fila[1].trim(), email, fila[0].trim());
+            if (fila.length < 3 || fila[2].isBlank()) throw new IllegalArgumentException("Faltan columnas (Núm. de control, Nombre, Correo).");
+            alumnoService.crear(fila[1].trim(), fila[2].trim(), fila[0].trim());
+        });
+    }
+
+    public CargaResultadoResponse importarAdministradores(MultipartFile archivo) {
+        return procesar(archivo, (fila, num) -> {
+            if (fila.length < 3) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Nombre, Correo).");
+            adminService.crear(fila[1].trim(), fila[2].trim(), fila[0].trim());
         });
     }
 
     public CargaResultadoResponse importarMaestros(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 2) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Nombre).");
-            String email = fila.length >= 3 && !fila[2].isBlank() ? fila[2].trim() : null;
-            maestroService.crear(fila[1].trim(), email, fila[0].trim());
+            if (fila.length < 3 || fila[2].isBlank()) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Nombre, Correo).");
+            maestroService.crear(fila[1].trim(), fila[2].trim(), fila[0].trim());
         });
     }
 
@@ -104,6 +110,6 @@ public class CargaDatosService {
     private boolean esEncabezado(String[] fila) {
         if (fila == null || fila.length == 0 || fila[0] == null) return false;
         String primera = fila[0].trim().toLowerCase();
-        return primera.matches(".*\\b(matricula|mat|alumno|num|empleado|clave|materia|docente|grupo)\\b.*");
+        return primera.matches(".*\\b(matricula|mat|alumno|num|empleado|clave|materia|docente|grupo|admin)\\b.*");
     }
 }

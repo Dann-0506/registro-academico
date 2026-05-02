@@ -13,7 +13,7 @@ public class CalificacionFinalDto {
     private Integer inscripcionId;
     private Integer alumnoId;
     private String alumnoNombre;
-    private String alumnoMatricula;
+    private String alumnoNumControl;
     private List<ResultadoUnidadDto> unidades;
     private BigDecimal calificacionCalculada;
     private BigDecimal bonusMateria;

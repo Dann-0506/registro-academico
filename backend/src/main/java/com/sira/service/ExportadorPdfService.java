@@ -66,7 +66,7 @@ public class ExportadorPdfService {
             PdfPTable datosAlumno = new PdfPTable(2);
             datosAlumno.setWidthPercentage(100);
             datosAlumno.addCell(crearCeldaSinBorde("Alumno: " + cf.getAlumnoNombre(), FUENTE_SUBTITULO, Element.ALIGN_LEFT));
-            datosAlumno.addCell(crearCeldaSinBorde("Matrícula: " + cf.getAlumnoMatricula(), FUENTE_SUBTITULO, Element.ALIGN_RIGHT));
+            datosAlumno.addCell(crearCeldaSinBorde("Núm. de control: " + cf.getAlumnoNumControl(), FUENTE_SUBTITULO, Element.ALIGN_RIGHT));
             datosAlumno.addCell(crearCeldaSinBorde("Materia: " + grupo.getMateria().getNombre() + " (" + grupo.getMateria().getClave() + ")", FUENTE_NORMAL, Element.ALIGN_LEFT));
             datosAlumno.addCell(crearCeldaSinBorde("Grupo: " + grupo.getClave() + " — " + grupo.getSemestre(), FUENTE_NORMAL, Element.ALIGN_RIGHT));
             datosAlumno.addCell(crearCeldaSinBorde("Docente: " + grupo.getMaestro().getUsuario().getNombre(), FUENTE_NORMAL, Element.ALIGN_LEFT));
@@ -155,7 +155,7 @@ public class ExportadorPdfService {
         tabla.addCell(crearCeldaCabecera("Estado"));
 
         for (CalificacionFinalDto cf : alumnos) {
-            tabla.addCell(crearCeldaNormal(cf.getAlumnoMatricula(), Element.ALIGN_CENTER));
+            tabla.addCell(crearCeldaNormal(cf.getAlumnoNumControl(), Element.ALIGN_CENTER));
             tabla.addCell(crearCeldaNormal(cf.getAlumnoNombre(), Element.ALIGN_LEFT));
             for (Unidad u : unidades) {
                 Optional<ResultadoUnidadDto> ru = cf.getUnidades() == null ? Optional.empty()

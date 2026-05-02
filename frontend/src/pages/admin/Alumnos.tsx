@@ -14,7 +14,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 
-const emptyForm = { nombre: '', email: '', matricula: '' }
+const emptyForm = { nombre: '', email: '', numControl: '' }
 
 export default function Alumnos() {
   const qc = useQueryClient()
@@ -80,7 +80,7 @@ export default function Alumnos() {
   const openCreate = () => { setEditTarget(null); setForm(emptyForm); setFormError(''); setModalOpen(true) }
   const openEdit = (a: AlumnoResponse) => {
     setEditTarget(a)
-    setForm({ nombre: a.nombre, email: a.email ?? '', matricula: a.matricula })
+    setForm({ nombre: a.nombre, email: a.email ?? '', numControl: a.numControl })
     setFormError('')
     setModalOpen(true)
   }
@@ -88,8 +88,9 @@ export default function Alumnos() {
 
   const handleSubmit = () => {
     if (!form.nombre.trim()) { setFormError('El nombre es requerido.'); return }
-    if (!form.matricula.trim()) { setFormError('La matrícula es requerida.'); return }
-    const data = { nombre: form.nombre.trim(), email: form.email.trim() || undefined, matricula: form.matricula.trim() }
+    if (!form.email.trim()) { setFormError('El correo electrónico es requerido.'); return }
+    if (!form.numControl.trim()) { setFormError('El número de control es requerido.'); return }
+    const data = { nombre: form.nombre.trim(), email: form.email.trim(), numControl: form.numControl.trim() }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data: data as typeof emptyForm })
     else createMut.mutate(data as typeof emptyForm)
   }
@@ -120,11 +121,11 @@ export default function Alumnos() {
         isLoading={isLoading}
         keyExtractor={(a) => a.id}
         searchable
-        searchKeys={['nombre', 'matricula', 'email']}
-        searchPlaceholder="Buscar por nombre, matrícula o correo..."
+        searchKeys={['nombre', 'numControl', 'email']}
+        searchPlaceholder="Buscar por nombre, núm. de control o correo..."
         emptyMessage="No hay alumnos registrados."
         columns={[
-          { header: 'Matrícula', accessor: 'matricula' },
+          { header: 'Núm. de control', accessor: 'numControl' },
           { header: 'Nombre', accessor: 'nombre' },
           { header: 'Correo', accessor: (a) => a.email ?? '—' },
           {
@@ -196,25 +197,28 @@ export default function Alumnos() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Correo electrónico</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Correo electrónico <span className="text-red-500">*</span>
+            </label>
             <input
               type="email"
+              required
               value={form.email}
               onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              placeholder="alumno@escuela.edu (opcional)"
+              placeholder="alumno@escuela.edu"
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Matrícula <span className="text-red-500">*</span>
+              Número de control <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              value={form.matricula}
-              onChange={(e) => setForm((p) => ({ ...p, matricula: e.target.value }))}
-              placeholder="Ej. A12345678"
+              value={form.numControl}
+              onChange={(e) => setForm((p) => ({ ...p, numControl: e.target.value }))}
+              placeholder="Ej. 21310001"
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
             />
           </div>
@@ -237,7 +241,7 @@ export default function Alumnos() {
       <ConfirmDialog
         open={!!resetTarget}
         title="Restablecer contraseña"
-        description={`Se restablecerá la contraseña de "${resetTarget?.nombre}" a su matrícula. ¿Continuar?`}
+        description={`Se restablecerá la contraseña de "${resetTarget?.nombre}" a su número de control. ¿Continuar?`}
         confirmLabel="Restablecer"
         variant="warning"
         loading={resetMut.isPending}

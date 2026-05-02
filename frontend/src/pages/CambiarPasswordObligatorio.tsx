@@ -53,8 +53,9 @@ export default function CambiarPasswordObligatorio() {
 
           {/* Info */}
           <div className="mx-6 mt-5 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
-            Tu contraseña temporal es tu <strong>número de empleado</strong>
-            {usuario?.rol === 'alumno' ? ' / matrícula' : ''}. Introdúcela como contraseña actual.
+            Tu contraseña temporal es tu{' '}
+            <strong>{usuario?.rol === 'alumno' ? 'número de control' : 'número de empleado'}</strong>.
+            Introdúcela como contraseña actual.
           </div>
 
           {/* Form */}
