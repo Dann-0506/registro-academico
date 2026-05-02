@@ -82,7 +82,7 @@ const FORMATOS: Record<string, FormatoTipo> = {
     notas: 'El alumno y el grupo (clave + semestre) deben existir previamente. No se permiten inscripciones duplicadas.',
   },
   actividades: {
-    label: 'Actividades (catálogo)',
+    label: 'Actividades',
     columnas: [
       { nombre: 'nombre',      requerida: true,  descripcion: 'Nombre de la actividad, debe ser único en el catálogo (ej. Examen parcial)' },
       { nombre: 'descripcion', requerida: false, descripcion: 'Descripción opcional de la actividad' },
