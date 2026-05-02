@@ -39,10 +39,11 @@ public class AdminService {
         if (administradorRepository.existsByNumEmpleado(numEmpleado)) {
             throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
         }
-        Usuario usuario = usuarioRepository.save(
-                new Usuario(nombre.trim(), email.trim().toLowerCase(), passwordEncoder.encode("123456"), "admin")
-        );
-        Administrador saved = administradorRepository.save(new Administrador(usuario, numEmpleado.trim().toUpperCase()));
+        String numEmpleadoNormalizado = numEmpleado.trim().toUpperCase();
+        Usuario usuario = new Usuario(nombre.trim(), email.trim().toLowerCase(), passwordEncoder.encode(numEmpleadoNormalizado), "admin");
+        usuario.setRequiereCambioPassword(true);
+        usuarioRepository.save(usuario);
+        Administrador saved = administradorRepository.save(new Administrador(usuario, numEmpleadoNormalizado));
         return administradorRepository.findByIdWithUsuario(saved.getId()).orElseThrow();
     }
 
@@ -82,7 +83,8 @@ public class AdminService {
     public void restablecerPassword(Integer id, Integer actorId) {
         Administrador admin = buscarPorId(id);
         verificarNoEsMismoUsuario(admin, actorId);
-        admin.getUsuario().setPasswordHash(passwordEncoder.encode("123456"));
+        admin.getUsuario().setPasswordHash(passwordEncoder.encode(admin.getNumEmpleado()));
+        admin.getUsuario().setRequiereCambioPassword(true);
         usuarioRepository.save(admin.getUsuario());
     }
 

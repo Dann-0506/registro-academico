@@ -11,12 +11,14 @@ public class LoginResponse {
     private String nombre;
     private String email;
     private String rol;
+    private boolean requiereCambioPassword;
 
-    public LoginResponse(String token, Integer id, String nombre, String email, String rol) {
+    public LoginResponse(String token, Integer id, String nombre, String email, String rol, boolean requiereCambioPassword) {
         this.token = token;
         this.id = id;
         this.nombre = nombre;
         this.email = email;
         this.rol = rol;
+        this.requiereCambioPassword = requiereCambioPassword;
     }
 }

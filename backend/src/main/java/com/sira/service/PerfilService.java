@@ -57,6 +57,7 @@ public class PerfilService {
         }
 
         usuario.setPasswordHash(passwordEncoder.encode(nueva));
+        usuario.setRequiereCambioPassword(false);
         usuarioRepository.save(usuario);
     }
 }

@@ -34,6 +34,9 @@ public class Usuario {
     @Column(name = "activo", nullable = false)
     private boolean activo = true;
 
+    @Column(name = "requiere_cambio_password", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean requiereCambioPassword = false;
+
     @CreationTimestamp
     @Column(name = "creado_en", updatable = false)
     private LocalDateTime creadoEn;

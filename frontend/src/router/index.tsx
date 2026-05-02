@@ -3,6 +3,7 @@ import { PrivateRoute } from './PrivateRoute'
 import { AppLayout } from '@/layouts/AppLayout'
 import Login from '@/pages/Login'
 import Perfil from '@/pages/Perfil'
+import CambiarPasswordObligatorio from '@/pages/CambiarPasswordObligatorio'
 import Dashboard from '@/pages/admin/Dashboard'
 import Alumnos from '@/pages/admin/Alumnos'
 import Maestros from '@/pages/admin/Maestros'
@@ -20,6 +21,14 @@ import CursoDetalle from '@/pages/alumno/CursoDetalle'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
+
+  // Ruta especial: autenticado pero sin layout (cambio de contraseña forzado)
+  {
+    element: <PrivateRoute />,
+    children: [
+      { path: '/cambiar-password-obligatorio', element: <CambiarPasswordObligatorio /> },
+    ],
+  },
 
   {
     element: <PrivateRoute />,

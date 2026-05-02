@@ -9,6 +9,7 @@ interface AuthState {
   logout: () => void
   isAuthenticated: () => boolean
   hasRole: (rol: Rol) => boolean
+  clearPasswordFlag: () => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -20,6 +21,9 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ token: null, usuario: null }),
       isAuthenticated: () => !!get().token,
       hasRole: (rol) => get().usuario?.rol === rol,
+      clearPasswordFlag: () => set(s => ({
+        usuario: s.usuario ? { ...s.usuario, requiereCambioPassword: false } : null
+      })),
     }),
     { name: 'sira-auth' }
   )

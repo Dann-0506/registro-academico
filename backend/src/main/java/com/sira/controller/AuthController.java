@@ -25,7 +25,8 @@ public class AuthController {
                             usuario.getId(),
                             usuario.getNombre(),
                             usuario.getEmail(),
-                            usuario.getRol()
+                            usuario.getRol(),
+                            usuario.isRequiereCambioPassword()
                     ));
                 })
                 .orElse(ResponseEntity.status(401).build());

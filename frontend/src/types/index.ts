@@ -6,6 +6,7 @@ export interface AuthUsuario {
   email: string
   rol: Rol
   identificador: string | null
+  requiereCambioPassword: boolean
 }
 
 export interface LoginResponse {
@@ -15,6 +16,7 @@ export interface LoginResponse {
   nombre: string
   email: string
   rol: Rol
+  requiereCambioPassword: boolean
 }
 
 export interface PerfilResponse {

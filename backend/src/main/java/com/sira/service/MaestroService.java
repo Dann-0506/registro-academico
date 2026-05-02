@@ -53,10 +53,11 @@ public class MaestroService {
         if (email != null && !email.isBlank() && usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
-        Usuario usuario = usuarioRepository.save(
-                new Usuario(nombre.trim(), email != null ? email.trim() : null, passwordEncoder.encode("123456"), "maestro")
-        );
-        Maestro saved = maestroRepository.save(new Maestro(usuario, numEmpleado.trim().toUpperCase()));
+        String numEmpleadoNormalizado = numEmpleado.trim().toUpperCase();
+        Usuario usuario = new Usuario(nombre.trim(), email != null ? email.trim() : null, passwordEncoder.encode(numEmpleadoNormalizado), "maestro");
+        usuario.setRequiereCambioPassword(true);
+        usuarioRepository.save(usuario);
+        Maestro saved = maestroRepository.save(new Maestro(usuario, numEmpleadoNormalizado));
         return maestroRepository.findByIdWithUsuario(saved.getId()).orElseThrow();
     }
 
@@ -92,7 +93,8 @@ public class MaestroService {
     @Transactional
     public void restablecerPassword(Integer id) {
         Maestro maestro = buscarPorId(id);
-        maestro.getUsuario().setPasswordHash(passwordEncoder.encode("123456"));
+        maestro.getUsuario().setPasswordHash(passwordEncoder.encode(maestro.getNumEmpleado()));
+        maestro.getUsuario().setRequiereCambioPassword(true);
         usuarioRepository.save(maestro.getUsuario());
     }
 

@@ -58,10 +58,11 @@ public class AlumnoService {
         if (email != null && !email.isBlank() && usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
-        Usuario usuario = usuarioRepository.save(
-                new Usuario(nombre.trim(), email != null ? email.trim() : null, passwordEncoder.encode("123456"), "alumno")
-        );
-        Alumno saved = alumnoRepository.save(new Alumno(usuario, matricula.trim().toUpperCase()));
+        String matriculaNormalizada = matricula.trim().toUpperCase();
+        Usuario usuario = new Usuario(nombre.trim(), email != null ? email.trim() : null, passwordEncoder.encode(matriculaNormalizada), "alumno");
+        usuario.setRequiereCambioPassword(true);
+        usuarioRepository.save(usuario);
+        Alumno saved = alumnoRepository.save(new Alumno(usuario, matriculaNormalizada));
         return alumnoRepository.findByIdWithUsuario(saved.getId()).orElseThrow();
     }
 
@@ -97,7 +98,8 @@ public class AlumnoService {
     @Transactional
     public void restablecerPassword(Integer id) {
         Alumno alumno = buscarPorId(id);
-        alumno.getUsuario().setPasswordHash(passwordEncoder.encode("123456"));
+        alumno.getUsuario().setPasswordHash(passwordEncoder.encode(alumno.getMatricula()));
+        alumno.getUsuario().setRequiereCambioPassword(true);
         usuarioRepository.save(alumno.getUsuario());
     }
 

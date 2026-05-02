@@ -19,9 +19,20 @@ export default function Login() {
     setLoading(true)
     try {
       const data = await login(form.email, form.password)
-      storeLogin(data.token, { id: data.id, nombre: data.nombre, email: form.email, rol: data.rol, identificador: null })
-      const redirects = { admin: '/admin', maestro: '/maestro', alumno: '/alumno' }
-      navigate(redirects[data.rol], { replace: true })
+      storeLogin(data.token, {
+        id: data.id,
+        nombre: data.nombre,
+        email: form.email,
+        rol: data.rol,
+        identificador: null,
+        requiereCambioPassword: data.requiereCambioPassword,
+      })
+      if (data.requiereCambioPassword) {
+        navigate('/cambiar-password-obligatorio', { replace: true })
+      } else {
+        const redirects = { admin: '/admin', maestro: '/maestro', alumno: '/alumno' }
+        navigate(redirects[data.rol], { replace: true })
+      }
     } catch {
       setError('Correo o contraseña incorrectos.')
     } finally {
