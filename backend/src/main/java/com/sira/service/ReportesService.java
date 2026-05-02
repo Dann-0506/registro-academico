@@ -28,8 +28,7 @@ public class ReportesService {
                 semestre,
                 buildMateriasReprobacion(semestre),
                 buildAlumnosRiesgo(semestre),
-                buildMaestrosAprovechamiento(semestre),
-                buildRendimientoHistorico()
+                buildMaestrosAprovechamiento(semestre)
         );
     }
 
@@ -93,15 +92,6 @@ public class ReportesService {
                         toLong(row[5]),
                         toLong(row[6])
                 ))
-                .toList();
-    }
-
-    // ─── Rendimiento histórico ────────────────────────────────────────────────
-
-    private List<RendimientoHistoricoDto> buildRendimientoHistorico() {
-        return inscripcionRepository.findRendimientoHistoricoRaw()
-                .stream()
-                .map(row -> new RendimientoHistoricoDto(str(row[0]), toLong(row[1]), toLong(row[2])))
                 .toList();
     }
 

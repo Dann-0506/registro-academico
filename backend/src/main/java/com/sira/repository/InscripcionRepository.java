@@ -103,19 +103,6 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         """, nativeQuery = true)
     List<Object[]> findMaestrosAprovechamientoRaw(String semestre);
 
-    @Query(value = """
-        SELECT g.semestre AS semestre,
-               SUM(CASE WHEN i.estado_academico='APROBADO'  THEN 1 ELSE 0 END) AS aprobados,
-               SUM(CASE WHEN i.estado_academico='REPROBADO' THEN 1 ELSE 0 END) AS reprobados
-        FROM inscripcion i
-        JOIN grupo g ON i.grupo_id = g.id
-        WHERE g.estado_evaluacion = 'CERRADO'
-          AND i.estado_academico IN ('APROBADO','REPROBADO')
-        GROUP BY g.semestre
-        ORDER BY g.semestre ASC
-        """, nativeQuery = true)
-    List<Object[]> findRendimientoHistoricoRaw();
-
     @Query("""
         SELECT i FROM Inscripcion i
         JOIN FETCH i.alumno a JOIN FETCH a.usuario

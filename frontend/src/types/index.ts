@@ -150,18 +150,11 @@ export interface MaestroAprovechamientoDto {
   porcentajeAprobacion: number
 }
 
-export interface RendimientoHistoricoDto {
-  semestre: string
-  aprobados: number
-  reprobados: number
-}
-
 export interface ReportesResponse {
   semestre: string
   materiasReprobacion: MateriaReprobacionDto[]
   alumnosRiesgo: AlumnoRiesgoDto[]
   maestrosAprovechamiento: MaestroAprovechamientoDto[]
-  rendimientoHistorico: RendimientoHistoricoDto[]
 }
 
 export interface DashboardResponse {
