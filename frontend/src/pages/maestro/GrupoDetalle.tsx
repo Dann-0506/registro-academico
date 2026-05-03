@@ -324,17 +324,22 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
 
   const [grades, setGrades] = useState<Record<number, Record<number, string>>>({})
   const [fieldStatus, setFieldStatus] = useState<Record<number, Record<number, FieldStatus>>>({})
+  const [cerrarErrors, setCerrarErrors] = useState<Record<number, string>>({})
 
   const invEstados = () => qc.invalidateQueries({ queryKey: ['estadosUnidades', grupoId] })
   const invReporte = () => qc.invalidateQueries({ queryKey: ['reporte', grupoId] })
 
   const cerrarMut = useMutation({
     mutationFn: (unidadId: number) => cerrarUnidad(grupoId, unidadId),
-    onSuccess: () => { invEstados(); invReporte() },
+    onSuccess: (_data, unidadId) => { invEstados(); invReporte(); setCerrarErrors((p) => ({ ...p, [unidadId]: '' })) },
+    onError: (err, unidadId) => {
+      const msg = axios.isAxiosError(err) ? err.response?.data?.error ?? 'Error al cerrar la unidad.' : 'Error inesperado.'
+      setCerrarErrors((p) => ({ ...p, [unidadId]: msg }))
+    },
   })
   const abrirMut = useMutation({
     mutationFn: (unidadId: number) => abrirUnidad(grupoId, unidadId),
-    onSuccess: invEstados,
+    onSuccess: (_data, unidadId) => { invEstados(); setCerrarErrors((p) => ({ ...p, [unidadId]: '' })) },
   })
 
   const getGrade = (inscripcionId: number, actividadId: number): string => {
@@ -414,9 +419,10 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
                 {cerrada && <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium">Cerrada</span>}
               </div>
               <div className="flex items-center gap-2">
-                {hasFieldErrors(u.id) && !cerrada && (
+                {(hasFieldErrors(u.id) || cerrarErrors[u.id]) && !cerrada && (
                   <span className="text-xs text-red-600 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" /> Error al guardar
+                    <AlertTriangle className="h-3 w-3" />
+                    {cerrarErrors[u.id] || 'Error al guardar'}
                   </span>
                 )}
                 {cerrada ? (

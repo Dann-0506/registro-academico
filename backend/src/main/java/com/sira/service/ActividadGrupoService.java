@@ -64,7 +64,8 @@ public class ActividadGrupoService {
                     "La ponderación excede el 100%. Disponible: " + new BigDecimal("100").subtract(sumActual) + "%");
         }
 
-        return actividadRepository.save(new ActividadGrupo(grupo, unidad, catalogo, etiqueta, ponderacion));
+        ActividadGrupo saved = actividadRepository.save(new ActividadGrupo(grupo, unidad, catalogo, etiqueta, ponderacion));
+        return actividadRepository.findByIdWithDetails(saved.getId()).orElseThrow();
     }
 
     @Transactional
@@ -89,7 +90,8 @@ public class ActividadGrupoService {
         if (actividad.getActividadCatalogo() != null) {
             actividad.setNombre(actividad.getNombreCompleto());
         }
-        return actividadRepository.save(actividad);
+        actividadRepository.save(actividad);
+        return actividadRepository.findByIdWithDetails(actividad.getId()).orElseThrow();
     }
 
     @Transactional

@@ -39,6 +39,22 @@ public interface ResultadoRepository extends JpaRepository<Resultado, Integer> {
     @Query("SELECT COUNT(r) > 0 FROM Resultado r WHERE r.actividadGrupo.id = :actividadId AND r.calificacion IS NOT NULL")
     boolean tieneCalificacionesRegistradas(Integer actividadId);
 
+    @Query("""
+        SELECT COUNT(i) FROM Inscripcion i
+        WHERE i.grupo.id = :grupoId
+        AND (
+            SELECT COUNT(r) FROM Resultado r
+            WHERE r.inscripcion.id = i.id
+            AND r.actividadGrupo.unidad.id = :unidadId
+            AND r.calificacion IS NOT NULL
+        ) < (
+            SELECT COUNT(a) FROM ActividadGrupo a
+            WHERE a.grupo.id = :grupoId
+            AND a.unidad.id = :unidadId
+        )
+        """)
+    long countAlumnosSinCalificarEnUnidad(Integer grupoId, Integer unidadId);
+
     @Modifying
     @Query(value = """
         INSERT INTO resultado (inscripcion_id, actividad_grupo_id, calificacion, modificado_en)

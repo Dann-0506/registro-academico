@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ActividadGrupoRepository extends JpaRepository<ActividadGrupo, Integer> {
@@ -30,6 +31,15 @@ public interface ActividadGrupoRepository extends JpaRepository<ActividadGrupo, 
         ORDER BY a.creadoEn ASC
         """)
     List<ActividadGrupo> findByGrupoIdAndUnidadId(Integer grupoId, Integer unidadId);
+
+    @Query("""
+        SELECT a FROM ActividadGrupo a
+        JOIN FETCH a.grupo
+        JOIN FETCH a.unidad
+        LEFT JOIN FETCH a.actividadCatalogo
+        WHERE a.id = :id
+        """)
+    Optional<ActividadGrupo> findByIdWithDetails(Integer id);
 
     @Query("SELECT COALESCE(SUM(a.ponderacion), 0) FROM ActividadGrupo a WHERE a.grupo.id = :grupoId AND a.unidad.id = :unidadId")
     BigDecimal sumPonderacionByGrupoIdAndUnidadId(Integer grupoId, Integer unidadId);

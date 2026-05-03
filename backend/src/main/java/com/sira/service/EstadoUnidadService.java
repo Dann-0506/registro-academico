@@ -5,6 +5,7 @@ import com.sira.model.Grupo;
 import com.sira.model.Unidad;
 import com.sira.repository.EstadoUnidadRepository;
 import com.sira.repository.GrupoRepository;
+import com.sira.repository.ResultadoRepository;
 import com.sira.repository.UnidadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class EstadoUnidadService {
     @Autowired private EstadoUnidadRepository estadoUnidadRepository;
     @Autowired private GrupoRepository grupoRepository;
     @Autowired private UnidadRepository unidadRepository;
+    @Autowired private ResultadoRepository resultadoRepository;
 
     @Transactional(readOnly = true)
     public Optional<EstadoUnidad> obtenerEstado(Integer grupoId, Integer unidadId) {
@@ -51,6 +53,12 @@ public class EstadoUnidadService {
 
     @Transactional
     public void cerrarUnidad(Integer grupoId, Integer unidadId) {
+        long pendientes = resultadoRepository.countAlumnosSinCalificarEnUnidad(grupoId, unidadId);
+        if (pendientes > 0) {
+            throw new IllegalStateException(
+                    "No se puede cerrar la unidad: " + pendientes +
+                    (pendientes == 1 ? " alumno tiene" : " alumnos tienen") + " calificaciones pendientes.");
+        }
         guardarEstado(grupoId, unidadId, "CERRADA");
     }
 
