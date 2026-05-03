@@ -4,7 +4,6 @@ import type { AlumnoResponse } from '@/types'
 const BASE = '/admin/alumnos'
 
 export const getAlumnos = () => client.get<AlumnoResponse[]>(BASE).then(r => r.data)
-export const getAlumno = (id: number) => client.get<AlumnoResponse>(`${BASE}/${id}`).then(r => r.data)
 export const createAlumno = (data: { nombre: string; email?: string; numControl: string }) =>
   client.post<AlumnoResponse>(BASE, data).then(r => r.data)
 export const updateAlumno = (id: number, data: { nombre: string; email?: string; numControl: string }) =>

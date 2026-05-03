@@ -4,7 +4,6 @@ import type { MaestroResponse } from '@/types'
 const BASE = '/admin/maestros'
 
 export const getMaestros = () => client.get<MaestroResponse[]>(BASE).then(r => r.data)
-export const getMaestro = (id: number) => client.get<MaestroResponse>(`${BASE}/${id}`).then(r => r.data)
 export const createMaestro = (data: { nombre: string; email?: string; numEmpleado: string }) =>
   client.post<MaestroResponse>(BASE, data).then(r => r.data)
 export const updateMaestro = (id: number, data: { nombre: string; email?: string; numEmpleado: string }) =>

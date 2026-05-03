@@ -2,9 +2,9 @@ package com.sira.controller;
 
 import com.sira.dto.CalificacionFinalDto;
 import com.sira.model.Grupo;
-import com.sira.model.Maestro;
 import com.sira.model.Unidad;
 import com.sira.model.Usuario;
+import com.sira.model.Maestro;
 import com.sira.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -50,20 +50,6 @@ public class PdfController {
         return pdfResponse(pdf, "acta_grupo_" + grupoId + ".pdf");
     }
 
-    @GetMapping("/maestro/inscripciones/{inscripcionId}/boleta/pdf")
-    @PreAuthorize("hasRole('MAESTRO') or hasRole('ADMIN')")
-    public ResponseEntity<byte[]> boletaMaestro(@PathVariable Integer inscripcionId,
-                                                  @AuthenticationPrincipal Usuario usuario) {
-        if ("MAESTRO".equals(usuario.getRol())) {
-            Grupo grupo = grupoService.buscarPorId(
-                    inscripcionService.buscarPorId(inscripcionId).getGrupo().getId());
-            Maestro maestro = maestroService.buscarPorUsuarioId(usuario.getId());
-            if (!grupo.getMaestro().getId().equals(maestro.getId())) {
-                throw new IllegalStateException("No tienes permiso para acceder a esta inscripción.");
-            }
-        }
-        return generarBoleta(inscripcionId);
-    }
 
     @GetMapping("/alumno/cursos/{grupoId}/boleta/pdf")
     @PreAuthorize("hasRole('ALUMNO')")

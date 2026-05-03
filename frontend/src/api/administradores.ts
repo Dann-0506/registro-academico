@@ -4,7 +4,6 @@ import type { AdminResponse } from '@/types'
 const BASE = '/admin/administradores'
 
 export const getAdmins = () => client.get<AdminResponse[]>(BASE).then(r => r.data)
-export const getAdmin = (id: number) => client.get<AdminResponse>(`${BASE}/${id}`).then(r => r.data)
 export const createAdmin = (data: { nombre: string; email: string; numEmpleado: string }) =>
   client.post<AdminResponse>(BASE, data).then(r => r.data)
 export const updateAdmin = (id: number, data: { nombre: string; email: string; numEmpleado: string }) =>

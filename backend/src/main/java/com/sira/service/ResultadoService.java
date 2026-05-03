@@ -1,5 +1,6 @@
 package com.sira.service;
 
+import com.sira.dto.ResultadoItemRequest;
 import com.sira.model.Resultado;
 import com.sira.repository.ActividadGrupoRepository;
 import com.sira.repository.GrupoRepository;
@@ -33,45 +34,28 @@ public class ResultadoService {
         return resultadoRepository.findByInscripcionId(inscripcionId);
     }
 
-    public void validarPonderacionCompleta(Integer grupoId, Integer unidadId) {
+    @Transactional
+    public void guardarLote(Integer grupoId, Integer unidadId, List<ResultadoItemRequest> items) {
+        if (items == null || items.isEmpty()) return;
+
+        BigDecimal maxima = obtenerMaximaDelGrupo(grupoId);
+
         BigDecimal suma = actividadGrupoRepository.sumPonderacionByGrupoIdAndUnidadId(grupoId, unidadId);
         if (suma == null || suma.compareTo(PONDERACION_COMPLETA) != 0) {
             throw new IllegalStateException(
                     "La ponderación de las actividades no suma 100%. No se pueden registrar calificaciones.");
         }
-    }
 
-    @Transactional
-    public void guardarCalificacion(Integer inscripcionId, Integer grupoId, Integer unidadId,
-                                    Integer actividadId, BigDecimal nota) {
-        BigDecimal maxima = obtenerMaximaDelGrupo(grupoId);
-        if (nota != null && (nota.compareTo(BigDecimal.ZERO) < 0 || nota.compareTo(maxima) > 0)) {
-            throw new IllegalArgumentException(
-                    "La calificación debe estar entre 0 y " + maxima.stripTrailingZeros().toPlainString() + ".");
-        }
         estadoUnidadService.validarUnidadAbierta(grupoId, unidadId);
-        resultadoRepository.upsert(inscripcionId, actividadId, nota);
-    }
 
-    @Transactional
-    public void guardarLote(Integer grupoId, Integer unidadId, List<Resultado> resultados) {
-        if (resultados == null || resultados.isEmpty()) return;
-        BigDecimal maxima = obtenerMaximaDelGrupo(grupoId);
-        for (Resultado r : resultados) {
-            if (r.getCalificacion() != null &&
-                    (r.getCalificacion().compareTo(BigDecimal.ZERO) < 0 ||
-                     r.getCalificacion().compareTo(maxima) > 0)) {
+        for (ResultadoItemRequest item : items) {
+            if (item.calificacion() != null &&
+                    (item.calificacion().compareTo(BigDecimal.ZERO) < 0 ||
+                     item.calificacion().compareTo(maxima) > 0)) {
                 throw new IllegalArgumentException(
                         "Todas las calificaciones deben estar entre 0 y " + maxima.stripTrailingZeros().toPlainString() + ".");
             }
-        }
-        estadoUnidadService.validarUnidadAbierta(grupoId, unidadId);
-        for (Resultado r : resultados) {
-            resultadoRepository.upsert(
-                    r.getInscripcion().getId(),
-                    r.getActividadGrupo().getId(),
-                    r.getCalificacion()
-            );
+            resultadoRepository.upsert(item.inscripcionId(), item.actividadGrupoId(), item.calificacion());
         }
     }
 

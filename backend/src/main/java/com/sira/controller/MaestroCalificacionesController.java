@@ -2,7 +2,6 @@ package com.sira.controller;
 
 import com.sira.dto.OverrideRequest;
 import com.sira.dto.ResultadoDto;
-import com.sira.dto.ResultadoItemRequest;
 import com.sira.dto.ResultadoLoteRequest;
 import com.sira.model.Grupo;
 import com.sira.model.Maestro;
@@ -45,13 +44,7 @@ public class MaestroCalificacionesController {
                                             @RequestBody ResultadoLoteRequest request,
                                             @AuthenticationPrincipal Usuario usuario) {
         verificarPropietario(grupoId, usuario);
-        resultadoService.validarPonderacionCompleta(grupoId, request.unidadId());
-        for (ResultadoItemRequest item : request.resultados()) {
-            resultadoService.guardarCalificacion(
-                    item.inscripcionId(), grupoId, request.unidadId(),
-                    item.actividadGrupoId(), item.calificacion()
-            );
-        }
+        resultadoService.guardarLote(grupoId, request.unidadId(), request.resultados());
         return ResponseEntity.noContent().build();
     }
 
