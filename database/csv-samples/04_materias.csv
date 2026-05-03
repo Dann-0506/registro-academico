@@ -1,0 +1,5 @@
+clave,nombre,total_unidades,nombres_unidades
+PROG101,Programación Orientada a Objetos,3,Fundamentos de POO|Herencia y Polimorfismo|Patrones de Diseño
+MAT201,Cálculo Diferencial,4,Límites y Continuidad|Derivadas|Aplicaciones de la Derivada|Optimización
+BD301,Bases de Datos,3,Modelo Relacional|SQL y Consultas|Normalización y Diseño
+REDES401,Redes de Computadoras,3,Modelo OSI y TCP/IP|Protocolos de Red|Seguridad en Redes

@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "BackendApplication",
+            "request": "launch",
+            "mainClass": "com.sira.BackendApplication",
+            "projectName": "backend",
+            "envFile":"${workspaceFolder}/.env"
+        },
+    ]
+}

@@ -1,8 +1,7 @@
 # Guía de Contribución
 
-Esta guía explica cómo trabajar con Git en este proyecto, tanto desde la terminal como desde VSCode. Está pensada para quienes están aprendiendo el flujo de trabajo con ramas. 
+Esta guía explica cómo trabajar con Git en este proyecto, tanto desde la terminal como desde VSCode. Está pensada para quienes están aprendiendo el flujo de trabajo con ramas.
 
-**NOTA: Ignoren lo de las convenciones en los nombres y eso, fue solo una sugerencia de Claude por ser el estandar. Pero el flujo si es así. Cualquier problema solo avisenme. Atte: Daniel:)**
 ---
 
 ## ¿Por qué usamos ramas?
@@ -24,6 +23,7 @@ main ─────────────────────────
 | Rama | Propósito |
 |---|---|
 | `main` | Código estable. Nadie trabaja directamente aquí. |
+| `development` | Rama de integración. Los cambios se prueban aquí antes de pasar a `main`. |
 | `feature/nombre` | Nueva funcionalidad. |
 | `fix/nombre` | Corrección de un bug. |
 | `refactor/nombre` | Reestructuración sin cambio de comportamiento. |
@@ -32,8 +32,8 @@ main ─────────────────────────
 ```
 feature/vista-alumnos
 feature/importacion-csv
-fix/left-join-inscripcion
-refactor/navegacion-util
+fix/lazy-loading-inscripcion
+refactor/calificacion-service
 ```
 
 ---
@@ -42,19 +42,19 @@ refactor/navegacion-util
 
 Cada vez que vayas a trabajar en algo nuevo, sigue estos pasos en orden.
 
-### Paso 1 — Asegúrate de tener `main` actualizado
+### Paso 1 — Asegúrate de tener `development` actualizado
 
 Antes de crear una rama, sincroniza tu copia local con lo que hay en el repositorio remoto.
 
 **Desde la terminal:**
 ```bash
-git checkout main
-git pull origin main
+git checkout development
+git pull origin development
 ```
 
 **Desde VSCode:**
 1. En la esquina inferior izquierda verás el nombre de la rama actual. Haz clic ahí.
-2. Selecciona `main` en la lista que aparece arriba.
+2. Selecciona `development` en la lista que aparece arriba.
 3. Abre la paleta de comandos con `Ctrl+Shift+P`.
 4. Escribe `Git: Pull` y presiona Enter.
 
@@ -99,14 +99,11 @@ Un commit es una fotografía del estado de tu código en un momento determinado.
 git status
 
 # Agregar los archivos que quieres incluir en el commit
-git add src/main/java/com/academico/controller/AlumnosController.java
-git add src/main/resources/com/academico/fxml/alumnos.fxml
-
-# O agregar todos los cambios de una vez
-git add .
+git add backend/src/main/java/com/sira/controller/AlumnosController.java
+git add frontend/src/pages/admin/Alumnos.tsx
 
 # Crear el commit con un mensaje descriptivo
-git commit -m "feat: agrega vista de gestión de alumnos"
+git commit -m "feat: agrega gestión de alumnos"
 ```
 
 **Desde VSCode:**
@@ -137,23 +134,28 @@ git push
 2. Selecciona `Insertar` (Push).
 3. Si es la primera vez, VSCode te preguntará si quieres publicar la rama — acepta.
 
-**NOTA: Puedes hacer esto al momento de crearla para que todos sepan que estas trabajando en dicha mejora.**
+Puedes hacer esto al momento de crearla para que todos sepan que estás trabajando en esa mejora.
+
 ---
 
-### Paso 6 — Une tu rama a `main` con un `Pull Request`
+### Paso 6 — Une tu rama a `development` con un Pull Request
 
-Un **Pull Request (PR)** es una petición para que tu código sea revisado y unido a `main`.
+Un **Pull Request (PR)** es una petición para que tu código sea revisado y unido a `development`.
+
 1. Entra al repositorio en **GitHub**.
-2. Verás un cartel amarillo que dice: **"Compare & pull request"**. haz clic ahí.
-3. **Título y Descripción:** Explica brevemente qué hciiste y si hay algo que tus compañeros deban probar.
-4. Haz clic en **"Create pull request"**.
+2. Verás un cartel que dice **"Compare & pull request"**. Haz clic ahí.
+3. Asegúrate de que el destino sea `development`, no `main`.
+4. Escribe un título y descripción claros: qué hiciste y qué hay que probar.
+5. Haz clic en **"Create pull request"**.
+6. Pide a un compañero que revise el código. Una vez aprobado, se hace el merge.
 
-**NOTA: Pide a un compañero que revise el código. Si todo está bien, alguien (o tí mismo si tienes permiso) hará clic en el botón verde **"Merge pull request"**.
+Los cambios de `development` a `main` los hace el responsable del proyecto cuando hay una versión estable lista.
+
 ---
 
 ### Paso 7 — Elimina la rama (opcional pero recomendado)
 
-Una vez que tu rama fue unida a `main`, ya no la necesitas. Eliminarla mantiene el repositorio limpio.
+Una vez que tu rama fue unida a `development`, ya no la necesitas. Eliminarla mantiene el repositorio limpio.
 
 **Desde la terminal:**
 ```bash
@@ -178,7 +180,7 @@ Un conflicto ocurre cuando dos personas modificaron el mismo archivo en el mismo
 Cuando hay un conflicto, el archivo afectado se ve así:
 
 ```
-<<<<<< HEAD (tu rama actual — main)
+<<<<<< HEAD (tu rama actual)
     private String nombre;
 =======
     private String nombreCompleto;
@@ -189,8 +191,8 @@ Cuando hay un conflicto, el archivo afectado se ve así:
 
 1. Abre el archivo con conflicto. VSCode lo resalta en rojo en el panel de control de código fuente.
 2. VSCode muestra botones encima del conflicto:
-   - `Aceptar cambio actual` — conserva lo que está en `main`
-   - `Aceptar cambio entrante` — conserva lo que viene de tu rama
+   - `Aceptar cambio actual` — conserva lo que está en tu rama
+   - `Aceptar cambio entrante` — conserva lo que viene de la otra rama
    - `Aceptar ambos cambios` — conserva las dos versiones
 3. Elige la opción correcta o edita manualmente el resultado final.
 4. Guarda el archivo.
@@ -224,9 +226,9 @@ tipo: descripción corta en español, imperativo, minúsculas
 **Ejemplos:**
 ```bash
 git commit -m "feat: agrega importación de alumnos por CSV"
-git commit -m "fix: corrige LEFT JOIN faltante en InscripcionDAO"
-git commit -m "refactor: extrae navegación a NavegacionUtil"
-git commit -m "test: agrega casos límite a CalificacionServiceTest"
+git commit -m "fix: corrige lazy loading en InscripcionRepository"
+git commit -m "refactor: consolida guardarLote en ResultadoService"
+git commit -m "style: ajusta tabla de alumnos al diseño del sistema"
 ```
 
 **Reglas:**
@@ -235,7 +237,7 @@ git commit -m "test: agrega casos límite a CalificacionServiceTest"
 - Si necesitas más contexto, agrega un cuerpo separado por una línea en blanco:
 
 ```bash
-git commit -m "fix: corrige cálculo de promedio con actividades nulas
+git commit -m "fix: corrige cálculo de promedio con actividades sin calificar
 
 Antes las actividades sin calificación se ignoraban del conteo total,
 lo que inflaba el promedio. Ahora se cuentan pero aportan cero."
@@ -243,13 +245,14 @@ lo que inflaba el promedio. Ahora se cuentan pero aportan cero."
 
 ---
 
-## Checklist antes de hacer merge a main
+## Checklist antes de hacer merge a `development`
 
-- [ ] El código compila sin errores (`mvn compile`)
-- [ ] Todos los tests pasan (`mvn test`)
+- [ ] El backend compila sin errores (`cd backend && mvn compile`)
+- [ ] El frontend compila sin errores (`cd frontend && npm run build`)
 - [ ] No hay credenciales ni contraseñas en el código
-- [ ] El mensaje de commit describe claramente el cambio
-- [ ] `main` está actualizado antes del merge (`git pull`)
+- [ ] El archivo `backend/.env` no está incluido en el commit
+- [ ] Los mensajes de commit describen claramente los cambios
+- [ ] `development` está actualizado antes del merge (`git pull`)
 
 ---
 
@@ -266,8 +269,8 @@ git log --oneline
 git branch -a
 
 # Descartar cambios en un archivo (¡cuidado, es irreversible!)
-git checkout -- nombre-del-archivo.java
+git checkout -- ruta/al/archivo.ts
 
 # Ver qué cambió en un archivo antes de hacer commit
-git diff nombre-del-archivo.java
+git diff ruta/al/archivo.ts
 ```
