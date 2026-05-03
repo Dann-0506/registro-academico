@@ -13,7 +13,9 @@ public interface ActividadGrupoRepository extends JpaRepository<ActividadGrupo, 
 
     @Query("""
         SELECT a FROM ActividadGrupo a
+        JOIN FETCH a.grupo
         JOIN FETCH a.unidad
+        LEFT JOIN FETCH a.actividadCatalogo
         WHERE a.grupo.id = :grupoId
         ORDER BY a.unidad.numero ASC, a.creadoEn ASC
         """)
@@ -21,7 +23,9 @@ public interface ActividadGrupoRepository extends JpaRepository<ActividadGrupo, 
 
     @Query("""
         SELECT a FROM ActividadGrupo a
+        JOIN FETCH a.grupo
         JOIN FETCH a.unidad
+        LEFT JOIN FETCH a.actividadCatalogo
         WHERE a.grupo.id = :grupoId AND a.unidad.id = :unidadId
         ORDER BY a.creadoEn ASC
         """)
