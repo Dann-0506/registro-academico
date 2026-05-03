@@ -27,6 +27,8 @@ public class GrupoService {
     @Autowired private InscripcionRepository inscripcionRepository;
     @Autowired private ConfiguracionService configuracionService;
     @Lazy @Autowired private ReporteService reporteService;
+    @Autowired private EstadoUnidadService estadoUnidadService;
+    @Autowired private UnidadService unidadService;
 
     @Transactional(readOnly = true)
     public List<Grupo> listarTodos() {
@@ -107,6 +109,11 @@ public class GrupoService {
         Grupo grupo = buscarPorId(id);
         if (grupo.isCerrado()) {
             throw new IllegalStateException("El curso ya se encuentra cerrado.");
+        }
+        int totalUnidades = unidadService.listarPorGrupo(id).size();
+        if (!estadoUnidadService.todasUnidadesCerradas(id, totalUnidades)) {
+            throw new IllegalStateException(
+                    "No se puede terminar la evaluación: hay unidades que aún no han sido cerradas.");
         }
         List<CalificacionFinalDto> reporte = reporteService.generarReporteFinalGrupo(id, grupo.getCalificacionMaxima());
         long pendientes = reporte.stream().filter(CalificacionFinalDto::isPendiente).count();

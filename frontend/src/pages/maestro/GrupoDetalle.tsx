@@ -2,13 +2,13 @@ import { useInvalidateDashboard } from '@/hooks/useInvalidateDashboard'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, Save, Lock, FileDown, Gift, AlertTriangle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Lock, LockOpen, FileDown, Gift, AlertTriangle } from 'lucide-react'
 import axios from 'axios'
 import { getMiGrupo, cerrarGrupoMaestro } from '@/api/grupos'
 import { getUnidadesByGrupo } from '@/api/materias'
 import { getActividades, createActividad, updateActividad, deleteActividad } from '@/api/actividades'
 import { getCatalogoActivo } from '@/api/actividadesCatalogo'
-import { getReporte, guardarLote, aplicarOverride, descargarActaPdf } from '@/api/calificaciones'
+import { getReporte, guardarCalificacion, aplicarOverride, descargarActaPdf, getEstadosUnidades, cerrarUnidad, abrirUnidad } from '@/api/calificaciones'
 import { getBonus, createBonus } from '@/api/bonus'
 import type {
   GrupoResponse, ActividadGrupoResponse, ActividadCatalogoResponse,
@@ -266,9 +266,12 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
 
 // ─── Calificaciones Tab ───────────────────────────────────────────────────────
 
+type FieldStatus = 'idle' | 'saving' | 'error'
+
 function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
   const qc = useQueryClient()
   const grupoId = grupo.id
+  const maxima = grupo.calificacionMaxima
 
   const { data: reporte = [], isLoading } = useQuery({
     queryKey: ['reporte', grupoId],
@@ -280,10 +283,25 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
     queryFn: () => getActividades(grupoId),
   })
 
-  // Local grades state: [inscripcionId][actividadGrupoId] = value
+  const { data: estadosUnidades = {} } = useQuery({
+    queryKey: ['estadosUnidades', grupoId],
+    queryFn: () => getEstadosUnidades(grupoId),
+  })
+
   const [grades, setGrades] = useState<Record<number, Record<number, string>>>({})
-  const [saving, setSaving] = useState<Record<number, boolean>>({})
-  const [saveErrors, setSaveErrors] = useState<Record<number, string>>({})
+  const [fieldStatus, setFieldStatus] = useState<Record<number, Record<number, FieldStatus>>>({})
+
+  const invEstados = () => qc.invalidateQueries({ queryKey: ['estadosUnidades', grupoId] })
+  const invReporte = () => qc.invalidateQueries({ queryKey: ['reporte', grupoId] })
+
+  const cerrarMut = useMutation({
+    mutationFn: (unidadId: number) => cerrarUnidad(grupoId, unidadId),
+    onSuccess: () => { invEstados(); invReporte() },
+  })
+  const abrirMut = useMutation({
+    mutationFn: (unidadId: number) => abrirUnidad(grupoId, unidadId),
+    onSuccess: invEstados,
+  })
 
   const getGrade = (inscripcionId: number, actividadId: number): string => {
     const existing = reporte
@@ -295,16 +313,35 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
     return existing?.calificacion != null ? String(existing.calificacion) : ''
   }
 
-  const setGrade = (inscripcionId: number, actividadId: number, value: string) => {
+  const setGrade = (inscripcionId: number, actividadId: number, value: string) =>
     setGrades((p) => ({ ...p, [inscripcionId]: { ...p[inscripcionId], [actividadId]: value } }))
-  }
 
-  const maxima = grupo.calificacionMaxima
+  const setStatus = (inscripcionId: number, actividadId: number, status: FieldStatus) =>
+    setFieldStatus((p) => ({ ...p, [inscripcionId]: { ...p[inscripcionId], [actividadId]: status } }))
 
-  const isGradeInvalid = (value: string): boolean => {
+  const isGradeInvalid = (value: string) => {
     if (value === '') return false
     const n = Number(value)
     return isNaN(n) || n < 0 || n > maxima
+  }
+
+  const handleBlur = async (inscripcionId: number, actividadId: number, unidadId: number, value: string) => {
+    if (isGradeInvalid(value)) return
+    const calificacion = value === '' ? null : Number(value)
+    const savedValue = reporte
+      .find((r) => r.inscripcionId === inscripcionId)
+      ?.unidades.flatMap((u) => u.desglose)
+      .find((d) => d.actividadGrupoId === actividadId)?.calificacion ?? null
+    const savedStr = savedValue != null ? String(savedValue) : ''
+    if (value === savedStr) return
+    setStatus(inscripcionId, actividadId, 'saving')
+    try {
+      await guardarCalificacion(grupoId, unidadId, inscripcionId, actividadId, calificacion)
+      invReporte()
+      setStatus(inscripcionId, actividadId, 'idle')
+    } catch {
+      setStatus(inscripcionId, actividadId, 'error')
+    }
   }
 
   const ponderacionDeUnidad = (unidadId: number): number =>
@@ -312,33 +349,9 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
       .filter((a: ActividadGrupoResponse) => a.unidadId === unidadId)
       .reduce((s: number, a: ActividadGrupoResponse) => s + a.ponderacion, 0)
 
-  const tieneCalificacionesInvalidas = (unidadId: number): boolean => {
+  const hasFieldErrors = (unidadId: number): boolean => {
     const actsU = actividades.filter((a: ActividadGrupoResponse) => a.unidadId === unidadId)
-    return reporte.some((r) => actsU.some((a: ActividadGrupoResponse) => isGradeInvalid(getGrade(r.inscripcionId, a.id))))
-  }
-
-  const handleSaveUnidad = async (unidadId: number, _nombre: string) => {
-    setSaving((p) => ({ ...p, [unidadId]: true }))
-    setSaveErrors((p) => ({ ...p, [unidadId]: '' }))
-    const actsByUnidad = actividades.filter((a: ActividadGrupoResponse) => a.unidadId === unidadId)
-    const resultados = reporte.flatMap((r) =>
-      actsByUnidad.map((a: ActividadGrupoResponse) => ({
-        inscripcionId: r.inscripcionId,
-        actividadGrupoId: a.id,
-        calificacion: grades[r.inscripcionId]?.[a.id] !== undefined
-          ? (grades[r.inscripcionId][a.id] === '' ? null : Number(grades[r.inscripcionId][a.id]))
-          : (r.unidades.flatMap((u) => u.desglose).find((d) => d.actividadGrupoId === a.id)?.calificacion ?? null),
-      }))
-    )
-    try {
-      await guardarLote(grupoId, { grupoId, unidadId, resultados })
-      qc.invalidateQueries({ queryKey: ['reporte', grupoId] })
-    } catch (err) {
-      const msg = axios.isAxiosError(err) ? err.response?.data?.error ?? 'Error al guardar.' : 'Error inesperado.'
-      setSaveErrors((p) => ({ ...p, [unidadId]: msg }))
-    } finally {
-      setSaving((p) => ({ ...p, [unidadId]: false }))
-    }
+    return reporte.some((r) => actsU.some((a: ActividadGrupoResponse) => fieldStatus[r.inscripcionId]?.[a.id] === 'error'))
   }
 
   const unidades = [...new Map(
@@ -355,29 +368,50 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
         if (actsU.length === 0) return null
         const ponderacion = ponderacionDeUnidad(u.id)
         const ponderacionIncompleta = ponderacion !== 100
-        const hayInvalidas = tieneCalificacionesInvalidas(u.id)
-        const bloqueado = ponderacionIncompleta || hayInvalidas
+        const cerrada = estadosUnidades[u.id] === 'CERRADA'
+        const inputsDeshabilitados = ponderacionIncompleta || cerrada
+        const puedesCerrar = !ponderacionIncompleta && !hasFieldErrors(u.id)
+
         return (
-          <div key={u.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
-              <h4 className="font-semibold text-slate-800">Unidad {u.numero}: {u.nombre}</h4>
-              <div className="flex items-center gap-3">
-                {saveErrors[u.id] && <span className="text-xs text-red-600">{saveErrors[u.id]}</span>}
-                <button
-                  onClick={() => handleSaveUnidad(u.id, u.nombre)}
-                  disabled={saving[u.id] || bloqueado}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {saving[u.id] ? <LoadingSpinner size="sm" /> : <Save className="h-3 w-3" />}
-                  Guardar
-                </button>
+          <div key={u.id} className={`bg-white rounded-xl border shadow-sm overflow-hidden ${cerrada ? 'border-slate-300 opacity-80' : 'border-slate-200'}`}>
+            <div className={`flex items-center justify-between px-5 py-3 border-b ${cerrada ? 'bg-slate-100 border-slate-200' : 'bg-slate-50 border-slate-200'}`}>
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-slate-800">Unidad {u.numero}: {u.nombre}</h4>
+                {cerrada && <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium">Cerrada</span>}
+              </div>
+              <div className="flex items-center gap-2">
+                {hasFieldErrors(u.id) && !cerrada && (
+                  <span className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" /> Error al guardar
+                  </span>
+                )}
+                {cerrada ? (
+                  <button
+                    onClick={() => abrirMut.mutate(u.id)}
+                    disabled={abrirMut.isPending}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 disabled:opacity-50 transition-colors"
+                  >
+                    {abrirMut.isPending ? <LoadingSpinner size="sm" /> : <LockOpen className="h-3 w-3" />}
+                    Reabrir
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => cerrarMut.mutate(u.id)}
+                    disabled={cerrarMut.isPending || !puedesCerrar}
+                    title={ponderacionIncompleta ? 'La ponderación debe ser 100%' : undefined}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {cerrarMut.isPending ? <LoadingSpinner size="sm" /> : <Lock className="h-3 w-3" />}
+                    Cerrar unidad
+                  </button>
+                )}
               </div>
             </div>
 
-            {ponderacionIncompleta && (
+            {ponderacionIncompleta && !cerrada && (
               <div className="flex items-center gap-2 px-5 py-2.5 bg-amber-50 border-b border-amber-100 text-amber-700 text-xs">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                La ponderación de esta unidad suma <strong className="mx-1">{ponderacion}%</strong> — debe ser exactamente 100% para poder guardar calificaciones.
+                La ponderación suma <strong className="mx-1">{ponderacion}%</strong> — debe ser 100% para registrar calificaciones.
               </div>
             )}
 
@@ -401,6 +435,7 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
                       {actsU.map((a: ActividadGrupoResponse) => {
                         const val = getGrade(r.inscripcionId, a.id)
                         const invalido = isGradeInvalid(val)
+                        const status = fieldStatus[r.inscripcionId]?.[a.id] ?? 'idle'
                         return (
                           <td key={a.id} className="px-3 py-2 text-center">
                             <input
@@ -410,18 +445,24 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
                               step={0.1}
                               value={val}
                               onChange={(e) => setGrade(r.inscripcionId, a.id, e.target.value)}
-                              disabled={ponderacionIncompleta}
+                              onBlur={(e) => handleBlur(r.inscripcionId, a.id, u.id, e.target.value)}
+                              disabled={inputsDeshabilitados}
                               className={`w-20 text-center px-2 py-1 rounded border text-sm focus:outline-none focus:ring-2 transition ${
-                                ponderacionIncompleta
+                                inputsDeshabilitados
                                   ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
-                                  : invalido
+                                  : status === 'error' || invalido
                                   ? 'border-red-400 bg-red-50 text-red-700 focus:ring-red-400/30'
+                                  : status === 'saving'
+                                  ? 'border-blue-300 bg-blue-50 focus:ring-blue-400/30'
                                   : 'border-slate-200 focus:ring-blue-500/30 focus:border-blue-400'
                               }`}
                               placeholder="—"
                             />
-                            {invalido && (
+                            {invalido && !inputsDeshabilitados && (
                               <p className="text-xs text-red-600 mt-0.5">0 – {maxima}</p>
+                            )}
+                            {status === 'error' && !invalido && (
+                              <p className="text-xs text-red-600 mt-0.5">Error</p>
                             )}
                           </td>
                         )
@@ -608,6 +649,11 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
     queryFn: () => getReporte(grupoId),
   })
 
+  const { data: estadosUnidades = {} } = useQuery({
+    queryKey: ['estadosUnidades', grupoId],
+    queryFn: () => getEstadosUnidades(grupoId),
+  })
+
   const invReporte = () => qc.invalidateQueries({ queryKey: ['reporte', grupoId] })
   const invGrupo = () => qc.invalidateQueries({ queryKey: ['miGrupo', grupoId] })
 
@@ -643,22 +689,30 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
       {/* Action buttons */}
       {(() => {
         const hayPendientes = reporte.some((r) => r.estado === 'PENDIENTE')
+        const hayUnidadesAbiertas = reporte.length > 0 &&
+          reporte[0].unidades.some((u) => estadosUnidades[u.unidadId] !== 'CERRADA')
+        const bloqueado = hayPendientes || hayUnidadesAbiertas
+        const motivoBloqueo = hayUnidadesAbiertas
+          ? 'Hay unidades sin cerrar'
+          : hayPendientes
+          ? 'Hay alumnos con calificaciones pendientes'
+          : undefined
         return (
           <div className="flex items-center gap-3 flex-wrap">
             {grupo.estadoEvaluacion === 'ABIERTO' && (
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCerrarOpen(true)}
-                  disabled={hayPendientes}
-                  title={hayPendientes ? 'Hay alumnos con calificaciones pendientes' : undefined}
+                  disabled={bloqueado}
+                  title={motivoBloqueo}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <Lock className="h-4 w-4" /> Terminar evaluación
                 </button>
-                {hayPendientes && (
+                {bloqueado && motivoBloqueo && (
                   <span className="text-xs text-amber-700 flex items-center gap-1">
                     <AlertTriangle className="h-3.5 w-3.5" />
-                    Hay alumnos con calificaciones pendientes
+                    {motivoBloqueo}
                   </span>
                 )}
               </div>

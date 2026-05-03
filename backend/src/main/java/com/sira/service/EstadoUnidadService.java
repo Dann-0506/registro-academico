@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EstadoUnidadService {
@@ -55,5 +57,19 @@ public class EstadoUnidadService {
     @Transactional
     public void abrirUnidad(Integer grupoId, Integer unidadId) {
         guardarEstado(grupoId, unidadId, "ABIERTA");
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, String> obtenerEstadosPorGrupo(Integer grupoId) {
+        return estadoUnidadRepository.findByGrupoId(grupoId).stream()
+                .collect(Collectors.toMap(e -> e.getUnidad().getId(), EstadoUnidad::getEstado));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean todasUnidadesCerradas(Integer grupoId, Integer totalUnidades) {
+        if (totalUnidades == 0) return true;
+        long cerradas = estadoUnidadRepository.findByGrupoId(grupoId).stream()
+                .filter(EstadoUnidad::isCerrada).count();
+        return cerradas >= totalUnidades;
     }
 }

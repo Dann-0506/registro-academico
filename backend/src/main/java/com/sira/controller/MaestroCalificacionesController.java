@@ -57,6 +57,13 @@ public class MaestroCalificacionesController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/grupos/{grupoId}/unidades/estados")
+    public Map<Integer, String> estadosUnidades(@PathVariable Integer grupoId,
+                                                 @AuthenticationPrincipal Usuario usuario) {
+        verificarPropietario(grupoId, usuario);
+        return estadoUnidadService.obtenerEstadosPorGrupo(grupoId);
+    }
+
     @GetMapping("/grupos/{grupoId}/unidades/{unidadId}/estado")
     public ResponseEntity<Map<String, String>> estadoUnidad(@PathVariable Integer grupoId,
                                                              @PathVariable Integer unidadId,

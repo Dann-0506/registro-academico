@@ -4,13 +4,21 @@ import type { CalificacionFinalDto } from '@/types'
 export const getReporte = (grupoId: number) =>
   client.get<CalificacionFinalDto[]>(`/maestro/grupos/${grupoId}/reporte`).then(r => r.data)
 
-export const guardarLote = (grupoId: number, data: {
-  grupoId: number; unidadId: number;
-  resultados: { inscripcionId: number; actividadGrupoId: number; calificacion: number | null }[]
-}) => client.post(`/maestro/grupos/${grupoId}/calificaciones/lote`, data)
+export const guardarCalificacion = (grupoId: number, unidadId: number, inscripcionId: number, actividadGrupoId: number, calificacion: number | null) =>
+  client.post(`/maestro/grupos/${grupoId}/calificaciones/lote`, {
+    grupoId, unidadId, resultados: [{ inscripcionId, actividadGrupoId, calificacion }],
+  })
 
 export const aplicarOverride = (inscripcionId: number, data: { calificacion: number | null; justificacion: string }) =>
   client.post(`/maestro/inscripciones/${inscripcionId}/override`, data)
+
+// Unidades
+export const getEstadosUnidades = (grupoId: number) =>
+  client.get<Record<number, string>>(`/maestro/grupos/${grupoId}/unidades/estados`).then(r => r.data)
+export const cerrarUnidad = (grupoId: number, unidadId: number) =>
+  client.post(`/maestro/grupos/${grupoId}/unidades/${unidadId}/cerrar`)
+export const abrirUnidad = (grupoId: number, unidadId: number) =>
+  client.post(`/maestro/grupos/${grupoId}/unidades/${unidadId}/abrir`)
 
 // Alumno
 export const getMisCalificaciones = (grupoId: number) =>
