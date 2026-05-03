@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/store/authStore'
 import { ChevronDown, LogOut, User, BookCheck, BookOpen } from 'lucide-react'
 import { rolLabel, cn } from '@/lib/utils'
@@ -87,6 +88,7 @@ function NavDropdown({ label, items, isActive }: {
 function UserMenu() {
   const { usuario, logout } = useAuthStore()
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -98,7 +100,7 @@ function UserMenu() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const handleLogout = () => { logout(); navigate('/login') }
+  const handleLogout = () => { logout(); qc.clear(); navigate('/login') }
 
   return (
     <div ref={ref} className="relative">
