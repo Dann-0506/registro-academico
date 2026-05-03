@@ -34,7 +34,7 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
-        WHERE m.id = :maestroId AND g.estadoEvaluacion = 'ABIERTO'
+        WHERE m.id = :maestroId AND g.activo = true
         ORDER BY g.semestre DESC, g.materia.nombre ASC
         """)
     List<Grupo> findByMaestroIdAbiertos(Integer maestroId);

@@ -752,7 +752,7 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
       <ConfirmDialog
         open={cerrarOpen}
         title="Terminar evaluación"
-        description="¿Terminar la evaluación de este grupo? Las calificaciones quedarán congeladas. Solo un administrador podrá reabrirlo si es necesario."
+        description="¿Terminar la evaluación de este grupo? Solo un administrador podrá reabrirlo si es necesario."
         confirmLabel="Terminar evaluación"
         variant="warning"
         loading={cerrarMut.isPending}
