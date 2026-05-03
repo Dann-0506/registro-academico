@@ -21,11 +21,7 @@ public class CalificacionFinalDto {
     private BigDecimal calificacionFinal;
     private boolean esOverride;
     private String overrideJustificacion;
+    private String estado;
 
-    public String getEstado() {
-        if (calificacionFinal == null) return "PENDIENTE";
-        return "APROBADO"; // el estado real lo determina CalificacionService con el límite
-    }
-
-    public boolean isPendiente() { return calificacionFinal == null; }
+    public boolean isPendiente() { return "PENDIENTE".equals(estado); }
 }

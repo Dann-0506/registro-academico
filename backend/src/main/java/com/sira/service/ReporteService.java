@@ -35,7 +35,13 @@ public class ReporteService {
 
         List<CalificacionFinalDto> reporte = new ArrayList<>();
         for (Inscripcion inscripcion : inscripciones) {
-            reporte.add(procesarCalificacionAlumno(inscripcion, unidades, limiteMaximo));
+            CalificacionFinalDto cf = procesarCalificacionAlumno(inscripcion, unidades, limiteMaximo);
+            BigDecimal minimaAprobatoria = inscripcion.getGrupo().getCalificacionMinimaAprobatoria();
+            boolean hayUnidadPendiente = cf.getUnidades() != null &&
+                    cf.getUnidades().stream().anyMatch(u -> u.getResultadoFinal() == null);
+            cf.setEstado(hayUnidadPendiente ? "PENDIENTE" :
+                    calificacionService.determinarEstado(cf.getCalificacionFinal(), minimaAprobatoria));
+            reporte.add(cf);
         }
         return reporte;
     }
