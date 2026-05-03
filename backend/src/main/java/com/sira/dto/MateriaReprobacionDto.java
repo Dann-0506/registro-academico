@@ -7,10 +7,6 @@ public record MateriaReprobacionDto(
         long gruposEvaluados,
         long totalAlumnos,
         long aprobados,
-        long reprobados
-) {
-    public double porcentajeReprobacion() {
-        if (totalAlumnos == 0) return 0;
-        return Math.round((reprobados * 100.0 / totalAlumnos) * 10.0) / 10.0;
-    }
-}
+        long reprobados,
+        double porcentajeReprobacion
+) {}

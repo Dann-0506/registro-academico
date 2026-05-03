@@ -37,15 +37,14 @@ public class ReportesService {
     private List<MateriaReprobacionDto> buildMateriasReprobacion(String semestre) {
         return inscripcionRepository.findMateriasConReprobacionRaw(semestre)
                 .stream()
-                .map(row -> new MateriaReprobacionDto(
-                        toInt(row[0]),
-                        str(row[1]),
-                        str(row[2]),
-                        toLong(row[3]),
-                        toLong(row[4]),
-                        toLong(row[5]),
-                        toLong(row[6])
-                ))
+                .map(row -> {
+                    long total = toLong(row[4]);
+                    long reprobados = toLong(row[6]);
+                    double pct = total > 0 ? Math.round((reprobados * 100.0 / total) * 10.0) / 10.0 : 0;
+                    return new MateriaReprobacionDto(
+                            toInt(row[0]), str(row[1]), str(row[2]),
+                            toLong(row[3]), total, toLong(row[5]), reprobados, pct);
+                })
                 .toList();
     }
 
@@ -83,15 +82,14 @@ public class ReportesService {
     private List<MaestroAprovechamientoDto> buildMaestrosAprovechamiento(String semestre) {
         return inscripcionRepository.findMaestrosAprovechamientoRaw(semestre)
                 .stream()
-                .map(row -> new MaestroAprovechamientoDto(
-                        toInt(row[0]),
-                        str(row[1]),
-                        str(row[2]),
-                        toLong(row[3]),
-                        toLong(row[4]),
-                        toLong(row[5]),
-                        toLong(row[6])
-                ))
+                .map(row -> {
+                    long alumnosEval = toLong(row[4]);
+                    long aprobados = toLong(row[5]);
+                    double pct = alumnosEval > 0 ? Math.round((aprobados * 100.0 / alumnosEval) * 10.0) / 10.0 : 0;
+                    return new MaestroAprovechamientoDto(
+                            toInt(row[0]), str(row[1]), str(row[2]),
+                            toLong(row[3]), alumnosEval, aprobados, toLong(row[6]), pct);
+                })
                 .toList();
     }
 
