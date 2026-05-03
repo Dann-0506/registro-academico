@@ -35,6 +35,7 @@ public class MaestroCalificacionesController {
     @GetMapping("/inscripciones/{inscripcionId}/resultados")
     public List<ResultadoDto> resultadosPorInscripcion(@PathVariable Integer inscripcionId,
                                                         @AuthenticationPrincipal Usuario usuario) {
+        verificarPropietarioPorInscripcion(inscripcionId, usuario);
         return resultadoService.buscarPorInscripcion(inscripcionId)
                 .stream().map(ResultadoDto::from).toList();
     }
@@ -57,6 +58,7 @@ public class MaestroCalificacionesController {
     public ResponseEntity<Void> aplicarOverride(@PathVariable Integer inscripcionId,
                                                  @RequestBody OverrideRequest request,
                                                  @AuthenticationPrincipal Usuario usuario) {
+        verificarPropietarioPorInscripcion(inscripcionId, usuario);
         inscripcionService.aplicarOverride(inscripcionId, request.calificacion(), request.justificacion());
         return ResponseEntity.noContent().build();
     }
@@ -88,6 +90,10 @@ public class MaestroCalificacionesController {
         verificarPropietario(grupoId, usuario);
         estadoUnidadService.abrirUnidad(grupoId, unidadId);
         return ResponseEntity.noContent().build();
+    }
+
+    private void verificarPropietarioPorInscripcion(Integer inscripcionId, Usuario usuario) {
+        verificarPropietario(inscripcionService.buscarPorId(inscripcionId).getGrupo().getId(), usuario);
     }
 
     private void verificarPropietario(Integer grupoId, Usuario usuario) {

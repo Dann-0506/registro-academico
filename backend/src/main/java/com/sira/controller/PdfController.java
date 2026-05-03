@@ -54,6 +54,14 @@ public class PdfController {
     @PreAuthorize("hasRole('MAESTRO') or hasRole('ADMIN')")
     public ResponseEntity<byte[]> boletaMaestro(@PathVariable Integer inscripcionId,
                                                   @AuthenticationPrincipal Usuario usuario) {
+        if ("MAESTRO".equals(usuario.getRol())) {
+            Grupo grupo = grupoService.buscarPorId(
+                    inscripcionService.buscarPorId(inscripcionId).getGrupo().getId());
+            Maestro maestro = maestroService.buscarPorUsuarioId(usuario.getId());
+            if (!grupo.getMaestro().getId().equals(maestro.getId())) {
+                throw new IllegalStateException("No tienes permiso para acceder a esta inscripción.");
+            }
+        }
         return generarBoleta(inscripcionId);
     }
 
