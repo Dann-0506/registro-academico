@@ -768,8 +768,8 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
 const TABS: { key: Tab; label: string }[] = [
   { key: 'actividades', label: 'Actividades' },
   { key: 'calificaciones', label: 'Calificaciones' },
-  { key: 'bonus', label: 'Bonus y Overrides' },
-  { key: 'reporte', label: 'Reporte y Acta' },
+  { key: 'bonus', label: 'Bonus' },
+  { key: 'reporte', label: 'Reporte Final' },
 ]
 
 export default function GrupoDetalle() {
